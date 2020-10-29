@@ -1,0 +1,1 @@
+bin\pasmo desolcoda.asm desolcode.bin

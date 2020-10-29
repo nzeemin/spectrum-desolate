@@ -1,0 +1,1 @@
+start C:\bin\fuse\fuse.exe --machine 48  desolate.tap
