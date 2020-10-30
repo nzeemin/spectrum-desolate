@@ -2,10 +2,14 @@
   ORG $5E00
 
 start:
-  call LBA07
+  call LBA07  ; Show titles and go to Menu
 ;  jp L9DBE
 
 ;  call LB0A2	; Inventory
+;  call LBF6F  ; The End
+;  call LBBEC  ; Info menu item, show Controls
+;  call LBADE  ; New game
+;  call LBB7E
 
 ;  call ShowScreen
 
@@ -112,6 +116,7 @@ ScreenAddrs:
   DW $48E4,$4AE4,$4CE4,$4EE4,$5004,$5204,$5404,$5604
   DW $5024,$5224,$5424,$5624,$5044,$5244,$5444,$5644
   DW $5064,$5264,$5464,$5664,$5084,$5284,$5484,$5684
+;TODO: 12 скрытых строк в памяти вне экрана ZX, для скроллирования в Credits
 
 ; Get ZX screen address using penCol in $86D7
 ;   A = penRow

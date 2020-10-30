@@ -1,6 +1,33 @@
 
 ;  ORG $9DBE
 
+; Game main loop
+;
+L9DDD:
+  LD A,(LDB7A)            ; Get Health
+  OR A
+  JP Z,LB9A2              ; Player is dead
+  CALL LADE5              ; Decode current room
+  CALL LA88F              ; Display 96 tiles on the screen
+  CALL LB96B              ; Display Health
+  CALL LB8EA
+  CALL LB76B
+  CALL LB551
+  CALL LA0F1              ; Scan keyboard
+  CP $0F                  ; CLEAR
+  JP Z,LBA3D
+  CP $04                  ; Up
+  JP Z,LA99B
+  CP $01                  ; Down
+  JP Z,LA966
+  CP $02                  ; Left
+  JP Z,LA9EB
+  CP $03                  ; Right
+  JP Z,LAA1A
+  XOR A                   ; Not a valid key
+  LD (LDB7C),A
+  JP LA8C6
+
 ; Put tile on the screen, 16x8 -> 16x16 on ZX screen
 ; NOTE: we're using masked tiles here but ignoring the mask
 ;   L = penRow; E = column; IX = Tile address
@@ -38,6 +65,29 @@ L9EAD_1:
   add ix,de
   djnz L9EAD_1
   ret
+
+; Copy screen 9340/9872 to A28F/A58F
+;
+L9FEA:
+  ret ;STUB
+
+; Clear screen 9340/9872
+;
+L9FCF:
+  jp ClearScreen
+
+; Scan keyboard; returns key in A
+;
+LA0F1:
+  PUSH BC
+  PUSH DE
+  PUSH HL
+  call ReadKeyboard
+;TODO: Protect from reading same key several times
+  POP HL
+  POP DE
+  POP BC
+  RET
 
 ; Display 96 tiles on the screen
 ;   HL Address where the 96 tiles are placed
@@ -81,6 +131,21 @@ LA88F_1:
   JP NZ,LA88F_0
   RET
 
+LA8C6:
+  ret ;STUB
+
+LA966:
+  ret ;STUB
+
+LA99B:
+  ret ;STUB
+
+LA9EB:
+  ret ;STUB
+
+LAA1A:
+  ret ;STUB
+
 ; Show small message popup
 ;
 LAB28:
@@ -96,6 +161,32 @@ LAB28:
   POP BC
   RET
 
+; Wait for Down key
+;
+LAD99:
+  CALL LA0F1              ; Scan keyboard
+  CP $01                  ; Down key?
+  JR NZ,LAD99
+  RET
+
+; Wait for MODE key
+;
+LADA1:
+  CALL LA0F1              ; Scan keyboard
+  CP $37
+  JR NZ,LADA1
+  RET
+
+; Decode current room
+;
+LADE5:
+  LD A,(LDB79)            ; Get the room number
+  LD HL,LDE97             ; List of encoded room addresses
+  CALL LADFF              ; now HL = encoded room
+  LD BC,$0060             ; decode 96 bytes
+  CALL LADF5              ; Decode the room to DBF5
+  RET
+
 ; Decode the room to DBF5
 ;
 ; HL Decode from
@@ -105,21 +196,36 @@ LADF5:
   CALL LB9F1              ; Decode the room
   LD HL,LDBF5
   RET
+;
+; Get address from table
+;
+; A Element number
+; HL Table address
+LADFF:
+  ADD A,A
+  LD E,A
+  LD D,$00
+  ADD HL,DE
+  LD A,(HL)
+  INC HL
+  LD H,(HL)
+  LD L,A
+  RET
+
 
 ; Open Inventory
 ;
-; Used by the routine at L9DDD.
 LB0A2:
   LD BC,$0060             ; Titles count to decode
   LD HL,LF329             ; Encoded screen for Inventory popup
   CALL LADF5              ; Decode the room to DBF5
   CALL LB177              ; Display screen from tiles with Tileset #2
-  LD A,$0B
-  LD ($DCF3),A
+  LD A,$16
+  LD (LDCF3),A            ; Left margin size for text
   LD A,$06
-  LD ($DCF4),A
+  LD (LDCF4),A            ; Line interval for text
   XOR A
-  LD ($DCF5),A            ; Data cartridge reader slot
+  LD (LDCF5),A            ; Data cartridge reader slot
   LD ($DC59),A
   LD ($DC5A),A
   LD ($DCF8),A
@@ -192,6 +298,29 @@ LB2D0_1:
   JP NZ,LB2D0_0
   RET
 
+LB551:
+  ret ;STUB
+
+LB76B:
+  ret ;STUB
+
+LB8EA:
+  ret ;STUB
+
+; Display Health
+;
+LB96B:
+  LD HL,$012C
+  LD ($86D7),HL           ; Set penRow/penCol
+  LD HL,(LDB7A)           ; Get Health
+  jp DrawNumber3
+
+LB9A2:
+  ret ;STUB
+
+LB9D6:
+  ret ;STUB
+
 ; Decode the room/screen
 ;
 ; HL Decode from
@@ -260,6 +389,116 @@ LBA81:
   CALL LBC34	
   RET
 
+; New Game
+;
+; Used by the routine at LBA93.
+LBADE:
+  XOR A
+  LD ($DCF7),A            ; Weapon slot
+  LD ($DB7D),A
+  LD ($DBC7),A
+  CALL LB9D6
+  LD HL,$0000
+  LD ($DBC3),HL
+  LD ($DBC5),HL
+  LD HL,$DB9C
+  LD B,$22
+LBADE_0:
+  LD (HL),$00
+  INC HL
+  DJNZ LBADE_0
+  LD HL,$DC5B
+  LD B,$22
+LBADE_1:
+  LD (HL),$00
+  INC HL
+  DJNZ LBADE_1
+  LD HL,$DB90
+  LD B,$09
+LBADE_2:
+  LD (HL),$00
+  INC HL
+  DJNZ LBADE_2
+  LD HL,$DCA2
+  LD B,$48
+LBADE_3:
+  LD (HL),$00
+  INC HL
+  DJNZ LBADE_3
+  LD HL,$DC96
+  CALL LBC6B
+  LD HL,$DC9A
+  CALL LBC6B
+  LD HL,$DC9E
+  CALL LBC6B
+  CALL LBC7D              ; Clear screen 9340/9872 and copy to A28F/A58F
+  LD A,$44
+  LD (LDC59),A
+  LD (LDC85),A
+  LD A,$0E
+  LD (LDCF4),A            ; Line interval for text
+  XOR A
+  LD (LDCF3),A            ; Left margin size for text
+  LD HL,$3A14
+  LD ($86D7),HL
+  LD HL,SE115             ; "In the Distant Future . . ."
+  CALL LBEDE              ; Load archived string and show message char-by-char
+  CALL LBA81
+  CALL LBC7D              ; Clear screen 9340/9872 and copy to A28F/A58F
+  CALL LBA81
+  CALL LBC84              ; Set zero penRow/penCol
+  LD HL,SE117             ; "'The Desolate' Space Cruiser|leaves orbit. ..."
+  CALL LBEDE              ; Load archived string and show message char-by-char
+  LD HL,$72B6
+  LD ($86D7),HL
+  LD HL,SE0B9             ; String with arrow down sign
+  CALL LBEDE              ; Load archived string and show message char-by-char
+  CALL WaitAnyKey         ; Wait for any (was: Wait for Down key)
+  CALL L9FCF              ; Clear screen 9340/9872
+  CALL LBC84              ; Set zero penRow/penCol
+  LD HL,SE119             ; "The ship sustains heavy|damage. ..."
+  CALL LBEDE              ; Load archived string and show message char-by-char
+  CALL WaitAnyKey         ; Wait for any key (was: Wait for MODE key)
+;
+; Game start
+;
+LBB7E:
+  XOR A
+  LD (LDC85),A
+; Continue menu item selected
+LBB7E_0:
+  LD A,$01
+  LD (LDB73),A
+  LD A,$FF
+  LD (LDC59),A
+  CALL LB2D0              ; Delay
+  JP L9DDD
+
+; Info menu item, show Controls
+;
+LBBEC:
+  LD BC,$0060             ; Counter = 96 bytes or tiles
+  LD HL,LF329             ; Decode from - Encoded screen for Inventory popup
+  LD DE,LDBF5             ; Where to decode
+  CALL LB9F1              ; Decode the room
+  LD HL,LDBF5
+  CALL LB177              ; Display screen from tiles with Tileset #2
+  LD A,$0A
+  LD (LDCF3),A            ; Left margin size for text
+  LD A,$0E
+  LD (LDCF4),A            ; Line interval for text
+  LD HL,$183C
+  LD ($86D7),HL           ; Set penRow/penCol
+  LD HL,SE0A5             ; "- Controls -"
+  CALL LBEDE              ; Load archived string and show message char-by-char
+  LD HL,$2A0A
+  LD ($86D7),HL           ; Set penRow/penCol
+  LD HL,SE0A7             ; "2nd = Look / Shoot|Alpha = Inventory ..."
+  CALL LBEDE              ; Load archived string and show message char-by-char
+  CALL L9FEA              ; Copy screen 9340/9872 to A28F/A58F
+  CALL LADA1              ; Wait for MODE key
+  JP LBA3D                ; Return to Menu
+
 LBC29:
   LD A,($DC55)
   ADD A,L
@@ -276,13 +515,70 @@ LBC36:
   DJNZ LBC36
   RET
 
-LBC7D:
-  call ClearScreen
+LBC6B:
   ret ;STUB
 
-; Load archived string and show message char-by-char
-;   HL Address of archived string offset
+LBC7D:
+  call L9FCF
+  ret ;STUB
+
+; Set zero penRow/penCol
+;
+LBC84:
+  LD HL,$0000
+  LD ($86D7),HL           ; Set penRow/penCol
+  RET
+
+; Draw string  on the screen using FontProto
+;   HL = String address
 LBEDE:
-  jp DrawString
+  ld a,(hl)
+  inc hl
+  or a
+  ret z
+  cp $7C	; '|'
+  jr z,LBEDE_1
+  push hl
+  call DrawChar
+  pop hl
+  jr LBEDE
+LBEDE_1:
+  PUSH BC
+  LD A,($86D8)
+  LD C,A
+  LD A,(LDCF4)            ; Line interval for text
+  ADD A,C
+  LD ($86D8),A
+  LD A,(LDCF3)            ; Get left margin size for text
+  LD ($86D7),A
+  POP BC
+  jr LBEDE
+
+; Routine??
+;
+LBF54:
+  XOR A
+  LD ($DD57),A
+  LD ($DD56),A
+  LD ($DC85),A
+  LD A,$96
+  LD ($DC59),A
+  RET
+
+; The End
+;
+LBF6F:
+  CALL L9FCF              ; Clear screen 9340/9872
+  CALL LBF54
+  LD HL,$2E46
+  LD ($86D7),HL           ; Set penRow/penCol
+  LD HL,SE11F             ; "The End"
+  CALL LBEDE              ; Load archived string and show message char-by-char
+;
+; Credits screen text scrolls up
+;
+LBF81:
+
+  ret ;STUB
 
 
