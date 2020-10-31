@@ -4,7 +4,7 @@ SE09F: DEFM "a tr1p1ea game",0
 SE0A1: DEFM "Items Found (/24):|            Enemies Killed:|               PlayerDeaths:||Awards:",0
 SE0A3: DEFM "OverWrite Current Game?|Alpha = Yes :: Clear = No",0
 SE0A5: DEFM "- Controls -",0
-SE0A7: DEFM "2nd: Look / Shoot|Alpha: Inventory|XT0n: Look / Shoot Mode|Mode: Close all Pop-Ups|Clear: Quit to TitleScreen",0
+SE0A7: DEFM "QAOP 1234 6789: Arrows|Space ZBMN05: Look/shoot|U I: Inventory|S D: Look/shoot mode|W E: Close all pop-ups|G: Quit to Menu",0
 SE0A9: DEFM "Earn 3 Good Awards for|an Extended Ending!",0
 SE0AB: DEFM "Sir Miss-A-Lot",0
 SE0AD: DEFM "Sherlock Holmes",0

@@ -28,53 +28,74 @@ L9DDD:
   LD (LDB7C),A
   JP LA8C6
 
-; Put tile on the screen, 16x8 -> 16x16 on ZX screen
+; Put tile on the screen (NOT aligned to 8px column), 16x8 -> 16x16 on ZX screen
 ; NOTE: we're using masked tiles here but ignoring the mask
-;   L = penRow; E = column; IX = Tile address
+;   L = row; A = column; B = height; IX = tile address
+L9E5F:
+  ld ($86D7),a  ; penCol
+  ld a,l  ; row
+  sra b                   ; B <- B / 2: working with line pairs
+L9E5F_1:                  ; loop by B
+  push af
+  call GetScreenAddr	; now HL = screen addr
+;  push bc
+; Draw 1st line
+  ld a,(ix+$01)
+  ;TODO
+
+  pop af
+  add a,2
+  ld de,$0004
+  add ix,de
+  djnz L9E5F_1
+  ret
+
+; Put tile on the screen (aligned to 8px column), 16x8 -> 16x16 on shadow screen
+; NOTE: we're using masked tiles here but ignoring the mask
+;   L = row; E = 8px column; IX = tile address
 L9EAD:
   ld a,e
   add a,a
   add a,a
   add a,a
   add a,a
-  ld ($86D7),a  ; penCol
-  ld a,l	; penRow
-  ld b,8	; 8 row pairs
+  ld ($86D7),a          ; penCol
+  ld a,l                ; penRow
+  ld b,8                ; 8 row pairs
+  call GetScreenAddr    ; now HL = screen addr
 L9EAD_1:
-  push af
-  call GetScreenAddr	; now HL = screen addr
   push bc
 ; Draw 1st line
   ld a,(ix+$01)
-  ld (hl),a	; write 1st byte
+  ld (hl),a             ; write 1st byte
   inc hl
   ld c,a
   ld a,(ix+$03)
-  ld (hl),a	; write 2nd byte
+  ld (hl),a             ; write 2nd byte
   ld b,a
-  ld de,$0100-1
-  add hl,de	; to the 2nd line
+  ld de,24-1
+  add hl,de             ; to the 2nd line
 ; Draw 2nd line
-  ld (hl),c	; write 1st byte
+  ld (hl),c             ; write 1st byte
   inc hl
-  ld (hl),b	; write 2nd byte
+  ld (hl),b             ; write 2nd byte
   pop bc
-  pop af
-  add a,2
+  ld de,24-1
+  add hl,de             ; to the next line
   ld de,$0004
   add ix,de
   djnz L9EAD_1
   ret
 
-; Copy screen 9340/9872 to A28F/A58F
+; Copy shadow screen to ZX screen
 ;
 L9FEA:
-  ret ;STUB
+  jp ShowShadowScreen
 
 ; Clear screen 9340/9872
 ;
 L9FCF:
-  jp ClearScreen
+  jp ClearShadowScreen
 
 ; Scan keyboard; returns key in A
 ;
@@ -226,13 +247,13 @@ LB0A2:
   LD (LDCF4),A            ; Line interval for text
   XOR A
   LD (LDCF5),A            ; Data cartridge reader slot
-  LD ($DC59),A
-  LD ($DC5A),A
-  LD ($DCF8),A
+  LD (LDC59),A
+  LD (LDC5A),A
+  LD (LDCF8),A
   LD A,$08
-  LD ($DC83),A
+  LD (LDC83),A
   LD A,$12
-  LD ($DC84),A
+  LD (LDC84),A
   LD HL,$1630
   LD ($86D7),HL
   LD HL,SE0BB             ; " - INVENTORY - "
@@ -291,7 +312,6 @@ LB2D0_0:
   LD D,A
 LB2D0_1:
   nop
-  nop
   DEC D
   JP NZ,LB2D0_1
   DEC C
@@ -349,7 +369,7 @@ LB9F1_2:
 LBA07:
   LD A,$44
   LD (LDC59),A
-  LD ($DC85),A
+  LD (LDC85),A
   LD HL,$3A1E
   LD ($86D7),HL           ; Set penRow/penCol
   LD HL,SE09D             ; "MaxCoderz Presents"
@@ -365,42 +385,70 @@ LBA07:
   CALL LBC7D              ; Clear screen 9340/9872 and copy to A28F/A58F
   CALL LBC34
   XOR A
-  LD ($DC85),A
+  LD (LDC85),A
 
 ; Return to Menu
 ;
 LBA3D:
-  LD A,($DC55)
+  LD A,(LDC55)
   INC A
   CP $08
   CALL Z,LBC2F
-  LD ($DC55),A
+  LD (LDC55),A
   DI
   LD HL,LF515
   CALL LA88F              ; Display 96 tiles on the screen
   LD HL,LF4B5             ; Main menu screen
   EI
   CALL LB177              ; Display screen from tiles with Tileset #2
-
-  ret ;STUB
+  LD C,$03
+  LD IX,Tileset3          ; Tile arrow right
+  DI
+  CALL LBA88
+  LD C,$25
+  LD IX,Tileset3+16       ; Tile arrow left
+  DI
+  CALL LBA88
+  CALL L9FEA              ; Copy screen 9340/9872 to A28F/A58F
+  CALL LA0F1              ; Scan keyboard
+  CP $36
+  JP Z,LBA93
+  CP $04                  ; Up key
+  JP Z,LBBCC
+  CP $01                  ; Down key
+  JP Z,LBBDC
+  JP LBA3D
 
 LBA81:
   CALL LBC34	
   CALL LBC34	
   RET
 
+; Routine??
+;
+LBA88:
+  LD A,(LDB8F)
+  LD L,A
+  LD A,C
+  LD B,$08
+  CALL L9E5F
+  RET
+
+LBA93:
+  ret ;STUB
+
 ; New Game
 ;
 ; Used by the routine at LBA93.
 LBADE:
   XOR A
-  LD ($DCF7),A            ; Weapon slot
-  LD ($DB7D),A
-  LD ($DBC7),A
+  LD (LDCF7),A            ; Weapon slot
+  LD (LDB7D),A
+  LD (LDBC7),A
   CALL LB9D6
   LD HL,$0000
-  LD ($DBC3),HL
-  LD ($DBC5),HL
+  LD (LDBC3),HL
+  LD (LDBC5),HL
   LD HL,$DB9C
   LD B,$22
 LBADE_0:
@@ -474,6 +522,12 @@ LBB7E_0:
   CALL LB2D0              ; Delay
   JP L9DDD
 
+LBBCC:
+  ret ;STUB
+
+LBBDC:
+  ret ;STUB
+
 ; Info menu item, show Controls
 ;
 LBBEC:
@@ -487,11 +541,11 @@ LBBEC:
   LD (LDCF3),A            ; Left margin size for text
   LD A,$0E
   LD (LDCF4),A            ; Line interval for text
-  LD HL,$183C
+  LD HL,$163C
   LD ($86D7),HL           ; Set penRow/penCol
   LD HL,SE0A5             ; "- Controls -"
   CALL LBEDE              ; Load archived string and show message char-by-char
-  LD HL,$2A0A
+  LD HL,$240A
   LD ($86D7),HL           ; Set penRow/penCol
   LD HL,SE0A7             ; "2nd = Look / Shoot|Alpha = Inventory ..."
   CALL LBEDE              ; Load archived string and show message char-by-char
@@ -500,13 +554,15 @@ LBBEC:
   JP LBA3D                ; Return to Menu
 
 LBC29:
-  LD A,($DC55)
+  LD A,(LDC55)
   ADD A,L
   LD L,A
   RET
 
 LBC2F:
-  ret ;STUB
+  XOR A
+  LD (LDC55),A
+  RET
 
 LBC34:
   LD B,$14
@@ -519,8 +575,9 @@ LBC6B:
   ret ;STUB
 
 LBC7D:
-  call L9FCF
-  ret ;STUB
+  CALL L9FCF              ; Clear screen 9340/9872
+  CALL L9FEA              ; Copy screen 9340/9872 to A28F/A58F
+  RET
 
 ; Set zero penRow/penCol
 ;
@@ -540,6 +597,8 @@ LBEDE:
   jr z,LBEDE_1
   push hl
   call DrawChar
+  CALL LB2D0              ; Delay
+  CALL L9FEA              ; Show shadow screen
   pop hl
   jr LBEDE
 LBEDE_1:
@@ -558,11 +617,11 @@ LBEDE_1:
 ;
 LBF54:
   XOR A
-  LD ($DD57),A
-  LD ($DD56),A
-  LD ($DC85),A
+  LD (LDD57),A
+  LD (LDD56),A
+  LD (LDC85),A
   LD A,$96
-  LD ($DC59),A
+  LD (LDC59),A
   RET
 
 ; The End

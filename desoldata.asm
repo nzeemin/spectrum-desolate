@@ -897,11 +897,11 @@ LDB78:  DEFB $03          ; Y coord in tiles?? $03 $06 INC/DEC
 LDB79:  DEFB $00          ; Room number
 LDB7A:  DEFW $0064        ; Health; initially $64
 LDB7C:  DEFB $00          ; ??
-  DEFB $00                ; ??
+LDB7D:  DEFB $00          ; ??
   DEFB $00,$00,$00,$00,$00,$00,$02,$03
   DEFB $00,$00,$00,$00,$00,$00,$00,$00
   DEFB $00
-  DEFB $1D                ; ??
+LDB8F:  DEFB $1D           ; Menu Y pos
   DEFB $00,$00,$00,$00,$00,$00,$00,$00
   DEFB $00,$00,$00,$00
   DEFB $00,$00,$00,$00,$00,$00,$00,$00 ; ??
@@ -909,9 +909,9 @@ LDB7C:  DEFB $00          ; ??
   DEFB $00,$00,$00,$00,$00,$00,$00,$00 ;
   DEFB $00,$00,$00,$00,$00,$00,$00,$00 ;
   DEFB $00,$00,$00,$00,$00,$00,$00     ;
-  DEFW $0000              ; ??
-  DEFW $0000              ; ??
-  DEFB $00                ; ??
+LDBC3:  DEFW $0000        ; ??
+LDBC5:  DEFW $0000        ; ??
+LDBC7:  DEFB $00          ; Counter?? $00 INC
   DEFB $08                ; ??
   DEFW $4014              ; data??
   DEFB $05,$44,$45,$53,$44,$41,$54,$41
@@ -936,15 +936,18 @@ LDBF5:
   DEFB $00,$00,$00,$00,$00,$00,$00,$00
   DEFB $00,$00,$00,$00,$00,$00,$00,$00
   DEFB $00,$00,$00,$00,$00,$00,$00,$00
-  DEFB $03                ; ??
+LDC55:  DEFB $03                ; ??
   DEFB $00,$00,$00
 LDC59:  DEFB $44          ; Delay factor: $64 $28 $00 $44 $96 $FF
+LDC5A:
   DEFB $00,$63,$63,$63,$63,$63,$63,$63
   DEFB $63,$63,$63,$63,$63,$63,$63,$63
   DEFB $63,$63,$63,$63,$63,$63,$63,$63
   DEFB $63,$63,$63,$63,$63,$63,$63,$63
   DEFB $63,$63,$63,$63,$63,$63,$63,$63
-  DEFB $00,$00,$00
+  DEFB $00
+LDC83:  DEFB $00
+LDC84:  DEFB $00
 LDC85:  DEFB $00          ; ??
 LDC86:  DEFB $00
 LDC87:  DEFB $00          ; ??
@@ -971,7 +974,7 @@ LDCF3:  DEFB $00          ; Left margin size for text, usually $00
 LDCF4:  DEFB $0E          ; Line interval for text
 LDCF5:  DEFB $00,$00
 LDCF7:  DEFB $00          ; Weapon ??
-  DEFB $00
+LDCF8:  DEFB $00
   DEFB $20,$20,$20,$20,$20,$20,$20,$20
   DEFB $20,$20,$20,$20,$20,$20,$20,$20
   DEFB $20,$20,$20,$20,$20,$20,$20,$20
@@ -986,8 +989,8 @@ LDCF7:  DEFB $00          ; Weapon ??
   DEFB $20,$00,$00
   DEFB $00                ; ??
   DEFB $00                ; ??
-  DEFB $00                ; ??
-  DEFB $00                ; ??
+LDD56:  DEFB $00                ; ??
+LDD57:  DEFB $00                ; ??
 LDD58:
   DEFB $2B,$E0,$2D,$E0,$29,$E0,$2F,$E0
   DEFB $31,$E0,$33,$E0,$35,$E0,$37,$E0

@@ -1,1 +1,1 @@
-bin\pasmo desolcoda.asm desolcode.bin
+bin\pasmo -d desolcoda.asm desolcode.bin >desolate.out
