@@ -1,15 +1,19 @@
 
+
+ClearShadowScreen   EQU L9FCF
+ClearPenRowCol      EQU LBC84
+
   ORG $5E00
 
 start:
-  call LBA07  ; Show titles and go to Menu
+;  call LBA07  ; Show titles and go to Menu
 ;  jp L9DBE
 
 ;  call LB0A2	; Inventory
 ;  call LBF6F  ; The End
 ;  call LBBEC  ; Info menu item, show Controls
 ;  call LBADE  ; New game
-;  call LBB7E  ; Game start
+  call LBB7E  ; Game start
 
 ;  call ShowScreen
 
@@ -119,6 +123,7 @@ ReadKeyboard_map:
   DB &BF, $09,$00,$00,$00,$00   ; Enter,"L","K","J","H"
   DB &7F, $36,$00,$36,$36,$36   ; Space,Sym,"M","N","B"
 
+; ZX screen address list used to copy shadow screen lines on the ZX screen
 ScreenAddrs:
   DW $40A4,$42A4,$44A4,$46A4,$40C4,$42C4,$44C4,$46C4
   DW $40E4,$42E4,$44E4,$46E4,$4804,$4A04,$4C04,$4E04
@@ -213,44 +218,17 @@ DrawTileMasked_1:
   djnz DrawTileMasked_1
   ret
 
-; Clear shadow screen
-ClearShadowScreen:
-  ld bc,24*138-1	        ; 64 line pairs
-  ld hl,ShadowScreen
-  ld e,l
-  ld d,h
-  inc de
-  xor a
-  ld (hl),a
-  ldir
-  ret
-
-; Set penRow/penCol to 0; same as BC84 in original
-ClearPenRowCol:
-  ld hl,$0000
-  ld ($86D7),hl
-  ret
-
-; Draw string  on the screen using FontProto
+; Draw string  on shadow screen using FontProto
 ;   HL = string addr
 DrawString:
   ld a,(hl)
   inc hl
   or a
   ret z
-  cp $7C	; '|'
-  jr nz,DrawString_1
-  xor a
-  ld ($86D7),a
-  ld a,($86D8)
-  add a,$0E
-  ld ($86D8),a
-  jp DrawString
-DrawString_1:
   push hl
   call DrawChar
   pop hl
-  jp DrawString
+  jr DrawString
 
 ; Draw character on the screen using FontProto
 ;   A = character to show

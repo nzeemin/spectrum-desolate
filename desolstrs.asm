@@ -1,3 +1,43 @@
+SE029: DEFM "                     ",0
+SE02B: DEFM "Code, GFX, Story etc",0
+SE02D: DEFM "Patrick Prendergast",0
+SE02F: DEFM "Acknowledgements",0
+SE031: DEFM "Durk Kingma - Grayscale",0
+SE033: DEFM "Kerey Roper - Huffman",0
+SE035: DEFM "Joe Pemberton - RLE",0
+SE037: DEFM "Joe Wingbermuehle - Ion",0
+SE039: DEFM "Tijl Coosemans - Venus",0
+SE03B: DEFM "DetachedS - MirageOS",0
+SE03D: DEFM "Testers",0
+SE03F: DEFM "David Sleight",0
+SE041: DEFM "John Sleight",0
+SE043: DEFM "Durk Kingma",0
+SE045: DEFM "Joe Pemberton",0
+SE047: DEFM "Shawn McAndrews",0
+SE049: DEFM "Tom King",0
+SE04B: DEFM "Domi Alex",0
+SE04D: DEFM "Sammy Griff",0
+SE04F: DEFM "Dennis Tseng",0
+SE051: DEFM "AndySoft",0
+SE053: DEFM "jedbouy",0
+SE055: DEFM "Bram Tant",0
+SE057: DEFM "Martin Warmer",0
+SE059: DEFM "Vincent Junemann",0
+SE05B: DEFM "Michael Angel",0
+SE05D: DEFM "Special Thanks & Greetz",0
+SE05F: DEFM "Everyone @ MaxCoderz",0
+SE061: DEFM "Everyone on #TCPA (EFNet)",0
+SE063: DEFM "ticalc.org",0
+SE065: DEFM "No animals were hurt more",0
+SE067: DEFM "than once during the",0
+SE069: DEFM "making of this game.",0
+SE06B: DEFM "Just Kidding ;P",0
+SE06D: DEFM "Thanks for Playing!",0
+SE06F: DEFM "visit www.MaxCoderz.com",0
+SE071: DEFM "ABlakRain",0
+SE073: DEFM "Travis Supalla",0
+SE075: DEFM "Jim Dieckmann",0
+SE077: DEFM "tr1p1ea@yahoo.com.au",0
 SE09B: DEFM "         No Data Cartridge| Selected",0
 SE09D: DEFM "MaxCoderz Presents",0
 SE09F: DEFM "a tr1p1ea game",0

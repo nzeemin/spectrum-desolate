@@ -28,6 +28,19 @@ L9DDD:
   LD (LDB7C),A
   JP LA8C6
 
+L9E19:
+  CALL LB653
+  CALL LA0F1              ; Scan keyboard
+  CP $36                  ; Yellow "2nd" key
+  JP Z,LAAAF              ; Look / Shoot
+  CP $28                  ; "XT0n" key
+  JP Z,LB930              ; Look / Shoot Mode
+  CP $30                  ; "ALPHA" key
+  JP Z,LB0A2              ; Open the Inventory
+L9E2E:
+  CALL L9FEA              ; Copy screen 9340/9872 to A28F/A58F
+  JP L9DDD
+
 ; Put tile on the screen (NOT aligned to 8px column), 16x8 -> 16x16 on ZX screen
 ; NOTE: we're using masked tiles here but ignoring the mask
 ;   L = row; A = column; B = height; IX = tile address
@@ -87,15 +100,26 @@ L9EAD_1:
   djnz L9EAD_1
   ret
 
+L9EDE:
+  ret ;STUB
+
 ; Copy shadow screen to ZX screen
 ;
 L9FEA:
   jp ShowShadowScreen
 
-; Clear screen 9340/9872
+; Clear shadow screen
 ;
 L9FCF:
-  jp ClearShadowScreen
+  ld bc,24*138-1	        ; 64 line pairs
+  ld hl,ShadowScreen
+  ld e,l
+  ld d,h
+  inc de
+  xor a
+  ld (hl),a
+  ldir
+  ret
 
 ; Scan keyboard; returns key in A
 ;
@@ -153,6 +177,73 @@ LA88F_1:
   RET
 
 LA8C6:
+  XOR A
+  LD (LDD54),A
+  JP LA8CD
+;
+LA8CD:
+  LD C,$00
+  LD A,(LDD55)
+  OR A
+  JR Z,LA8DF
+  LD HL,LDE87
+  LD A,(LDB75)            ; Direction/orientation??
+  ADD A,A
+  ADD A,A
+  JR LA8E9
+LA8DF:
+  LD HL,LDE47
+  LD A,(LDB75)
+  ADD A,A
+  ADD A,A
+  ADD A,A
+  ADD A,A
+LA8E9:
+  LD E,A
+  LD D,$00
+  ADD HL,DE
+  LD A,(LDD54)
+  ADD A,A
+  ADD A,A
+  LD E,A
+  LD D,$00
+  ADD HL,DE
+  LD B,$04
+LA8F8:
+  PUSH HL
+  LD L,(HL)
+  LD H,$00
+  ADD HL,HL
+  ADD HL,HL
+  ADD HL,HL
+  ADD HL,HL
+  LD DE,$E8E7     ; ???
+  ADD HL,DE
+  EX DE,HL
+  CALL LA92E
+  PUSH BC
+  CALL LA956
+  LD A,C
+  CALL L9EDE
+  POP BC
+  POP HL
+  INC HL
+  DJNZ LA8F8
+  LD A,(LDD54)
+  CP $03
+  JR Z,LA927
+  INC A
+  LD (LDD54),A
+  XOR A
+  LD (LDD55),A
+  JP L9E19
+LA927:
+  XOR A
+  LD (LDD54),A
+  JP L9E19
+LA92E:
+
+LA956:
   ret ;STUB
 
 LA966:
@@ -165,6 +256,9 @@ LA9EB:
   ret ;STUB
 
 LAA1A:
+  ret ;STUB
+
+LAAAF:
   ret ;STUB
 
 ; Show small message popup
@@ -321,10 +415,17 @@ LB2D0_1:
 LB551:
   ret ;STUB
 
+LB653
+  ret ;STUB
+
 LB76B:
   ret ;STUB
 
 LB8EA:
+  ret ;STUB
+
+; Switch Look / Shoot mode
+LB930:
   ret ;STUB
 
 ; Display Health
@@ -375,14 +476,14 @@ LBA07:
   LD HL,SE09D             ; "MaxCoderz Presents"
   CALL LBEDE              ; Load archived string and show message char-by-char
   CALL LBA81
-  CALL LBC7D              ; Clear screen 9340/9872 and copy to A28F/A58F
+  CALL LBC7D              ; Clear shadow screen and copy to A28F/A58F
   CALL LBC34
   LD HL,$3A2E
   LD ($86D7),HL           ; Set penRow/penCol
   LD HL,SE09F             ; "a tr1p1ea game"
   CALL LBEDE              ; Load archived string and show message char-by-char
   CALL LBA81
-  CALL LBC7D              ; Clear screen 9340/9872 and copy to A28F/A58F
+  CALL LBC7D              ; Clear shadow screen and copy to A28F/A58F
   CALL LBC34
   XOR A
   LD (LDC85),A
@@ -439,7 +540,6 @@ LBA93:
 
 ; New Game
 ;
-; Used by the routine at LBA93.
 LBADE:
   XOR A
   LD (LDCF7),A            ; Weapon slot
@@ -479,7 +579,7 @@ LBADE_3:
   CALL LBC6B
   LD HL,$DC9E
   CALL LBC6B
-  CALL LBC7D              ; Clear screen 9340/9872 and copy to A28F/A58F
+  CALL LBC7D              ; Clear shadow screen and copy to A28F/A58F
   LD A,$44
   LD (LDC59),A
   LD (LDC85),A
@@ -492,7 +592,7 @@ LBADE_3:
   LD HL,SE115             ; "In the Distant Future . . ."
   CALL LBEDE              ; Load archived string and show message char-by-char
   CALL LBA81
-  CALL LBC7D              ; Clear screen 9340/9872 and copy to A28F/A58F
+  CALL LBC7D              ; Clear shadow screen and copy to A28F/A58F
   CALL LBA81
   CALL LBC84              ; Set zero penRow/penCol
   LD HL,SE117             ; "'The Desolate' Space Cruiser|leaves orbit. ..."
@@ -502,7 +602,7 @@ LBADE_3:
   LD HL,SE0B9             ; String with arrow down sign
   CALL LBEDE              ; Load archived string and show message char-by-char
   CALL WaitAnyKey         ; Wait for any (was: Wait for Down key)
-  CALL L9FCF              ; Clear screen 9340/9872
+  CALL L9FCF              ; Clear shadow screen
   CALL LBC84              ; Set zero penRow/penCol
   LD HL,SE119             ; "The ship sustains heavy|damage. ..."
   CALL LBEDE              ; Load archived string and show message char-by-char
@@ -521,13 +621,52 @@ LBB7E_0:
   LD (LDC59),A
   CALL LB2D0              ; Delay
   JP L9DDD
-
+;
+LBB92:
+  LD A,(LDB73)
+  OR A
+  JP NZ,LBBA4
+  LD A,(LDB8F)
+  ADD A,$0C
+  LD (LDB8F),A
+  JP LBA3D
+; Menu up step
+LBBA4:
+  LD A,(LDB8F)
+  ADD A,$FA
+  LD (LDB8F),A
+  JP LBA3D
+LBBAF:
+  LD A,(LDB73)
+  OR A
+  JP NZ,LBBC1
+  LD A,(LDB8F)
+  ADD A,$0C
+  LD (LDB8F),A
+  JP LBA3D
+; Menu down step
+LBBC1:
+  LD A,(LDB8F)
+  ADD A,$06
+  LD (LDB8F),A
+  JP LBA3D
+; Menu up key pressed
 LBBCC:
-  ret ;STUB
-
+  LD A,(LDB8F)
+  CP $1D
+  JP Z,LBA3D
+  CP $29
+  JP Z,LBB92
+  JP LBBA4
+; Menu down key pressed
 LBBDC:
-  ret ;STUB
-
+  LD A,(LDB8F)
+  CP $35
+  JP Z,LBA3D
+  CP $1D
+  JP Z,LBBAF
+  JP LBBC1
+;
 ; Info menu item, show Controls
 ;
 LBBEC:
@@ -552,18 +691,18 @@ LBBEC:
   CALL L9FEA              ; Copy screen 9340/9872 to A28F/A58F
   CALL LADA1              ; Wait for MODE key
   JP LBA3D                ; Return to Menu
-
+;
 LBC29:
   LD A,(LDC55)
   ADD A,L
   LD L,A
   RET
-
+;
 LBC2F:
   XOR A
   LD (LDC55),A
   RET
-
+;
 LBC34:
   LD B,$14
 LBC36:
@@ -575,7 +714,7 @@ LBC6B:
   ret ;STUB
 
 LBC7D:
-  CALL L9FCF              ; Clear screen 9340/9872
+  CALL L9FCF              ; Clear shadow screen
   CALL L9FEA              ; Copy screen 9340/9872 to A28F/A58F
   RET
 
@@ -613,7 +752,7 @@ LBEDE_1:
   POP BC
   jr LBEDE
 
-; Routine??
+; Set variables for Credits
 ;
 LBF54:
   XOR A
@@ -623,11 +762,11 @@ LBF54:
   LD A,$96
   LD (LDC59),A
   RET
-
+;
 ; The End
 ;
 LBF6F:
-  CALL L9FCF              ; Clear screen 9340/9872
+  CALL L9FCF              ; Clear shadow screen
   CALL LBF54
   LD HL,$2E46
   LD ($86D7),HL           ; Set penRow/penCol
@@ -637,7 +776,56 @@ LBF6F:
 ; Credits screen text scrolls up
 ;
 LBF81:
-
-  ret ;STUB
+  LD A,126                ; To draw new strings on the very bottom
+  LD ($86D8),A            ; penRow
+LBF686:
+  JP LBF6F_4
+LBF6F_2:
+  call L9FEA              ; Show shadow screen
+  CALL LB2D0              ; Delay
+LBF6F_3:
+  CALL LA0F1              ; Scan keyboard
+  or a                    ; any key pressed?
+  jp nz,LBA3D             ; Return to main Menu
+  CALL LBFD5              ; Scroll shadow screen up one line
+;  CALL LBFEC
+  JR LBF686
+LBF6F_4:
+  LD A,(LDD56)
+  INC A
+  LD (LDD56),A
+  CP 12
+  JP NZ,LBF6F_2
+  XOR A
+  LD (LDD56),A
+  LD A,(LDD57)
+  LD E,A
+  LD D,$00
+  LD HL,LDDF2
+  ADD HL,DE
+  LD A,(HL)
+  LD ($86D7),A
+  LD A,(LDD57)
+  LD HL,LDD58
+  CALL LADFF              ; Get address from table
+  CALL DrawString         ; Draw string on shadow screen without any delays
+  LD A,(LDD57)
+  INC A                   ; increase the counter
+  LD (LDD57),A
+  CP $47
+  JP NZ,LBF6F_3
+  JP LBA3D                ; Return to main Menu
+LBFD5:
+  LD DE,ShadowScreen
+  LD HL,ShadowScreen+24
+  LD BC,137*24
+  LDIR
+  RET
+LBFEC:
+;  LD DE,$A2D7
+;  LD HL,$9340
+;  LD BC,$02B8
+;  LDIR
+  RET
 
 
