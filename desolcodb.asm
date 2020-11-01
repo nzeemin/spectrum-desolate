@@ -716,8 +716,8 @@ LB0E0:                    ; loop by B
   LD C,A                  ; C = count of empty slots
 LB0F3:
   PUSH BC
-  LD IX,Tileset2+$7E*32   ; Tile gray dot in the center - placeholder
-  CALL LB15D
+  LD IX,Tileset3+14*32    ; Tile gray dot in the center - placeholder
+  CALL LB15D              ; Draw tile by XOR then go to next position
   POP BC
   LD A,C
   OR A                    ; last item?
@@ -735,7 +735,6 @@ LB0F3:
   LD (LDC5A),A
   JP LB0F3
 LB119:
-;  call ShowShadowScreen ;DEBUG
   JP LB1AA
 ;
 LB11C:
@@ -749,7 +748,7 @@ LB11C:
 LB12A:
   PUSH BC
   LD C,B
-  LD A,$1D                ; 29
+  LD A,$1D                ; 29 items
   SUB C
   PUSH AF
   CALL LB529
@@ -763,7 +762,7 @@ LB12A:
   ADD HL,DE
   PUSH HL
   POP IX
-  CALL LB15D              ; Draw tile IX at X=LDC83 Y=LDC84 by XOR
+  CALL LB15D              ; Draw tile by XOR then go to next position
   LD HL,LDC5B             ; Inventory items
   LD A,(LDC5A)
   LD E,A
@@ -778,16 +777,16 @@ LB12A:
   LD (LDC5A),A
   POP BC
   RET
-;
+; Draw tile by XOR using X = (LDC83), Y = (LDC84), then go to next position
 LB15D:
-  LD A,(LDC84)
+  LD A,(LDC84)            ; get Y pos for Inventory
   LD L,A                  ; L = row
-  LD A,(LDC83)            ; A = X pos
+  LD A,(LDC83)            ; A = X pos for Inventory
   LD B,$08
   CALL L9E5F              ; Draw tile by XOR operation
-  LD A,(LDC83)
+  LD A,(LDC83)            ; get X pos
   ADD A,16                ; increase X; was: $08
-  LD (LDC83),A
+  LD (LDC83),A            ; set X pos
   CP 176                  ; was: $58
   CALL Z,LB11C
   RET
@@ -837,22 +836,122 @@ LB177_1:
 LB1AA:
   XOR A
   LD (LDC82),A
-  LD A,$08
-  LD (LDC83),A
-  LD A,$12
-  LD (LDC84),A
+  LD A,16                 ; was: $08
+  LD (LDC83),A            ; set X pos
+  LD A,$24                ; was: $12
+  LD (LDC84),A            ; set Y pos
   CALL LB2AF
 LB1BB:
   CALL LBEDE              ; Load archived string and show message char-by-char
-  CALL LB295
+  CALL LB295              ; Draw Inventory selection square
 ; Inventory item selection
 LB1C1:
-
-  ret ;STUB
-
+  CALL LA0F1              ; Scan keyboard
+  CP $37                  ; Escape key? (close any popups)
+  JP Z,L9DDD              ;   yes => return to the game main loop
+  CP $36                  ; Look/shoot key?
+  JP Z,LB307
+  CP $02                  ; Left key?
+  JP Z,LB1FE
+  CP $03                  ; Right key?
+  JP Z,LB214
+  JP LB1C1                ; continue the loop
+LB1DB:
+  CALL LB2DE
+  CALL LB2AF
+  RET
+LB1E2:
+  CALL LB295
+  LD A,(LDC82)
+  DEC A
+  LD (LDC82),A
+  CALL LB1DB
+  RET
+LB1F0:
+  CALL LB295
+  LD A,(LDC82)
+  INC A
+  LD (LDC82),A
+  CALL LB1DB
+  RET
+LB1FE:                    ; Left key pressed
+  LD A,(LDC83)            ; get X pos
+  CP 16                   ; was: $08
+  JP Z,LB25F
+  CALL LB1E2
+  LD A,(LDC83)            ; get X pos
+  ADD A,-16               ; was: $F8
+  LD (LDC83),A            ; set X pos
+  JP LB1BB
+LB214:                    ; Right key pressed
+  LD A,(LDC83)            ; get X pos
+  CP $A0                  ; was: $50
+  JP Z,LB22A
+  CALL LB1F0
+  LD A,(LDC83)            ; get X pos
+  ADD A,16                ; was: $08
+  LD (LDC83),A            ; set X pos
+  JP LB1BB
+LB22A:
+  LD A,(LDC84)            ; get Y pos
+  CP $4C                  ; was: $26
+  JP Z,LB245
+  CALL LB1F0
+  LD A,(LDC84)            ; get Y pos
+  ADD A,20                ; was: $0A
+  LD (LDC84),A            ; set Y pos
+  LD A,16                 ; was: $08
+  LD ($DC83),A
+  JP LB1BB
+LB245:
+  CALL LB295
+  LD A,16                 ; was: $08
+  LD (LDC83),A            ; set X pos
+  LD A,$24                ; was: $12
+  LD (LDC84),A            ; set Y pos
+  XOR A
+  LD (LDC82),A
+  CALL LB2DE
+  CALL LB2AF
+  JP LB1BB
+LB25F:
+  LD A,(LDC84)            ; get Y pos
+  CP $24                  ; was: $12
+  JP Z,LB27A
+  CALL LB1E2
+  LD A,(LDC84)            ; get Y pos
+  ADD A,-20               ; was: $F6
+  LD (LDC84),A            ; set Y pos
+  LD A,$A0                ; was: $50
+  LD (LDC83),A            ; set X pos
+  JP LB1BB
+LB27A:
+  CALL LB295
+  LD A,$A0                ; was: $50
+  LD (LDC83),A            ; set X pos
+  LD A,$4C                ; was: $26
+  LD (LDC84),A            ; get Y pos
+  LD A,$1D
+  LD (LDC82),A
+  CALL LB2DE
+  CALL LB2AF
+  JP LB1BB
+; Draw Inventory selection square
 LB295:
-  ret ;STUB
-
+;  LD DE,$0020
+;  LD HL,Tileset2
+;  ADD HL,DE
+;  PUSH HL
+;  POP IX
+  ld ix,Tileset3+15*32
+  LD B,16                 ; was: $08
+  LD A,(LDC84)            ; get Y pos
+  LD L,A
+  LD A,(LDC83)            ; get X pos
+  CALL L9E5F              ; Draw tile by XOR operation
+  CALL L9FEA              ; Copy shadow screen to ZX screen
+  RET
+;
 LB2AF:
   LD HL,$6812
   LD ($86D7),HL           ; Set penRow/penCol
@@ -870,7 +969,7 @@ LB2AF:
 LB2CC:
   LD HL,$E0DB
   RET
-
+;
 ; Delay by LDC59
 LB2D0:
   LD A,(LDC59)            ; get delay factor
@@ -883,12 +982,81 @@ LB2D0_1:
   DEC C
   JP NZ,LB2D0_0
   RET
+;
+LB2DE:
+  ret ;STUB
 
 ; We've got Data cartridge reader
 LB301:
   LD A,$01
   LD (LDCF5),A            ; Data cartridge reader slot
   RET
+;
+; Inventory Look/shoot key pressed
+LB307:
+  LD HL,LDC5B
+  LD A,(LDC82)
+  LD D,$00
+  LD E,A
+  ADD HL,DE
+  LD A,(HL)
+  CP $63
+  JP Z,LB1C1
+  LD (LDC89),A
+  OR A                    ; $00 - Data cartridge reader
+  JP Z,LB33F
+  CP $13                  ; Power Drill?
+  JP Z,LB3F4
+  CP $14                  ; Life Support Data Disk?
+  JP Z,LB44A
+  CP $15                  ; Air-Lock Tool?
+  JP Z,LB487
+  CP $16                  ; Box of Power Cells
+  JP Z,LB4C4
+  CP $19                  ; Rubik's Cube
+  JP Z,LB501
+  SUB $11                 ; Data cartridge?
+  JP C,LB3AF
+  JP LB3E8                ; smth other
+LB33F:
+  LD A,$44
+  LD (LDC59),A
+  LD (LDC85),A
+  LD BC,$0060
+  LD HL,LF42F             ; Data cartridge reader screen
+  CALL LADF5
+  CALL LB177              ; Display screen from tiles with Tileset #2
+  LD A,(LDCF8)
+  CP $01
+  JP Z,LB36C
+  LD A,$21
+  LD (LDCF3),A
+  LD HL,$2C16
+  LD ($86D7),HL           ; Set penRow/penCol
+  LD HL,$E09B             ; "         No Data Cartridge| Selected"
+  JP LB373
+LB36C:
+  LD HL,$1416
+  LD ($86D7),HL           ; Set penRow/penCol
+  POP HL
+LB373:
+  CALL LBEDE              ; Load archived string and show message char-by-char
+
+LB3AF:
+
+LB3E8:
+
+LB3F4:
+
+LB44A:
+
+LB487:
+
+LB4C4:
+
+LB501:
+
+  ret ;STUB
 
 LB529:
   OR A

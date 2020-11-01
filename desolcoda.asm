@@ -9,7 +9,12 @@ start:
 ;  call LBA07  ; Show titles and go to Menu
 ;  jp L9DBE
 
-;  call LB0A2	; Inventory
+;  ld a,$01
+;  ld (LDB9C+0),a
+;  ld (LDB9C+1),a
+;  ld (LDB9C+3),a
+;  call LB0A2  ; Inventory
+
 ;  call LBF6F  ; The End
 ;  call LBBEC  ; Info menu item, show Controls
 ;  call LBADE  ; New game

@@ -1,3 +1,6 @@
 /*.tap
+/*.tzx
 /*.bin
 /x-*
+/.vscode
+/desolate.txt
