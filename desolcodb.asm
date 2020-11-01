@@ -10,7 +10,7 @@ L9DDD:
   CALL LADE5              ; Decode current room
   CALL LA88F              ; Display 96 tiles on the screen
   CALL LB96B              ; Display Health
-  CALL LB8EA
+  CALL LB8EA              ; Show look/shoot selection indicator
   CALL LB76B
   CALL LB551
   CALL LA0F1              ; Scan keyboard
@@ -38,29 +38,58 @@ L9E19:
   CP $30                  ; "ALPHA" key
   JP Z,LB0A2              ; Open the Inventory
 L9E2E:
-  CALL L9FEA              ; Copy screen 9340/9872 to A28F/A58F
+  CALL L9FEA              ; Copy shadow screen to ZX screen
   JP L9DDD
 
-; Put tile on the screen (NOT aligned to 8px column), 16x8 -> 16x16 on ZX screen
-; NOTE: we're using masked tiles here but ignoring the mask
-;   L = row; A = column; B = height; IX = tile address
-L9E5F:
-  ld ($86D7),a  ; penCol
-  ld a,l  ; row
-  sra b                   ; B <- B / 2: working with line pairs
-L9E5F_1:                  ; loop by B
-  push af
-  call GetScreenAddr	; now HL = screen addr
-;  push bc
-; Draw 1st line
-  ld a,(ix+$01)
-  ;TODO
+; Quit menu item selected
+L9E51:
+  ret ;STUB
 
-  pop af
-  add a,2
-  ld de,$0004
-  add ix,de
-  djnz L9E5F_1
+; Put tile on the screen (NOT aligned to 8px column), 16x8 -> 16x16 on shadow screen
+; Uses XOR operation so it is revertable.
+;   L = row; A = X coord; B = height; IX = tile address
+L9E5F:
+  ld e,l
+  ld h,$00
+  ld d,h
+  add hl,de               ; now HL = L * 2
+  add hl,de               ; now HL = L * 3
+  add hl,hl
+  add hl,hl               ; now HL = L * 12
+  add hl,hl               ; now HL = L * 24
+  ld e,a
+  and $07
+  ld c,a                  ; C = offset within 8px column
+  srl e
+  srl e
+  srl e                   ; E = number of 8px column
+  add hl,de               ; now HL = offset on the shadow screen
+  ld de,ShadowScreen
+  add hl,de               ; HL = address in the shadow screen
+L9E8D:                  ; loop by B
+  ld d,(ix+$00)
+  ld e,$00
+  ld a,c
+  or a
+  jr z,L9E9D
+L9E96:
+  srl d
+  rr e
+  dec a
+  jr nz,L9E96
+L9E9D:
+  ld a,(hl)
+  xor d
+  ld (hl),a
+  inc hl
+  ld a,(hl)
+  xor e
+  ld (hl),a
+  ld de,24-1
+  add hl,de               ; to the next line
+  inc ix
+  inc ix
+  djnz L9E8D
   ret
 
 ; Put tile on the screen (aligned to 8px column), 16x8 -> 16x16 on shadow screen
@@ -100,8 +129,81 @@ L9EAD_1:
   djnz L9EAD_1
   ret
 
+;   DE = tiles address; A = ??; H = column; L = row
 L9EDE:
+  PUSH HL
+  PUSH AF
+  AND $3F
+  LD H,$00
+  LD L,A
+  ADD HL,HL
+  ADD HL,HL
+  ADD HL,HL
+  ADD HL,HL
+  add hl,hl
+  ADD HL,DE               ; now HL = source tile address
+  LD DE,L9FAF
+  LD BC,32
+  LDIR                    ; get the tile data to the buffer
+  POP AF
+;  BIT 6,A
+;  CALL NZ,L9EDE_1
+;  BIT 7,A
+;  CALL NZ,L9EDE_4
+  LD IX,L9FAF
+  POP HL
+  LD A,H
+  LD H,$00
+  LD B,H
+  LD C,L                  ; get row
+  ADD HL,BC
+  ADD HL,BC
+  ADD HL,HL
+  ADD HL,HL
+  add hl,hl               ; now HL = row * 24
+  LD C,A
+  ADD HL,BC               ; now HL = offset on the shadow screen
+  ld bc,ShadowScreen
+  ADD HL,BC
+  LD B,$08                ; 8 line pairs
+L9EDE_0:                  ; loop by B
+  PUSH BC
+; Process 1st line
+  ld a,(ix+$00)           ; get mask byte
+  and (hl)
+  or (ix+$01)             ; use pixels byte
+  ld (hl),a
+  inc hl
+  ld a,(ix+$02)           ; get mask byte
+  and (hl)
+  or (ix+$03)             ; use pixels byte
+  ld (hl),a
+  ld bc,24-1
+  add hl,bc               ; next line
+; Process 2nd line
+  ld a,(ix+$00)           ; get mask byte
+  and (hl)
+  or (ix+$01)             ; use pixels byte
+  ld (hl),a
+  inc hl
+  ld a,(ix+$02)           ; get mask byte
+  and (hl)
+  or (ix+$03)             ; use pixels byte
+  ld (hl),a
+  ld bc,24-1
+  add hl,bc               ; next line
+; Increase tile address
+  ld bc,$0004
+  add ix,bc
+  POP BC
+  DJNZ L9EDE_0
+  RET
+L9EDE_1:
   ret ;STUB
+
+L9FAF:
+  DEFS 32,$00
+
 
 ; Copy shadow screen to ZX screen
 ;
@@ -189,35 +291,36 @@ LA8CD:
   LD HL,LDE87
   LD A,(LDB75)            ; Direction/orientation??
   ADD A,A
-  ADD A,A
+  ADD A,A                 ; now A = A * 4
   JR LA8E9
 LA8DF:
   LD HL,LDE47
-  LD A,(LDB75)
+  LD A,(LDB75)            ; Direction/orientation??
   ADD A,A
   ADD A,A
   ADD A,A
-  ADD A,A
+  ADD A,A                 ; now A = A * 8
 LA8E9:
   LD E,A
   LD D,$00
   ADD HL,DE
   LD A,(LDD54)
   ADD A,A
-  ADD A,A
+  ADD A,A                 ; now A = A * 4
   LD E,A
   LD D,$00
   ADD HL,DE
-  LD B,$04
-LA8F8:
+  LD B,$04                ; 4 tiles?
+LA8F8:                    ; loop by B
   PUSH HL
-  LD L,(HL)
+  LD L,(HL)               ; tile number??
   LD H,$00
   ADD HL,HL
   ADD HL,HL
   ADD HL,HL
-  ADD HL,HL
-  LD DE,$E8E7     ; ???
+  ADD HL,HL               ; HL = L * 16
+  add hl,hl
+  LD DE,Tileset1+$7A*32   ; was: $E8E7
   ADD HL,DE
   EX DE,HL
   CALL LA92E
@@ -242,22 +345,213 @@ LA927:
   LD (LDD54),A
   JP L9E19
 LA92E:
-
+  INC C
+  LD A,(LDB76)            ; Get X coord in tiles
+  add a,a
+  LD H,A
+  LD A,(LDB77)            ; Get Y coord in lines
+;  add a,a
+  SUB 16      ; was: $08
+  LD L,A
+  LD A,C
+  CP $01
+  RET Z
+  CP $02
+  JR NZ,LA94C
+LA941:
+  LD A,(LDB75)
+  CP $02
+  JR Z,LA94A
+  INC H
+  RET
+LA94A:
+  DEC H
+  RET
+LA94C:
+  LD A,16     ; was: $08
+  ADD A,L
+  LD L,A
+  LD A,C
+  CP $04
+  JR Z,LA941
+  RET
 LA956:
-  ret ;STUB
+  LD C,$00
+  LD A,(LDB75)
+  OR A
+  RET Z
+  CP $01
+  RET Z
+  CP $03
+  RET Z
+  LD C,$80
+  RET
 
+; Move Down
 LA966:
-  ret ;STUB
-
+  LD A,(LDB75)
+  OR A
+  JP Z,LA97C
+  LD A,(LDB7D)            ; Get look/shoot switch value
+  CP $01
+  JP NZ,LA97C
+  XOR A
+  LD (LDB75),A
+  JP LA8C6
+LA97C:
+  XOR A
+  LD (LDB75),A
+  CALL LAA60
+  CP $01
+  JP NZ,LA8CD
+  LD A,(LDB77)
+  PUSH AF
+  ADD A,$08
+  LD (LDB77),A
+  LD A,(LDB78)
+  PUSH AF
+  INC A
+  LD (LDB78),A
+  JR LA9D1
+;
+; Move Up
 LA99B:
-  ret ;STUB
-
+  LD A,(LDB75)
+  CP $01
+  JP Z,LA9B3
+  LD A,(LDB7D)            ; Get look/shoot switch value
+  CP $01
+  JP NZ,LA9B3
+  LD A,$01
+  LD (LDB75),A
+  JP LA8C6
+LA9B3:
+  LD A,$01
+  LD (LDB75),A
+  CALL LAA60
+  CP $01
+  JP NZ,LA8CD
+  LD A,(LDB77)
+  PUSH AF
+  ADD A,$F8
+  LD (LDB77),A
+  LD A,(LDB78)
+  PUSH AF
+  DEC A
+  LD (LDB78),A
+LA9D1:
+  LD A,(LDB84)
+  OR A
+  JP Z,LA9E6
+  CALL LB72E
+  OR A
+  JP Z,LA9E6
+  CALL LB74C
+  OR A
+  JP Z,LB07B           ; Decrease Health by 4, restore Y coord
+LA9E6:
+  POP AF
+  POP AF
+  JP LA8CD
+;
+; Move Left
 LA9EB:
-  ret ;STUB
-
+  LD A,(LDB75)
+  CP $02
+  JP Z,LAA03
+  LD A,(LDB7D)            ; Get look/shoot switch value
+  CP $01
+  JP NZ,LAA03
+  LD A,$02
+  LD (LDB75),A
+  JP LA8C6
+LAA03:
+  LD A,$02
+  LD (LDB75),A
+  CALL LAA60
+  CP $01
+  JP NZ,LA8CD
+  LD A,(LDB76)            ; Get X coord in tiles
+  PUSH AF
+  DEC A                   ; X = X - 1
+  LD (LDB76),A
+  JR LAA47
+;
+; Move Right
 LAA1A:
+  LD A,(LDB75)
+  CP $03
+  JP Z,LAA32
+  LD A,(LDB7D)            ; Get look/shoot switch value
+  CP $01                  ; Shoot mode?
+  JP NZ,LAA32             ; no => jump
+  LD A,$03
+  LD (LDB75),A
+  JP LA8C6
+LAA32:
+  LD A,$03
+  LD (LDB75),A
+  CALL LAA60
+  CP $01
+  JP NZ,LA8CD
+  LD A,(LDB76)            ; Get X coord in tiles
+  PUSH AF
+  INC A                   ; X = X + 1
+  LD (LDB76),A
+LAA47:
+  LD A,(LDB84)
+  OR A
+  JP Z,LAA5C
+  CALL LB72E
+  OR A
+  JP Z,LAA5C
+  CALL LB74C
+  OR A
+  JP Z,LB08D              ; Decrease Health by 4, restore X coord
+LAA5C:
+  POP AF
+  JP LA8CD
+;
+LAA60:
+  CALL LADE5              ; Decode current room
+  LD A,(LDB76)            ; Get X coord in tiles
+  LD E,A
+  CALL LAA7D
+  LD D,$00
+  ADD HL,DE
+  LD A,(LDB74)
+  LD E,A
+  LD A,(LDB78)
+  LD B,A
+  CALL LAA8D
+;
+LAA78:
+  ADD HL,DE
+  DJNZ LAA78
+  LD A,(HL)
+  RET
+;
+LAA7D:
+  LD A,(LDB75)
+  OR A
+  RET Z
+  CP $01
+  RET Z
+  CP $02
+  JR NZ,LAA8B
+  DEC E
+  RET
+LAA8B:
+  INC E
+  RET
+;
+LAA8D:
   ret ;STUB
 
+LAA9D:
+  ret ;STUB
+
+; Look / Shoot
 LAAAF:
   ret ;STUB
 
@@ -277,15 +571,13 @@ LAB28:
   RET
 
 ; Wait for Down key
-;
 LAD99:
   CALL LA0F1              ; Scan keyboard
   CP $01                  ; Down key?
   JR NZ,LAD99
   RET
-
-; Wait for MODE key
 ;
+; Wait for MODE key
 LADA1:
   CALL LA0F1              ; Scan keyboard
   CP $37
@@ -301,7 +593,7 @@ LADE5:
   LD BC,$0060             ; decode 96 bytes
   CALL LADF5              ; Decode the room to DBF5
   RET
-
+;
 ; Decode the room to DBF5
 ;
 ; HL Decode from
@@ -327,7 +619,32 @@ LADFF:
   LD L,A
   RET
 
-
+; Decrease Health by 4, restore Y coord
+LB07B:
+  LD B,$02
+LB07D:
+  CALL LB994              ; Decrease Health
+  DJNZ LB07D
+  POP AF
+  LD (LDB78),A
+  POP AF
+  LD (LDB77),A
+  JP LA8CD
+;
+; Decrease Health by 4, restore X coord
+LB08D:
+  LD B,$02
+LB08F:
+  CALL LB994              ; Decrease Health
+  DJNZ LB08F
+  POP AF                  ; Restore old X coord
+  LD (LDB76),A            ; Set X coord
+  JP LA8CD
+LB09B:
+  LD HL,$3410
+  LD ($86D7),HL           ; Set penRow/penCol
+  RET
+;
 ; Open Inventory
 ;
 LB0A2:
@@ -380,7 +697,7 @@ LB177_0:
   ld ixh,d
   ld l,b
   ld e,c
-  call DrawTileMasked
+  call DrawTileMasked     ; was: CALL L9EDE
 LB177_1:
   POP BC
   POP HL
@@ -405,7 +722,6 @@ LB2D0:
 LB2D0_0:
   LD D,A
 LB2D0_1:
-  nop
   DEC D
   JP NZ,LB2D0_1
   DEC C
@@ -418,10 +734,48 @@ LB551:
 LB653
   ret ;STUB
 
+LB72E:
+  ret ;STUB
+
+LB74C:
+  ret ;STUB
+
 LB76B:
   ret ;STUB
 
+; Show look/shoot selection indicator
+;
 LB8EA:
+  LD A,(LDB7D)            ; Get look/shoot switch value
+  OR A                    ; 
+  JP Z,LB902              ;
+  CALL LB913              ;
+  LD A,$8C                ;
+  CALL L9E5F              ;
+  CALL LB91C              ;
+  LD A,$A0                ;
+  CALL L9E5F              ;
+  RET                     ;
+LB902:
+  CALL LB913              ;
+  LD A,$76                ;
+  CALL L9E5F              ;
+  CALL LB91C              ;
+  LD A,$8A                ;
+  CALL L9E5F              ;
+  RET                     ;
+LB913:
+  LD IX,Tileset3+1        ; Small triange pointing right
+  LD B,12                 ; Tile height
+  LD L,$00                ; Y pos
+  RET                     ;
+LB91C:
+  LD IX,Tileset3+32+1     ; Small triange pointing left
+  LD B,12                 ; Tile height
+  LD L,$00                ; Y pos
+  RET                     ;
+
+LB925:
   ret ;STUB
 
 ; Switch Look / Shoot mode
@@ -436,11 +790,55 @@ LB96B:
   LD HL,(LDB7A)           ; Get Health
   jp DrawNumber3
 
+; Decrease Health
+;
+LB994:
+  LD A,(LDB7A)
+  SUB $02                 ; Health = Health minus 2
+  CALL C,LB9A0
+  LD (LDB7A),A
+  RET
+LB9A0:
+  XOR A
+  RET
+;
+; Player is dead, Health 0
+;
 LB9A2:
-  ret ;STUB
-
+  CALL L9FCF              ; Clear screen 9340/9872
+  LD A,$32
+  LD (LDCF3),A
+  LD A,$0E
+  LD (LDCF4),A
+  CALL LAB28              ; Show small message popup
+  LD HL,$580E
+  LD ($86D7),HL           ; Set penRow/penCol
+  LD HL,SE0BD             ; "The Desolate has claimed|your life too . . ."
+  CALL LBEDE              ; Load archived string and show message char-by-char
+  XOR A
+  CALL LB9D6
+  LD HL,(LDBC3)
+  INC HL
+  LD (LDBC3),HL
+LB9C9:
+  CALL L9FEA              ; Copy shadow screen to ZX screen
+  CALL LA0F1              ; Scan keyboard
+  CP $37                  ; "MODE" key
+  JP Z,L9E19
+  JR LB9C9
+;
 LB9D6:
-  ret ;STUB
+  LD (LDB79),A
+  LD (LDB75),A
+  LD A,$06
+  LD (LDB76),A            ; Set X coord = 6
+  LD A,$30    ; was: $18
+  LD (LDB77),A
+  LD A,$03
+  LD (LDB78),A
+  LD A,$64                ; Health = 100
+  LD (LDB7A),A
+  RET
 
 ; Decode the room/screen
 ;
@@ -502,18 +900,20 @@ LBA3D:
   LD HL,LF4B5             ; Main menu screen
   EI
   CALL LB177              ; Display screen from tiles with Tileset #2
-  LD C,$03
+  LD C,$09                ; left triangle X pos
   LD IX,Tileset3          ; Tile arrow right
   DI
   CALL LBA88
-  LD C,$25
-  LD IX,Tileset3+16       ; Tile arrow left
+  LD C,$4D                ; right triangle X pos
+  LD IX,Tileset3+32       ; Tile arrow left
   DI
   CALL LBA88
-  CALL L9FEA              ; Copy screen 9340/9872 to A28F/A58F
+  CALL L9FEA              ; Copy shadow screen to ZX screen
   CALL LA0F1              ; Scan keyboard
-  CP $36
+  CP $36                  ; look/shoot key
   JP Z,LBA93
+  cp $09                  ; Enter key
+  jp z,LBA93
   CP $04                  ; Up key
   JP Z,LBBCC
   CP $01                  ; Down key
@@ -525,25 +925,56 @@ LBA81:
   CALL LBC34	
   RET
 
-; Routine??
+; Draw menu item selection triangles
 ;
 LBA88:
   LD A,(LDB8F)
-  LD L,A
-  LD A,C
-  LD B,$08
-  CALL L9E5F
+  LD L,A                  ; L = Y coord
+  LD A,C                  ; A = X coord
+  LD B,16                 ; 8 = tile height
+  CALL L9E5F              ; Draw tile by XOR operation
   RET
-
+;
 LBA93:
-  ret ;STUB
-
+  LD A,(LDB8F)
+  CP $3A
+  JP Z,LBAB2              ; New menu item
+  CP $46
+  JP Z,LBB82              ; Continue menu item
+  CP $52
+  JP Z,LBBEC              ; Info menu item
+  CP $5E
+  JP Z,LBF64              ; Credits menu item
+  CP $6A
+  JP Z,L9E51              ; Quit menu item
+  JP LBA3D
+;
+; New menu item selected
+LBAB2:
+  LD A,(LDB73)
+  OR A
+  JP Z,LBADE
+  CALL LB925
+  CALL LAB28              ; Show small message popup
+  LD HL,$2C07
+  LD ($86D7),HL           ; Set penRow/penCol
+  LD HL,SE0A3             ; "OverWrite Current Game?|Alpha = Yes :: Clear = No"
+  CALL LBEDE              ; Load archived string and show message char-by-char
+  CALL L9FEA              ; Copy shadow screen to ZX screen
+LBACE:
+  CALL LA0F1              ; Scan keyboard
+  CP $0F
+  JP Z,LBA3D
+  CP $30
+  JP Z,LBADE
+  JP LBACE
+;
 ; New Game
 ;
 LBADE:
   XOR A
   LD (LDCF7),A            ; Weapon slot
-  LD (LDB7D),A
+  LD (LDB7D),A            ; Get look/shoot switch value
   LD (LDBC7),A
   CALL LB9D6
   LD HL,$0000
@@ -614,7 +1045,7 @@ LBB7E:
   XOR A
   LD (LDC85),A
 ; Continue menu item selected
-LBB7E_0:
+LBB82:
   LD A,$01
   LD (LDB73),A
   LD A,$FF
@@ -624,46 +1055,46 @@ LBB7E_0:
 ;
 LBB92:
   LD A,(LDB73)
-  OR A
+  OR A                    ; do we have the game to continue?
   JP NZ,LBBA4
   LD A,(LDB8F)
-  ADD A,$0C
+  ADD A,-24               ; up two steps
   LD (LDB8F),A
   JP LBA3D
 ; Menu up step
 LBBA4:
   LD A,(LDB8F)
-  ADD A,$FA
+  ADD A,-12
   LD (LDB8F),A
   JP LBA3D
 LBBAF:
   LD A,(LDB73)
-  OR A
+  OR A                    ; do we have the game to continue?
   JP NZ,LBBC1
   LD A,(LDB8F)
-  ADD A,$0C
+  ADD A,24                ; down two steps
   LD (LDB8F),A
   JP LBA3D
 ; Menu down step
 LBBC1:
   LD A,(LDB8F)
-  ADD A,$06
+  ADD A,12
   LD (LDB8F),A
   JP LBA3D
 ; Menu up key pressed
 LBBCC:
   LD A,(LDB8F)
-  CP $1D
-  JP Z,LBA3D
-  CP $29
+  CP $3A                  ; "New Game" selected?
+  JP Z,LBA3D              ; yes => continue
+  CP $52                  ; "Info" selected?
   JP Z,LBB92
   JP LBBA4
 ; Menu down key pressed
 LBBDC:
   LD A,(LDB8F)
-  CP $35
+  CP $6A                  ; "Quit" selected?
   JP Z,LBA3D
-  CP $1D
+  CP $3A                  ; "New Game" selected?
   JP Z,LBBAF
   JP LBBC1
 ;
@@ -688,7 +1119,7 @@ LBBEC:
   LD ($86D7),HL           ; Set penRow/penCol
   LD HL,SE0A7             ; "2nd = Look / Shoot|Alpha = Inventory ..."
   CALL LBEDE              ; Load archived string and show message char-by-char
-  CALL L9FEA              ; Copy screen 9340/9872 to A28F/A58F
+  CALL L9FEA              ; Copy shadow screen to ZX screen
   CALL LADA1              ; Wait for MODE key
   JP LBA3D                ; Return to Menu
 ;
@@ -715,7 +1146,7 @@ LBC6B:
 
 LBC7D:
   CALL L9FCF              ; Clear shadow screen
-  CALL L9FEA              ; Copy screen 9340/9872 to A28F/A58F
+  CALL L9FEA              ; Copy shadow screen to ZX screen
   RET
 
 ; Set zero penRow/penCol
@@ -737,7 +1168,7 @@ LBEDE:
   push hl
   call DrawChar
   CALL LB2D0              ; Delay
-  CALL L9FEA              ; Show shadow screen
+  CALL L9FEA              ; Copy shadow screen to ZX screen
   pop hl
   jr LBEDE
 LBEDE_1:
@@ -763,6 +1194,13 @@ LBF54:
   LD (LDC59),A
   RET
 ;
+; Credits menu item selected
+LBF64:
+  CALL L9FCF              ; Clear shadow screen
+  CALL L9FEA              ; Copy shadow screen to ZX screen
+  CALL LBF54
+  JR LBF81
+;
 ; The End
 ;
 LBF6F:
@@ -781,7 +1219,7 @@ LBF81:
 LBF686:
   JP LBF6F_4
 LBF6F_2:
-  call L9FEA              ; Show shadow screen
+  call L9FEA              ; Copy shadow screen to ZX screen
   CALL LB2D0              ; Delay
 LBF6F_3:
   CALL LA0F1              ; Scan keyboard
@@ -827,5 +1265,3 @@ LBFEC:
 ;  LD BC,$02B8
 ;  LDIR
   RET
-
-

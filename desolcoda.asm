@@ -14,6 +14,12 @@ start:
 ;  call LBBEC  ; Info menu item, show Controls
 ;  call LBADE  ; New game
   call LBB7E  ; Game start
+;  call LB9A2  ; Player is dead
+
+;  ld de,Tileset1+$10*32
+;  ld a,0
+;  ld hl,$0210
+;  call L9EDE  
 
 ;  call ShowScreen
 
@@ -515,7 +521,7 @@ ShowShadowScreen_src: DW 0
 
 ;----------------------------------------------------------------------------
 ShadowScreen:
-  DEFS 3312,$00
+  DEFS 3312,$81
 
 ;----------------------------------------------------------------------------
 
