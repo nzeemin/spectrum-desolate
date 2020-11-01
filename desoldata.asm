@@ -889,22 +889,27 @@ LBFF8:
 ;
 LDB73:  DEFB $00          ; ?? $00 $01
 LDB74:  DEFB $0C          ; ??
-LDB75:  DEFB $00          ; Direction/orientation?? $00 $01 $02 $03
+LDB75:  DEFB $00          ; Direction/orientation: $00 down, $01 up, $02 left, $03 right
 LDB76:  DEFB $06          ; X coord in tiles: $01 $06 $0A INC/DEC
-LDB77:  DEFB $30          ; Y coord on the screen?? $18 $30
+LDB77:  DEFB $30          ; Y coord/line on the screen: $30
 LDB78:  DEFB $03          ; Y coord in tiles: $03 $06 INC/DEC
 LDB79:  DEFB $00          ; Room number
 LDB7A:  DEFW $0064        ; Health; initially $64
 LDB7C:  DEFB $00          ; ??
 LDB7D:  DEFB $00          ; Look/shoot switch: $00 look, $01 shoot
-  DEFB $00,$00,$00,$00,$00
-LDB84:  DEFB $00,$02,$03
+LDB7E:  DEFB $00
+LDB7F:  DEFB $00,$00
+LDB81:  DEFB $00,$00
+  DEFB $00
+LDB84: DEFB $02,$03
   DEFB $00,$00,$00,$00,$00,$00,$00,$00
   DEFB $00
 LDB8F:  DEFB $3A           ; Menu Y pos: $3A $46 $52 $5E $6A
-  DEFB $00,$00,$00,$00,$00,$00,$00,$00
+LDB90:  DEFB $00
+  DEFB $00,$00,$00,$00,$00,$00,$00
   DEFB $00,$00,$00,$00
-  DEFB $00,$00,$00,$00,$00,$00,$00,$00 ; ??
+LDB9C:
+  DEFB $00,$00,$00,$00,$00,$00,$00,$00 ; Inventory items??
   DEFB $00,$00,$00,$00,$00,$00,$00,$00 ;
   DEFB $00,$00,$00,$00,$00,$00,$00,$00 ;
   DEFB $00,$00,$00,$00,$00,$00,$00,$00 ;
@@ -936,29 +941,32 @@ LDBF5:
   DEFB $00,$00,$00,$00,$00,$00,$00,$00
   DEFB $00,$00,$00,$00,$00,$00,$00,$00
   DEFB $00,$00,$00,$00,$00,$00,$00,$00
-LDC55:  DEFB $03                ; ??
-  DEFB $00,$00,$00
+LDC55:  DEFB $03          ; ??
+LDC56:  DEFB $00          ; ??
+  DEFB $00,$00
 LDC59:  DEFB $44          ; Delay factor: $64 $28 $00 $44 $96 $FF
-LDC5A:
-  DEFB $00,$63,$63,$63,$63,$63,$63,$63
+LDC5A:  DEFB $00          ; Inventory items count??
+LDC5B:                    ; Inventory list
   DEFB $63,$63,$63,$63,$63,$63,$63,$63
   DEFB $63,$63,$63,$63,$63,$63,$63,$63
   DEFB $63,$63,$63,$63,$63,$63,$63,$63
   DEFB $63,$63,$63,$63,$63,$63,$63,$63
-  DEFB $00
-LDC83:  DEFB $00
-LDC84:  DEFB $00
+  DEFB $63,$63,$63,$63,$63,$63,$63
+LDC82:  DEFB $00          ; Inventory ??
+LDC83:  DEFB $00          ; Inventory X
+LDC84:  DEFB $00          ; Inventory Y
 LDC85:  DEFB $00          ; ??
 LDC86:  DEFB $00
 LDC87:  DEFB $00          ; ??
 LDC88:  DEFB $00          ; ?? counter
-  DEFB $00,$00,$FF,$00,$00,$00,$00
+LDC89:  DEFB $00          ; Current inventory item??
+  DEFB $00,$FF,$00,$00,$00,$00
   DEFB $00,$00
-LDC92:
-  DEFB $1E,$1A,$1F,$21
-  DEFB $1E,$1A,$1F,$21
-  DEFB $1E,$1A,$1F,$21
-  DEFB $1E,$1A,$1F,$21
+LDC92:  DEFB $1E,$1A,$1F,$21
+LDC96:  DEFB $1E,$1A,$1F,$21
+LDC9A:  DEFB $1E,$1A,$1F,$21
+LDC9E:  DEFB $1E,$1A,$1F,$21
+LDCA2:
   DEFB $00,$00,$00,$00,$00,$00,$00,$00
   DEFB $00,$00,$00,$00,$00,$00,$00,$00
   DEFB $00,$00,$00,$00,$00,$00,$00,$00
@@ -1021,17 +1029,19 @@ LDDF2:
   DEFB $00,$00,$00,$00,$00,$00,$00,$00
   DEFB $00,$00,$00,$00,$00,$00,$00
 LDE47:
-  DEFB $00,$01,$02,$03,$00,$01,$04,$05
+  DEFB $00,$01,$02,$03,$00,$01,$04,$05    ; $00 down
   DEFB $00,$01,$02,$03,$00,$01,$06,$07
-  DEFB $08,$01,$09,$03,$08,$01,$0A,$05
+  DEFB $08,$01,$09,$03,$08,$01,$0A,$05    ; $01 up
   DEFB $08,$01,$09,$03,$08,$01,$0B,$07
-  DEFB $0C,$0D,$0E,$12,$0C,$0D,$0F,$11
+  DEFB $0C,$0D,$0E,$12,$0C,$0D,$0F,$11    ; $02 left
   DEFB $0C,$0D,$0E,$12,$0C,$0D,$10,$11
-  DEFB $0C,$0D,$0E,$12,$0C,$0D,$0F,$11
+  DEFB $0C,$0D,$0E,$12,$0C,$0D,$0F,$11    ; $03 right
   DEFB $0C,$0D,$0E,$12,$0C,$0D,$10,$11
 LDE87:
-  DEFB $00,$01,$13,$03, $08,$01,$09,$14
-  DEFB $0C,$0D,$15,$16, $0C,$0D,$15,$16
+  DEFB $00,$01,$13,$03    ; $00 down
+  DEFB $08,$01,$09,$14    ; $01 up
+  DEFB $0C,$0D,$15,$16    ; $02 left
+  DEFB $0C,$0D,$15,$16    ; $03 right
 
 ; List of encoded room addresses
 LDE97:
@@ -1179,8 +1189,9 @@ LDE97:
   DEFW $DB03
   DEFW $DB25
   DEFW $DB4C
-  DEFW $E0E5
-  DEFW $E0E7
+LDFB7:
+  DEFW $E0E5    ; Data cartridge reader
+  DEFW $E0E7    ; Data Cartridge 1
   DEFW $E0E9
   DEFW $E0EB
   DEFW $E0ED
@@ -1199,12 +1210,12 @@ LDE97:
   DEFW $DD53
   DEFW $DD53
   DEFW $E107
-  DEFW $E109
+  DEFW $E109    ; Data Cartridge 16
   DEFW $E10B
   DEFW $E10D
   DEFW $E10F
   DEFW $E111
-  DEFW $E113
+  DEFW $E113    ; Rubik's Cube
   DEFW $DD53
   DEFW $DD53
   DEFW $DD53

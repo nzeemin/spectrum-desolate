@@ -28,6 +28,7 @@ L9DDD:
   LD (LDB7C),A
   JP LA8C6
 
+; Ending of main game loop
 L9E19:
   CALL LB653
   CALL LA0F1              ; Scan keyboard
@@ -39,7 +40,7 @@ L9E19:
   JP Z,LB0A2              ; Open the Inventory
 L9E2E:
   CALL L9FEA              ; Copy shadow screen to ZX screen
-  JP L9DDD
+  JP L9DDD                ; continue main game loop
 
 ; Quit menu item selected
 L9E51:
@@ -129,7 +130,8 @@ L9EAD_1:
   djnz L9EAD_1
   ret
 
-;   DE = tiles address; A = ??; H = column; L = row
+; Draw tile
+;   DE = tile address; A = ??; H = column; L = row
 L9EDE:
   PUSH HL
   PUSH AF
@@ -147,9 +149,9 @@ L9EDE:
   LDIR                    ; get the tile data to the buffer
   POP AF
 ;  BIT 6,A
-;  CALL NZ,L9EDE_1
+;  CALL NZ,L9EDE_1         ; Reflect tile
 ;  BIT 7,A
-;  CALL NZ,L9EDE_4
+;  CALL NZ,L9EDE_4         ; Reflect tile
   LD IX,L9FAF
   POP HL
   LD A,H
@@ -289,17 +291,17 @@ LA8CD:
   OR A
   JR Z,LA8DF
   LD HL,LDE87
-  LD A,(LDB75)            ; Direction/orientation??
+  LD A,(LDB75)            ; Direction/orientation
   ADD A,A
   ADD A,A                 ; now A = A * 4
   JR LA8E9
 LA8DF:
   LD HL,LDE47
-  LD A,(LDB75)            ; Direction/orientation??
+  LD A,(LDB75)            ; Direction/orientation
   ADD A,A
   ADD A,A
   ADD A,A
-  ADD A,A                 ; now A = A * 8
+  ADD A,A                 ; now A = A * 16
 LA8E9:
   LD E,A
   LD D,$00
@@ -310,28 +312,28 @@ LA8E9:
   LD E,A
   LD D,$00
   ADD HL,DE
-  LD B,$04                ; 4 tiles?
+  LD B,$04                ; 4 tiles
 LA8F8:                    ; loop by B
   PUSH HL
-  LD L,(HL)               ; tile number??
+  LD L,(HL)               ; get tile number
   LD H,$00
   ADD HL,HL
   ADD HL,HL
   ADD HL,HL
   ADD HL,HL               ; HL = L * 16
-  add hl,hl
+  add hl,hl               ; HL = L * 32
   LD DE,Tileset1+$7A*32   ; was: $E8E7
   ADD HL,DE
-  EX DE,HL
+  EX DE,HL                ; DE = tile address
   CALL LA92E
   PUSH BC
   CALL LA956
   LD A,C
-  CALL L9EDE
+  CALL L9EDE              ; Draw tile DE at column H row L
   POP BC
   POP HL
   INC HL
-  DJNZ LA8F8
+  DJNZ LA8F8              ; continue loop by tiles
   LD A,(LDD54)
   CP $03
   JR Z,LA927
@@ -339,19 +341,18 @@ LA8F8:                    ; loop by B
   LD (LDD54),A
   XOR A
   LD (LDD55),A
-  JP L9E19
+  JP L9E19                ; Go to ending of main game loop
 LA927:
   XOR A
   LD (LDD54),A
-  JP L9E19
+  JP L9E19                ; Go to ending of main game loop
 LA92E:
   INC C
   LD A,(LDB76)            ; Get X coord in tiles
-  add a,a
+  add a,a                 ; now coord in 8px columns
   LD H,A
   LD A,(LDB77)            ; Get Y coord in lines
-;  add a,a
-  SUB 16      ; was: $08
+  SUB 16                  ; was: $08
   LD L,A
   LD A,C
   CP $01
@@ -359,16 +360,16 @@ LA92E:
   CP $02
   JR NZ,LA94C
 LA941:
-  LD A,(LDB75)
-  CP $02
+  LD A,(LDB75)            ; Direction/orientation
+  CP $02                  ; left?
   JR Z,LA94A
-  INC H
+  INC H                   ; right
   RET
 LA94A:
-  DEC H
+  DEC H                   ; left
   RET
 LA94C:
-  LD A,16     ; was: $08
+  LD A,16                 ; was: $08
   ADD A,L
   LD L,A
   LD A,C
@@ -377,68 +378,68 @@ LA94C:
   RET
 LA956:
   LD C,$00
-  LD A,(LDB75)
-  OR A
+  LD A,(LDB75)            ; Direction/orientation
+  OR A                    ; down?
   RET Z
-  CP $01
+  CP $01                  ; up?
   RET Z
-  CP $03
+  CP $03                  ; right?
   RET Z
   LD C,$80
   RET
 
 ; Move Down
 LA966:
-  LD A,(LDB75)
-  OR A
+  LD A,(LDB75)            ; Direction/orientation
+  OR A                    ; down?
   JP Z,LA97C
   LD A,(LDB7D)            ; Get look/shoot switch value
   CP $01
   JP NZ,LA97C
-  XOR A
-  LD (LDB75),A
+  XOR A                   ; down
+  LD (LDB75),A            ; Direction/orientation
   JP LA8C6
 LA97C:
-  XOR A
-  LD (LDB75),A
+  XOR A                   ; down
+  LD (LDB75),A            ; Direction/orientation
   CALL LAA60
   CP $01
   JP NZ,LA8CD
-  LD A,(LDB77)
+  LD A,(LDB77)            ; Get Y pixel coord
   PUSH AF
-  ADD A,$08
-  LD (LDB77),A
-  LD A,(LDB78)
+  ADD A,16                ; Down one tile; was: $08
+  LD (LDB77),A            ; Set Y pixel coord
+  LD A,(LDB78)            ; Get Y tile coord
   PUSH AF
   INC A
-  LD (LDB78),A
+  LD (LDB78),A            ; Set Y tile coord
   JR LA9D1
 ;
 ; Move Up
 LA99B:
-  LD A,(LDB75)
-  CP $01
+  LD A,(LDB75)            ; Direction/orientation
+  CP $01                  ; up?
   JP Z,LA9B3
   LD A,(LDB7D)            ; Get look/shoot switch value
-  CP $01
+  CP $01                  ; shoot?
   JP NZ,LA9B3
-  LD A,$01
-  LD (LDB75),A
+  LD A,$01                ; up
+  LD (LDB75),A            ; Direction/orientation
   JP LA8C6
 LA9B3:
-  LD A,$01
-  LD (LDB75),A
+  LD A,$01                ; up
+  LD (LDB75),A            ; Direction/orientation
   CALL LAA60
   CP $01
   JP NZ,LA8CD
-  LD A,(LDB77)
+  LD A,(LDB77)            ; Get Y pixel coord
   PUSH AF
-  ADD A,$F8
-  LD (LDB77),A
-  LD A,(LDB78)
+  ADD A,-16               ; Up one tile; was: $F8
+  LD (LDB77),A            ; Set Y pixel coord
+  LD A,(LDB78)            ; Get Y tile coord
   PUSH AF
   DEC A
-  LD (LDB78),A
+  LD (LDB78),A            ; Set Y tile coord
 LA9D1:
   LD A,(LDB84)
   OR A
@@ -456,18 +457,18 @@ LA9E6:
 ;
 ; Move Left
 LA9EB:
-  LD A,(LDB75)
-  CP $02
+  LD A,(LDB75)            ; Direction/orientation
+  CP $02                  ; left?
   JP Z,LAA03
   LD A,(LDB7D)            ; Get look/shoot switch value
   CP $01
   JP NZ,LAA03
-  LD A,$02
-  LD (LDB75),A
+  LD A,$02                ; left
+  LD (LDB75),A            ; Direction/orientation
   JP LA8C6
 LAA03:
-  LD A,$02
-  LD (LDB75),A
+  LD A,$02                ; left
+  LD (LDB75),A            ; Direction/orientation
   CALL LAA60
   CP $01
   JP NZ,LA8CD
@@ -479,18 +480,18 @@ LAA03:
 ;
 ; Move Right
 LAA1A:
-  LD A,(LDB75)
-  CP $03
+  LD A,(LDB75)            ; Direction/orientation
+  CP $03                  ; right?
   JP Z,LAA32
   LD A,(LDB7D)            ; Get look/shoot switch value
-  CP $01                  ; Shoot mode?
+  CP $01                  ; shoot?
   JP NZ,LAA32             ; no => jump
-  LD A,$03
-  LD (LDB75),A
+  LD A,$03                ; right
+  LD (LDB75),A            ; Direction/orientation
   JP LA8C6
 LAA32:
-  LD A,$03
-  LD (LDB75),A
+  LD A,$03                ; right
+  LD (LDB75),A            ; Direction/orientation
   CALL LAA60
   CP $01
   JP NZ,LA8CD
@@ -521,7 +522,7 @@ LAA60:
   ADD HL,DE
   LD A,(LDB74)
   LD E,A
-  LD A,(LDB78)
+  LD A,(LDB78)            ; Get Y tile coord
   LD B,A
   CALL LAA8D
 ;
@@ -532,25 +533,45 @@ LAA78:
   RET
 ;
 LAA7D:
-  LD A,(LDB75)
-  OR A
+  LD A,(LDB75)            ; Direction/orientation
+  OR A                    ; down?
   RET Z
-  CP $01
+  CP $01                  ; up?
   RET Z
-  CP $02
+  CP $02                  ; left?
   JR NZ,LAA8B
-  DEC E
+  DEC E                   ; going left 1 tile
   RET
 LAA8B:
-  INC E
+  INC E                   ; going right 1 tile
   RET
 ;
 LAA8D:
-  ret ;STUB
-
+  LD A,(LDB75)            ; Direction/orientation
+  CP $02                  ; left
+  RET Z
+  CP $03                  ; right?
+  RET Z
+  OR A                    ; down?
+  JR NZ,LAA9B
+  INC B                   ; going down 1 tile
+  RET
+LAA9B:
+  DEC B                   ; going up 1 tile
+  RET
+;
 LAA9D:
-  ret ;STUB
-
+  LD A,(LDB74)
+  LD E,A
+  LD A,(LDB78)            ; Get Y tile coord
+  LD B,A
+  LD A,(LDB76)            ; Get X tile coord
+LAAA8:
+  ADD A,E
+  DJNZ LAAA8
+  LD (LDC56),A
+  RET
+;
 ; Look / Shoot
 LAAAF:
   ret ;STUB
@@ -619,6 +640,13 @@ LADFF:
   LD L,A
   RET
 
+; Inventory item to item description string
+LAE19:
+  LD A,(LDC89)
+  LD HL,LDFB7
+  CALL LADFF
+  RET
+
 ; Decrease Health by 4, restore Y coord
 LB07B:
   LD B,$02
@@ -626,9 +654,9 @@ LB07D:
   CALL LB994              ; Decrease Health
   DJNZ LB07D
   POP AF
-  LD (LDB78),A
+  LD (LDB78),A            ; Set Y tile coord
   POP AF
-  LD (LDB77),A
+  LD (LDB77),A            ; Set Y pixel coord
   JP LA8CD
 ;
 ; Decrease Health by 4, restore X coord
@@ -645,36 +673,127 @@ LB09B:
   LD ($86D7),HL           ; Set penRow/penCol
   RET
 ;
-; Open Inventory
+; Open the Inventory pop-up
 ;
 LB0A2:
-  LD BC,$0060             ; Titles count to decode
+  LD BC,$0060             ; Tile count to decode
   LD HL,LF329             ; Encoded screen for Inventory popup
-  CALL LADF5              ; Decode the room to DBF5
+  CALL LADF5              ; Decode the screen to DBF5
   CALL LB177              ; Display screen from tiles with Tileset #2
-  LD A,$16
+  LD A,22                 ; was: $0B
   LD (LDCF3),A            ; Left margin size for text
-  LD A,$06
+  LD A,12                 ; was: $06
   LD (LDCF4),A            ; Line interval for text
   XOR A
-  LD (LDCF5),A            ; Data cartridge reader slot
-  LD (LDC59),A
-  LD (LDC5A),A
+  LD (LDCF5),A            ; Data cartridge reader slot??
+  LD (LDC59),A            ; set delay factor
+  LD (LDC5A),A            ; Inventory items count = 0
   LD (LDCF8),A
-  LD A,$08
-  LD (LDC83),A
-  LD A,$12
-  LD (LDC84),A
+  LD A,16                 ; was: $08
+  LD (LDC83),A            ; set X pos
+  LD A,$24                ; was: $12
+  LD (LDC84),A            ; set Y pos
   LD HL,$1630
-  LD ($86D7),HL
+  LD ($86D7),HL           ; Set penRow/penCol
   LD HL,SE0BB             ; " - INVENTORY - "
-  CALL LBEDE              ; Load archived string and show message char-by-char
-
-  ret ;STUB
-
-; Display screen from tiles with Tileset #2
+  call DrawString         ; was: CALL LBEDE
 ;
-; HL Screen in tiles, usually $DBF5
+  LD HL,LDB9C             ; Inventory items??
+  LD B,$1D                ; 29 items
+LB0E0:                    ; loop by B
+  PUSH HL
+  LD A,(HL)               ; get item
+  CP $01                  ; do we have the item
+  CALL Z,LB12A            ; yes => put in the list and draw
+  POP HL
+  INC HL                  ; next item
+  DJNZ LB0E0              ; continue loop
+;
+  LD A,(LDC5A)            ; Inventory items count
+  LD C,A
+  LD A,$1D                ; 29 items
+  SUB C
+  LD C,A                  ; C = count of empty slots
+LB0F3:
+  PUSH BC
+  LD IX,Tileset2+$7E*32   ; Tile gray dot in the center - placeholder
+  CALL LB15D
+  POP BC
+  LD A,C
+  OR A                    ; last item?
+  JP Z,LB119              ; yes, exit the loop
+  DEC C
+  LD HL,LDC5B
+  LD A,(LDC5A)
+  LD E,A
+  LD D,$00
+  ADD HL,DE
+  LD A,$63
+  LD (HL),A
+  LD A,(LDC5A)
+  INC A                   ; increase Inventory items count
+  LD (LDC5A),A
+  JP LB0F3
+LB119:
+;  call ShowShadowScreen ;DEBUG
+  JP LB1AA
+;
+LB11C:
+  LD A,16                 ; was: $08
+  LD (LDC83),A            ; set X pos
+  LD A,(LDC84)            ; get Y pos
+  ADD A,20                ; 10 lines lower; was: $0A
+  LD (LDC84),A            ; set Y pos
+  RET
+;
+LB12A:
+  PUSH BC
+  LD C,B
+  LD A,$1D                ; 29
+  SUB C
+  PUSH AF
+  CALL LB529
+  LD L,A
+  LD H,$00
+  ADD HL,HL
+  ADD HL,HL
+  ADD HL,HL
+  ADD HL,HL               ; HL = A * 16
+  LD DE,Tileset3+32       ; Inventory items, 12 tiles
+  ADD HL,DE
+  PUSH HL
+  POP IX
+  CALL LB15D              ; Draw tile IX at X=LDC83 Y=LDC84 by XOR
+  LD HL,LDC5B             ; Inventory items
+  LD A,(LDC5A)
+  LD E,A
+  LD D,$00
+  ADD HL,DE
+  POP AF
+  LD (HL),A
+  OR A
+  CALL Z,LB301
+  LD A,(LDC5A)
+  INC A                   ; increase Inventory items count
+  LD (LDC5A),A
+  POP BC
+  RET
+;
+LB15D:
+  LD A,(LDC84)
+  LD L,A                  ; L = row
+  LD A,(LDC83)            ; A = X pos
+  LD B,$08
+  CALL L9E5F              ; Draw tile by XOR operation
+  LD A,(LDC83)
+  ADD A,16                ; increase X; was: $08
+  LD (LDC83),A
+  CP 176                  ; was: $58
+  CALL Z,LB11C
+  RET
+;
+; Display screen from tiles with Tileset #2
+;   HL = Screen in tiles, usually LDBF5
 LB177:
   LD BC,$0000
 LB177_0:
@@ -715,9 +834,46 @@ LB177_1:
   JP NZ,LB177_0
   RET
 
-; Delay by DC59
+LB1AA:
+  XOR A
+  LD (LDC82),A
+  LD A,$08
+  LD (LDC83),A
+  LD A,$12
+  LD (LDC84),A
+  CALL LB2AF
+LB1BB:
+  CALL LBEDE              ; Load archived string and show message char-by-char
+  CALL LB295
+; Inventory item selection
+LB1C1:
+
+  ret ;STUB
+
+LB295:
+  ret ;STUB
+
+LB2AF:
+  LD HL,$6812
+  LD ($86D7),HL           ; Set penRow/penCol
+  LD HL,LDC5B
+  LD A,(LDC82)
+  LD D,$00
+  LD E,A
+  ADD HL,DE
+  LD A,(HL)
+  CP $63                  ; empty slot?
+  JP Z,LB2CC
+  LD (LDC89),A
+  CALL LAE19              ; Get inventory item description string
+  RET
+LB2CC:
+  LD HL,$E0DB
+  RET
+
+; Delay by LDC59
 LB2D0:
-  LD A,(LDC59)
+  LD A,(LDC59)            ; get delay factor
   LD C,A
 LB2D0_0:
   LD D,A
@@ -726,6 +882,20 @@ LB2D0_1:
   JP NZ,LB2D0_1
   DEC C
   JP NZ,LB2D0_0
+  RET
+
+; We've got Data cartridge reader
+LB301:
+  LD A,$01
+  LD (LDCF5),A            ; Data cartridge reader slot
+  RET
+
+LB529:
+  OR A
+  RET Z
+  SUB $11
+  RET NC
+  LD A,$01
   RET
 
 LB551:
@@ -751,18 +921,18 @@ LB8EA:
   JP Z,LB902              ;
   CALL LB913              ;
   LD A,$8C                ;
-  CALL L9E5F              ;
+  CALL L9E5F              ; Draw tile by XOR operation
   CALL LB91C              ;
   LD A,$A0                ;
-  CALL L9E5F              ;
+  CALL L9E5F              ; Draw tile by XOR operation
   RET                     ;
 LB902:
   CALL LB913              ;
   LD A,$76                ;
-  CALL L9E5F              ;
+  CALL L9E5F              ; Draw tile by XOR operation
   CALL LB91C              ;
   LD A,$8A                ;
-  CALL L9E5F              ;
+  CALL L9E5F              ; Draw tile by XOR operation
   RET                     ;
 LB913:
   LD IX,Tileset3+1        ; Small triange pointing right
@@ -793,7 +963,7 @@ LB96B:
 ; Decrease Health
 ;
 LB994:
-  LD A,(LDB7A)
+  LD A,(LDB7A)            ; Get Health
   SUB $02                 ; Health = Health minus 2
   CALL C,LB9A0
   LD (LDB7A),A
@@ -807,9 +977,9 @@ LB9A0:
 LB9A2:
   CALL L9FCF              ; Clear screen 9340/9872
   LD A,$32
-  LD (LDCF3),A
+  LD (LDCF3),A            ; Left margin size for text
   LD A,$0E
-  LD (LDCF4),A
+  LD (LDCF4),A            ; Line interval for text
   CALL LAB28              ; Show small message popup
   LD HL,$580E
   LD ($86D7),HL           ; Set penRow/penCol
@@ -823,21 +993,21 @@ LB9A2:
 LB9C9:
   CALL L9FEA              ; Copy shadow screen to ZX screen
   CALL LA0F1              ; Scan keyboard
-  CP $37                  ; "MODE" key
-  JP Z,L9E19
+  CP $37                  ; "MODE" key?
+  JP Z,L9E19              ; yes => Go to ending of main game loop
   JR LB9C9
 ;
 LB9D6:
   LD (LDB79),A
-  LD (LDB75),A
+  LD (LDB75),A            ; Direction/orientation
   LD A,$06
-  LD (LDB76),A            ; Set X coord = 6
-  LD A,$30    ; was: $18
-  LD (LDB77),A
+  LD (LDB76),A            ; Set X tile coord = 6
+  LD A,$30                ; was: $18
+  LD (LDB77),A            ; Set Y pixel coord = 48
   LD A,$03
-  LD (LDB78),A
-  LD A,$64                ; Health = 100
-  LD (LDB7A),A
+  LD (LDB78),A            ; Set Y tile coord = 3
+  LD A,$64
+  LD (LDB7A),A            ; Set Health = 100
   RET
 
 ; Decode the room/screen
@@ -867,21 +1037,21 @@ LB9F1_2:
 ; Show titles and show Menu
 LBA07:
   LD A,$44
-  LD (LDC59),A
+  LD (LDC59),A            ; set delay factor
   LD (LDC85),A
   LD HL,$3A1E
   LD ($86D7),HL           ; Set penRow/penCol
   LD HL,SE09D             ; "MaxCoderz Presents"
   CALL LBEDE              ; Load archived string and show message char-by-char
-  CALL LBA81
-  CALL LBC7D              ; Clear shadow screen and copy to A28F/A58F
+  CALL LBA81              ; Delay x2
+  CALL LBC7D              ; Clear shadow screen and copy to ZX screen
   CALL LBC34
   LD HL,$3A2E
   LD ($86D7),HL           ; Set penRow/penCol
   LD HL,SE09F             ; "a tr1p1ea game"
   CALL LBEDE              ; Load archived string and show message char-by-char
-  CALL LBA81
-  CALL LBC7D              ; Clear shadow screen and copy to A28F/A58F
+  CALL LBA81              ; Delay x2
+  CALL LBC7D              ; Clear shadow screen and copy to ZX screen
   CALL LBC34
   XOR A
   LD (LDC85),A
@@ -924,9 +1094,8 @@ LBA81:
   CALL LBC34	
   CALL LBC34	
   RET
-
-; Draw menu item selection triangles
 ;
+; Draw menu item selection triangles
 LBA88:
   LD A,(LDB8F)
   LD L,A                  ; L = Y coord
@@ -980,56 +1149,56 @@ LBADE:
   LD HL,$0000
   LD (LDBC3),HL
   LD (LDBC5),HL
-  LD HL,$DB9C
+  LD HL,LDB9C
   LD B,$22
 LBADE_0:
   LD (HL),$00
   INC HL
   DJNZ LBADE_0
-  LD HL,$DC5B
+  LD HL,LDC5B
   LD B,$22
 LBADE_1:
   LD (HL),$00
   INC HL
   DJNZ LBADE_1
-  LD HL,$DB90
+  LD HL,LDB90
   LD B,$09
 LBADE_2:
   LD (HL),$00
   INC HL
   DJNZ LBADE_2
-  LD HL,$DCA2
+  LD HL,LDCA2
   LD B,$48
 LBADE_3:
   LD (HL),$00
   INC HL
   DJNZ LBADE_3
-  LD HL,$DC96
+  LD HL,LDC96
   CALL LBC6B
-  LD HL,$DC9A
+  LD HL,LDC9A
   CALL LBC6B
-  LD HL,$DC9E
+  LD HL,LDC9E
   CALL LBC6B
-  CALL LBC7D              ; Clear shadow screen and copy to A28F/A58F
+  CALL LBC7D              ; Clear shadow screen and copy to ZX screen
   LD A,$44
-  LD (LDC59),A
+  LD (LDC59),A            ; set delay factor
   LD (LDC85),A
   LD A,$0E
   LD (LDCF4),A            ; Line interval for text
   XOR A
   LD (LDCF3),A            ; Left margin size for text
   LD HL,$3A14
-  LD ($86D7),HL
+  LD ($86D7),HL           ; Set penRow/penCol
   LD HL,SE115             ; "In the Distant Future . . ."
   CALL LBEDE              ; Load archived string and show message char-by-char
-  CALL LBA81
-  CALL LBC7D              ; Clear shadow screen and copy to A28F/A58F
-  CALL LBA81
+  CALL LBA81              ; Delay x2
+  CALL LBC7D              ; Clear shadow screen and copy to ZX screen
+  CALL LBA81              ; Delay x2
   CALL LBC84              ; Set zero penRow/penCol
   LD HL,SE117             ; "'The Desolate' Space Cruiser|leaves orbit. ..."
   CALL LBEDE              ; Load archived string and show message char-by-char
   LD HL,$72B6
-  LD ($86D7),HL
+  LD ($86D7),HL           ; Set penRow/penCol
   LD HL,SE0B9             ; String with arrow down sign
   CALL LBEDE              ; Load archived string and show message char-by-char
   CALL WaitAnyKey         ; Wait for any (was: Wait for Down key)
@@ -1049,7 +1218,7 @@ LBB82:
   LD A,$01
   LD (LDB73),A
   LD A,$FF
-  LD (LDC59),A
+  LD (LDC59),A            ; set delay factor
   CALL LB2D0              ; Delay
   JP L9DDD
 ;
@@ -1144,19 +1313,19 @@ LBC36:
 LBC6B:
   ret ;STUB
 
+; Clear shadow screen and copy to ZX screen
 LBC7D:
   CALL L9FCF              ; Clear shadow screen
   CALL L9FEA              ; Copy shadow screen to ZX screen
   RET
 
 ; Set zero penRow/penCol
-;
 LBC84:
-  LD HL,$0000
+  LD HL,$0000             ; Left-top corner
   LD ($86D7),HL           ; Set penRow/penCol
   RET
 
-; Draw string  on the screen using FontProto
+; Draw string on the screen using FontProto
 ;   HL = String address
 LBEDE:
   ld a,(hl)
@@ -1173,13 +1342,13 @@ LBEDE:
   jr LBEDE
 LBEDE_1:
   PUSH BC
-  LD A,($86D8)
+  LD A,($86D8)            ; Get penRow
   LD C,A
   LD A,(LDCF4)            ; Line interval for text
   ADD A,C
-  LD ($86D8),A
+  LD ($86D8),A            ; Set penRow
   LD A,(LDCF3)            ; Get left margin size for text
-  LD ($86D7),A
+  LD ($86D7),A           ; Set penCol
   POP BC
   jr LBEDE
 
@@ -1191,7 +1360,7 @@ LBF54:
   LD (LDD56),A
   LD (LDC85),A
   LD A,$96
-  LD (LDC59),A
+  LD (LDC59),A            ; set delay factor
   RET
 ;
 ; Credits menu item selected
@@ -1215,7 +1384,7 @@ LBF6F:
 ;
 LBF81:
   LD A,126                ; To draw new strings on the very bottom
-  LD ($86D8),A            ; penRow
+  LD ($86D8),A            ; Set penRow
 LBF686:
   JP LBF6F_4
 LBF6F_2:
@@ -1242,7 +1411,7 @@ LBF6F_4:
   LD HL,LDDF2
   ADD HL,DE
   LD A,(HL)
-  LD ($86D7),A
+  LD ($86D7),A           ; Set penCol
   LD A,(LDD57)
   LD HL,LDD58
   CALL LADFF              ; Get address from table
@@ -1253,6 +1422,7 @@ LBF6F_4:
   CP $47
   JP NZ,LBF6F_3
   JP LBA3D                ; Return to main Menu
+; Scroll shadow screen up 1px
 LBFD5:
   LD DE,ShadowScreen
   LD HL,ShadowScreen+24
