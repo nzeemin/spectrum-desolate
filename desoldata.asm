@@ -977,7 +977,7 @@ LDCA2:
   DEFB $00,$00,$00,$00,$00,$00,$00,$00
   DEFB $00,$00,$00,$00,$00,$00,$00,$00
   DEFB $00,$00,$00,$00,$00,$00,$00,$00
-  DEFB $00
+LDCF2:  DEFB $00          ; 
 LDCF3:  DEFB $00          ; Left margin size for text, usually $00
 LDCF4:  DEFB $0E          ; Line interval for text
 LDCF5:  DEFB $00,$00
@@ -1220,6 +1220,7 @@ LDFB7:
   DEFW $DD53
   DEFW $DD53
   DEFW $DD53
+LDFF3:          ; Table ??
   DEFW $E079
   DEFW $E079
   DEFW $E07B
@@ -1237,16 +1238,19 @@ LDFB7:
   DEFW $E093
   DEFW $E095
   DEFW $E097
+LE015:          ; Table ?? access code
   DEFW $DC92
   DEFW $DC92
   DEFW $DC96
   DEFW $DC9A
   DEFW $DC9E
+LE01F:          ; Table of strings: access code messages
   DEFW $E121
   DEFW $E121
   DEFW $E123
   DEFW $E125
   DEFW $E127
+LE029:          ; Archived strings offsets (TODO DELETE THEM!)
   DEFW $0002
   DEFW $0018
   DEFW $002D

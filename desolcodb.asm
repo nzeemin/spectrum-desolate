@@ -209,8 +209,7 @@ L9FAF:
 
 ; Copy shadow screen to ZX screen
 ;
-L9FEA:
-  jp ShowShadowScreen
+L9FEA EQU ShowShadowScreen
 
 ; Clear shadow screen
 ;
@@ -574,22 +573,129 @@ LAAA8:
 ;
 ; Look / Shoot
 LAAAF:
-  ret ;STUB
-
-; Show small message popup
+  LD A,(LDB7D)            ; Get look/shoot switch value
+  CP $01                  ; shoot mode?
+  JP Z,LB758              ; yes => jump
+  XOR A
+  LD (LDC88),A
+  CALL LAA9D
+  CALL LAE09
+LAAC1:
+  LD A,(HL)
+  LD C,A
+  LD A,(LDC56)
+  SUB C
+  JP Z,LAADD
+  LD A,(LDC88)
+  CP $31
+  JP Z,LAADA
+  INC A
+  LD (LDC88),A
+  INC HL
+  JP LAAC1
 ;
+LAADA:
+  JP L9E2E
+LAADD:
+  LD A,(LDC88)
+  OR A
+  JP Z,LAB3F
+  CP $01
+  JP Z,LAB3F
+  CP $03
+  JP Z,LABA4
+  CP $04
+  JP Z,LABA4
+  CP $19
+  JP Z,LABDE
+  CP $1A
+  JP Z,LABDE
+  CP $21
+  JP Z,LAC05
+  CP $22
+  JP Z,LAC05
+  CP $06
+  JP Z,LAC54
+  CP $07
+  JP Z,LAC54
+  CP $0B
+  JP Z,LACE3
+  CP $0C
+  JP Z,LACE3
+  CP $0F
+  JP Z,LBC8B
+  CP $10
+  JP Z,LBC8B
+  JP L9E2E
+;
+; Show small message popup
 LAB28:
   PUSH BC
   PUSH DE
   LD BC,$0060
   LD HL,LEB27             ; Decode from: Small message popup
   LD DE,LDBF5             ; Decode to
-  CALL LB9F1              ; Decode the room
+  CALL LB9F1              ; Decode the screen
   LD HL,LDBF5
   CALL LB177              ; Display screen from tiles with Tileset #2
   POP DE
   POP BC
   RET
+;
+LAB3F:
+  CALL LAE09
+  LD DE,$0002
+  CALL LAC4C
+  JP NZ,LAADA
+  LD A,(LDB79)            ; Get room number
+  CP $1B
+  JP NZ,LAB7A
+  LD A,(LDCF7)            ; Weapon slot
+  OR A
+  JP NZ,LAB7A             ; have weapon => jump
+  LD A,$0B
+  LD (LDCF3),A            ; Left margin size for text
+  LD A,$07
+  LD (LDCF4),A
+  CALL LAB28              ; Show small message popup
+  CALL LAB73              ; Set penRow/penCol for small message popup
+  LD HL,$E0D5             ; -> "It is not wise to proceed| without a weapon."
+  CALL LBEDE              ; Load archived string and show message char-by-char
+  JP LAD8C
+
+; Set penRow/penCol for small message popup
+LAB73:
+  LD HL,$5812
+  LD ($86D7),HL           ; Set penRow/penCol
+  RET
+LAB7A:
+  ret ;STUB
+
+LABA4:
+  ret ;STUB
+
+LABDE:
+  ret ;STUB
+
+LAC05:
+  ret ;STUB
+
+LAC4C:
+  ADD HL,DE
+  LD A,(HL)
+  LD C,A
+  LD A,(LDB75)
+  SUB C
+  RET
+
+LAC54:
+  ret ;STUB
+
+LACE3:
+  ret ;STUB
+
+LAD8C:
+  ret ;STUB
 
 ; Wait for Down key
 LAD99:
@@ -639,6 +745,9 @@ LADFF:
   LD H,(HL)
   LD L,A
   RET
+
+LAE09:
+  ret ;STUB
 
 ; Inventory item to item description string
 LAE19:
@@ -1003,7 +1112,7 @@ LB307:
   CP $63
   JP Z,LB1C1
   LD (LDC89),A
-  OR A                    ; $00 - Data cartridge reader
+  OR A                    ; $00 - Data cartridge reader?
   JP Z,LB33F
   CP $13                  ; Power Drill?
   JP Z,LB3F4
@@ -1011,9 +1120,9 @@ LB307:
   JP Z,LB44A
   CP $15                  ; Air-Lock Tool?
   JP Z,LB487
-  CP $16                  ; Box of Power Cells
+  CP $16                  ; Box of Power Cells?
   JP Z,LB4C4
-  CP $19                  ; Rubik's Cube
+  CP $19                  ; Rubik's Cube?
   JP Z,LB501
   SUB $11                 ; Data cartridge?
   JP C,LB3AF
@@ -1030,10 +1139,10 @@ LB33F:
   CP $01
   JP Z,LB36C
   LD A,$21
-  LD (LDCF3),A
+  LD (LDCF3),A            ; Left margin size for text
   LD HL,$2C16
   LD ($86D7),HL           ; Set penRow/penCol
-  LD HL,$E09B             ; "         No Data Cartridge| Selected"
+  LD HL,$E09B             ; "No Data Cartridge Selected"
   JP LB373
 LB36C:
   LD HL,$1416
@@ -1041,22 +1150,91 @@ LB36C:
   POP HL
 LB373:
   CALL LBEDE              ; Load archived string and show message char-by-char
-
+  LD A,(LDC89)
+  CP $02
+  CALL Z,LB39A
+  CP $03
+  CALL Z,LB3A1
+  CP $04
+  CALL Z,LB3A8
+  CALL L9FEA              ; Copy shadow screen to ZX screen
+LB38B:
+  CALL LA0F1              ; Scan keyboard
+  CP $37
+  JP NZ,LB38B
+  XOR A
+  LD (LDC85),A
+  JP L9DDD
+LB39A:
+  LD HL,LDC96
+  CALL LBC3C
+  RET
+LB3A1:
+  LD HL,LDC9A
+  CALL LBC3C
+  RET
+LB3A8:
+  LD HL,LDC9E
+  CALL LBC3C
+  RET
+;
+; Data cartridge selected in the Inventory
 LB3AF:
-
+  LD A,(LDCF5)            ; Data cartridge reader
+  OR A                    ; do we have the reader?
+  JP Z,LB3C8              ; no => jump
+  LD A,(LDC89)
+  LD HL,LDFF3             ; Table address
+  CALL LADFF              ; Get address from table
+  PUSH HL
+  LD A,$01
+  LD (LDCF8),A
+  JP LB33F
+LB3C8:                    ; We don't have data cartridge reader
+  CALL LB2DE
+  LD HL,$2E0C
+  LD ($86D7),HL           ; Set penRow/penCol
+  LD HL,SE0E3             ; "You Need A Data Cartridge Reader"
+  CALL LB513              ; Show message
+  JP LB1C1
+LB3DA:
+  CALL LAE09
+  LD DE,$0011
+  ADD HL,DE
+  LD A,(HL)
+  LD C,A
+  LD A,(LDB75)
+  SUB C
+  RET
+; Something other selected in the Inventory
 LB3E8:
+  ret ;STUB
 
+; Power drill selected in the Inventory
 LB3F4:
+  ret ;STUB
 
+; Life Support Data Disk selected in the Inventory
 LB44A:
+  ret ;STUB
 
 LB487:
+  ret ;STUB
 
 LB4C4:
-
-LB501:
-
   ret ;STUB
+
+; Rubik's Cube selected in the Inventory
+LB501:
+  ret ;STUB
+
+; Show message HL
+LB513:
+  CALL LBEDE              ; Load archived string and show message char-by-char
+  CALL L9FEA              ; Copy shadow screen to ZX screen
+  LD A,$01
+  LD (LDCF2),A
+  RET
 
 LB529:
   OR A
@@ -1076,6 +1254,9 @@ LB72E:
   ret ;STUB
 
 LB74C:
+  ret ;STUB
+
+LB758:
   ret ;STUB
 
 LB76B:
@@ -1125,16 +1306,16 @@ LB930:
 LB96B:
   LD HL,$012C
   LD ($86D7),HL           ; Set penRow/penCol
-  LD HL,(LDB7A)           ; Get Health
-  jp DrawNumber3
+  LD HL,(LDB7A)           ; get Health
+  jp DrawNumber3          ; Show 3-digit decimal number HL
 
 ; Decrease Health
 ;
 LB994:
-  LD A,(LDB7A)            ; Get Health
+  LD A,(LDB7A)            ; get Health
   SUB $02                 ; Health = Health minus 2
   CALL C,LB9A0
-  LD (LDB7A),A
+  LD (LDB7A),A            ; set Health
   RET
 LB9A0:
   XOR A
@@ -1143,7 +1324,7 @@ LB9A0:
 ; Player is dead, Health 0
 ;
 LB9A2:
-  CALL L9FCF              ; Clear screen 9340/9872
+  CALL L9FCF              ; Clear shadow screen
   LD A,$32
   LD (LDCF3),A            ; Left margin size for text
   LD A,$0E
@@ -1161,7 +1342,7 @@ LB9A2:
 LB9C9:
   CALL L9FEA              ; Copy shadow screen to ZX screen
   CALL LA0F1              ; Scan keyboard
-  CP $37                  ; "MODE" key?
+  CP $37                  ; "MODE" key? TODO: any key
   JP Z,L9E19              ; yes => Go to ending of main game loop
   JR LB9C9
 ;
@@ -1470,13 +1651,16 @@ LBC2F:
   XOR A
   LD (LDC55),A
   RET
-;
+; Looooooooong delay
 LBC34:
-  LD B,$14
+  LD B,$14                ; x20
 LBC36:
   CALL LB2D0              ; Delay
   DJNZ LBC36
   RET
+
+LBC3C:
+  ret ;STUB
 
 LBC6B:
   ret ;STUB
@@ -1492,6 +1676,9 @@ LBC84:
   LD HL,$0000             ; Left-top corner
   LD ($86D7),HL           ; Set penRow/penCol
   RET
+;
+LBC8B:
+  ret ;STUB
 
 ; Draw string on the screen using FontProto
 ;   HL = String address
@@ -1500,7 +1687,7 @@ LBEDE:
   inc hl
   or a
   ret z
-  cp $7C	; '|'
+  cp $7C	                ; '|'
   jr z,LBEDE_1
   push hl
   call DrawChar
@@ -1516,7 +1703,7 @@ LBEDE_1:
   ADD A,C
   LD ($86D8),A            ; Set penRow
   LD A,(LDCF3)            ; Get left margin size for text
-  LD ($86D7),A           ; Set penCol
+  LD ($86D7),A            ; Set penCol
   POP BC
   jr LBEDE
 
