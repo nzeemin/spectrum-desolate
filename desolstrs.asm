@@ -70,7 +70,7 @@ SE0D3: DEFM "You dont have a|          Weapon to equip!",0
 SE0D5: DEFM "It is not wise to proceed|       without a weapon.",0
 SE0D7: DEFM "You cant enter that sector|   Life-Support is offline.",0
 SE0D9: DEFM "You cant enter until the|AirLock is re-pressurised",0
-SE0DB: DEFM "       ---- N o  I t e m ----",0
+SE0DB: DEFM "    ---- N o  I t e m ----",0
 SE0DD: DEFM ": Door Locked :",0
 SE0DF: DEFM " INVALID CODE",0
 SE0E1: DEFM "       Accepted!      ",0
