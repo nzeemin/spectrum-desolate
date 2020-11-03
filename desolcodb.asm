@@ -609,9 +609,9 @@ LAADD:
   CP $04
   JP Z,LABA4
   CP $19
-  JP Z,LABDE
+  JP Z,LABBE
   CP $1A
-  JP Z,LABDE
+  JP Z,LABBE
   CP $21
   JP Z,LAC05
   CP $22
@@ -664,7 +664,7 @@ LAB3F:
   LD HL,SE0D5             ; -> "It is not wise to proceed without a weapon."
   CALL LBEDE              ; Load archived string and show message char-by-char
   JP LAD8C
-
+;
 ; Set penRow/penCol for small message popup
 LAB73:
   LD HL,$5812
@@ -694,9 +694,17 @@ LAB85:
   JP LAE23
 ;
 LABA4:
-  ret ;STUB
-
-LABDE:
+  CALL LAE09
+  LD DE,$0005
+  CALL LAC4C
+  JP NZ,LAADA              ; => Show the screen, continue the game main loop
+  LD A,$02
+  LD (LDC8A),A
+  CALL LAE09
+  LD DE,$001D
+  JP LAB85
+;
+LABBE:
   ret ;STUB
 
 LAC05:
@@ -711,14 +719,132 @@ LAC4C:
   RET
 
 LAC54:
-  ret ;STUB
-
+  CALL LAE09
+  LD DE,$0008
+  ADD HL,DE
+  LD A,(HL)
+  LD C,A
+  LD A,(LDB75)
+  SUB C
+  JP NZ,LAADA              ; => Show the screen, continue the game main loop
+  CALL LAE09
+  LD DE,$000A
+  ADD HL,DE
+  LD A,(HL)
+  LD (LDC89),A
+  CALL LAE09
+  LD DE,$0009
+  ADD HL,DE
+  LD A,(HL)
+  CP $01
+  JP Z,LAC97
+  CALL LAB28              ; Show small message popup
+  CALL LAB73              ; Set penRow/penCol for small message popup
+  LD HL,SE0C3             ; " Another Dead Person"
+  CALL LBEDE              ; Load archived string and show message char-by-char
+  LD HL,$3309
+  LD ($86D7),HL           ; Set penRow/penCol
+  LD HL,SE0C5             ; " Search Reveals Nothing"
+  CALL LBEDE              ; Load archived string and show message char-by-char
+  JP LAD8C
+LAC97:
+  CALL LAD4F
+  CP $01
+  JP Z,LAADA              ; => Show the screen, continue the game main loop
+  LD A,(LDB79)            ; Get the room number
+  OR A                    ; room #0 ?
+  JP Z,LACC5              ; yes => Small message popup "OMG! This Person Is DEAD! What Happened Here!?!"
+  CALL LAB28              ; Show small message popup
+  CALL LAB73              ; Set penRow/penCol for small message popup
+  LD HL,SE0C7             ; " This Person is Dead . . ."
+  CALL LBEDE              ; Load archived string and show message char-by-char
+  CALL LACB8              ; Show arrow sign as prompt to continue
+  JP LAD00
+;
+; Show arrow sign as prompt to continue
+LACB8:
+  LD HL,$66B0
+  LD ($86D7),HL           ; Set penRow/penCol
+  LD HL,SE0B9             ; String with arrow down sign
+  CALL LBEDE              ; Load archived string and show message char-by-char
+  RET
+;
+; Small message popup "OMG! This Person Is DEAD! What Happened Here!?!"
+LACC5:
+  CALL LAB28              ; Show small message popup
+  CALL LAB73              ; Set penRow/penCol for small message popup
+  LD HL,SE0BF             ; "OMG! This Person Is DEAD!"
+  CALL LBEDE              ; Load archived string and show message char-by-char
+  LD HL,$6612
+  LD ($86D7),HL           ; Set penRow/penCol
+  LD HL,SE0C1             ; "What Happened Here!?!"
+  CALL LBEDE              ; Load archived string and show message char-by-char
+  CALL LACB8              ; Show arrow sign as prompt to continue
+  JP LAD00
+;
 LACE3:
   ret ;STUB
 
-LAD8C:
+; Show screen, wait for down key, show small message popup
+LACF6:
+  CALL L9FEA              ; Copy shadow screen to ZX screen
+  CALL LAD99              ; Wait for Down key
+  CALL LAB28              ; Show small message popup
+  RET
+;
+LAD00:
+  CALL LACF6              ; Show screen, wait for down key, show small message popup
+  LD HL,$5816
+  LD ($86D7),HL           ; Set penRow/penCol
+  LD HL,SE0C9             ; "They Seem To Be Holding"
+  CALL LBEDE              ; Load archived string and show message char-by-char
+  LD HL,$663E
+  LD ($86D7),HL           ; Set penRow/penCol
+  LD HL,SE0CB             ; "Something"
+  CALL LBEDE              ; Load archived string and show message char-by-char
+  LD A,(LDBC7)
+  INC A
+  LD (LDBC7),A
+LAD22:
+  CALL LACB8
+  CALL LACF6
+  LD HL,$5830
+  LD ($86D7),HL           ; Set penRow/penCol
+  LD HL,SE0CF             ; "You Picked Up A"
+  CALL LBEDE              ; Load archived string and show message char-by-char
+  LD HL,$6612
+  LD ($86D7),HL           ; Set penRow/penCol
+  CALL LAE19              ; Get inventory item description string
+  CALL LBEDE              ; Load archived string and show message char-by-char
+  LD A,(LDC89)
+  LD H,$00
+  LD L,A
+  LD DE,LDB9C
+  ADD HL,DE
+  LD (HL),$01
+  JP LAD8C
+;
+; ??
+LAD4F:
+  LD A,(LDC89)
+  LD H,$00
+  LD L,A
+  LD DE,LDB9C
+  ADD HL,DE
+  LD A,(HL)
+  RET
+;
+LAD5B:
   ret ;STUB
 
+LAD8C:
+  CALL L9FEA              ; Copy shadow screen to ZX screen
+LAD8F:
+  CALL LA0F1              ; Scan keyboard
+  CP $37                  ; Mode key?
+  JR NZ,LAD8F
+  JP L9E2E
+;
 ; Wait for Down key
 LAD99:
   CALL LA0F1              ; Scan keyboard
@@ -754,9 +880,8 @@ LADF5:
   RET
 ;
 ; Get address from table
-;
-; A Element number
-; HL Table address
+;   A = Element number
+;   HL = Table address
 LADFF:
   ADD A,A
   LD E,A
@@ -847,6 +972,7 @@ LB08F:
   POP AF                  ; Restore old X coord
   LD (LDB76),A            ; Set X coord
   JP LA8CD
+;
 LB09B:
   LD HL,$3410
   LD ($86D7),HL           ; Set penRow/penCol
@@ -1392,7 +1518,7 @@ LB94C:
   JP LB960
 LB95C:
   XOR A
-  LD ($DB7D),A
+  LD (LDB7D),A
 LB960:
   LD A,$96
   LD (LDC59),A            ; set delay factor
@@ -1443,7 +1569,7 @@ LB9C9:
   JR LB9C9
 ;
 LB9D6:
-  LD (LDB79),A
+  LD (LDB79),A            ; set the room number
   LD (LDB75),A            ; Direction/orientation
   LD A,$06
   LD (LDB76),A            ; Set X tile coord = 6

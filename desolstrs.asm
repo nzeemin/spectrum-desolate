@@ -53,7 +53,7 @@ SE0B1: DEFM "Terminator",0
 SE0B3: DEFM "Over & Over Again",0
 SE0B5: DEFM "Survivor",0
 SE0B7: DEFM "        Ion Phaser",0
-SE0B9: DEFM "`",0
+SE0B9: DEFM "$",0  ; Arrow down
 SE0BB: DEFM " - INVENTORY - ",0
 SE0BD: DEFM "The Desolate has claimed|your life too . . .",0
 SE0BF: DEFM "OMG! This Person Is DEAD!",0

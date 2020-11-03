@@ -252,13 +252,14 @@ DrawChar:
   ld (DrawChar_width),a
   jp DrawChar_fin
 DrawChar_0:
-  cp $2C        ; char less than ','?
+  cp $27        ; char less than apostroph?
   jr nc, DrawChar_1
-  add a,$15     ; for '&' amp '(' ')' chars
+  add a,$3A     ; for '!', quotes, '#' '$' '%' '&'
+  jr DrawChar_2
 DrawChar_1:
-  cp $60
-  jr c,DrawChar_2
-  sub $05       ; skip the 5-char gap for lower letters
+  cp $2A        ; char less than '*'?
+  jr nc,DrawChar_2
+  add a,$15     ; for apostroph, '(' ')' chars
 DrawChar_2:
   sub $2C       ; font starts from ','
   ld e,a        ; calculating the symbol address
