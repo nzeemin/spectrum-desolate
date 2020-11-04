@@ -648,13 +648,16 @@ LDB4C:
   DEFB $61,$25,$31,$02,$00,$00,$04,$00,$FF,$05,$61,$46,$61,$61,$61,$4B ; desc
   DEFB $61,$04,$20,$04,$02,$01,$00                                     ;
 ;
-; Variables??
+; Variables
+;
+L86D7:  DEFB $00          ; penCol
+L86D8:  DEFB $00          ; penRow
 ;
 LDB73:  DEFB $00          ; ?? $00 $01
 LDB74:  DEFB $0C          ; Line width in tiles ??
 LDB75:  DEFB $00          ; Direction/orientation: $00 down, $01 up, $02 left, $03 right
 LDB76:  DEFB $06          ; X coord in tiles: $01 $06 $0A INC/DEC
-LDB77:  DEFB $30          ; Y coord/line on the screen: $30
+LDB77:  DEFB $30          ; Y coord/line on the screen: 0..127
 LDB78:  DEFB $03          ; Y coord in tiles: $03 $06 INC/DEC
 LDB79:  DEFB $00          ; Room number
 LDB7A:  DEFW $0064        ; Health; initially $64
@@ -732,7 +735,7 @@ LDC92:  DEFB $1E,$1A,$1F,$21
 LDC96:  DEFB $1E,$1A,$1F,$21
 LDC9A:  DEFB $1E,$1A,$1F,$21
 LDC9E:  DEFB $1E,$1A,$1F,$21
-LDCA2:
+LDCA2:                    ; Table with marks where door locks codes accepted
   DEFB $00,$00,$00,$00,$00,$00,$00,$00
   DEFB $00,$00,$00,$00,$00,$00,$00,$00
   DEFB $00,$00,$00,$00,$00,$00,$00,$00

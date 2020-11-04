@@ -108,13 +108,13 @@ SE0FF: DEFM "          Data Cartridge 13",0
 SE101: DEFM "          Data Cartridge 14",0
 SE103: DEFM "          Data Cartridge 15",0
 SE105: DEFM "          Data Cartridge 16",0
-SE107: DEFM "                    Power Drill",0
+SE107: DEFM "                 Power Drill",0
 SE109: DEFM "    Life Support Data Disk",0
 SE10B: DEFM "                 Air-Lock Tool",0
 SE10D: DEFM "         Box of Power Cells",0
-SE10F: DEFM "                   Pile of Parts",0
-SE111: DEFM "                    Duck Idol ;)",0
-SE113: DEFM "                   Rubik's Cube",0
+SE10F: DEFM "                 Pile of Parts",0
+SE111: DEFM "                   Duck Idol ;)",0
+SE113: DEFM "                  Rubik's Cube",0
 SE115: DEFM "In the Distant Future . . .",0
 SE117: DEFM "'The Desolate' Space Cruiser|leaves orbit. Its mission is|secret, its cargo classified.|6014 Cycles into the journey|the ship encounters a savage|meteorite shower.||Contact with Desolate is lost.",0
 SE119: DEFM "The ship sustains heavy|damage. Onboard a cryo-|genic incubation cell|finishes re-animation. Its|occupant steps out of the|chamber not knowing who he|is, or what he is going to do.||But at least he is alive.",0

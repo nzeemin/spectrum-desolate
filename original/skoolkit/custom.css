@@ -1,0 +1,48 @@
+body {
+  color: #000000;
+  background-color: #ffffff;
+  font-family: Tahoma,sans;
+}
+
+footer {
+  margin-bottom: 40px;
+}
+
+div.description {
+  margin-left: 240px;
+}
+
+td.register {
+  background-color: #f4f4ff;
+  padding-left: 10px;
+  padding-right: 10px;
+  font-family: monospace;
+}
+table.input-1 th, table.output-1 th {
+  background-color: white;
+  text-align: left;
+}
+table.input-1 td, table.output-1 td {
+  background-color: #f4f4ff;
+}
+
+table.disassembly {
+  width: 800px;
+  margin-left: 280px;
+}
+td.asm-label-1, td.address-1, td.address-2 {
+  font-family: monospace;
+  padding-left: 10px;
+  padding-right: 10px;
+}
+td.address-2 {
+  background-color: #f4f4ff;
+}
+td.instruction {
+  color: #202020;
+}
+td.comment-1 {
+  color: #008000;
+  background-color: #f4f4ff;
+  font-family: monospace;
+}

@@ -1,0 +1,1 @@
+C:\bin\skoolkit-8.2\skool2html.py desolate.skool desolate.ref -H -1

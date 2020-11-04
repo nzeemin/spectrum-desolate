@@ -1,0 +1,8 @@
+;
+; SkoolKit ref file for Desolate
+;
+
+[Game]
+Game=Desolate
+StyleSheet=skoolkit.css;custom.css
+

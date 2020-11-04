@@ -132,7 +132,8 @@ L9EAD_1:
   ret
 
 ; Draw tile
-;   DE = tile address; A = ??; H = column; L = row
+;   DE = tile address; H = column; L = row
+;   A = flags: bit7=1 - reflect horz, bit6=1 - reflect vert
 L9EDE:
   PUSH HL
   PUSH AF
@@ -151,8 +152,8 @@ L9EDE:
   POP AF
 ;  BIT 6,A
 ;  CALL NZ,L9EDE_1         ; Reflect tile
-;  BIT 7,A
-;  CALL NZ,L9EDE_4         ; Reflect tile
+  BIT 7,A
+  CALL NZ,L9EDE_HR        ; Reflect tile
   LD IX,L9FAF
   POP HL
   LD A,H
@@ -201,11 +202,61 @@ L9EDE_0:                  ; loop by B
   POP BC
   DJNZ L9EDE_0
   RET
-L9EDE_1:
-  ret ;STUB
-
+; Horizontal reflection
+L9EDE_HR:
+  push af
+  ld ix,L9FAF
+  ld b,8
+L9EDE_HR_1:
+; Exchange bytes 0 <-> 2
+  ld a,(ix+$00)
+  ld c,(ix+$02)
+  call ReflectByte
+  ld (ix+$02),a
+  ld a,c
+  call ReflectByte
+  ld (ix+$00),a
+; Exchange bytes 1 <-> 3
+  ld a,(ix+$01)
+  ld c,(ix+$03)
+  call ReflectByte
+  ld (ix+$03),a
+  ld a,c
+  call ReflectByte
+  ld (ix+$01),a
+  inc ix
+  inc ix
+  inc ix
+  inc ix
+  djnz L9EDE_HR_1
+  pop af
+  ret
+;
 L9FAF:
   DEFS 32,$00
+;
+; Reflect byte bits of A
+ReflectByte:
+  push bc
+  rlca
+  rr c
+  rlca
+  rr c
+  rlca
+  rr c
+  rlca
+  rr c
+  rlca
+  rr c
+  rlca
+  rr c
+  rlca
+  rr c
+  rlca
+  rr c
+  ld a,c
+  pop bc
+  ret
 
 
 ; Copy shadow screen to ZX screen
@@ -327,7 +378,7 @@ LA8F8:                    ; loop by B
   EX DE,HL                ; DE = tile address
   CALL LA92E
   PUSH BC
-  CALL LA956
+  CALL LA956              ; if looking left - set C bit7=1 to reflect tile horizontal
   LD A,C
   CALL L9EDE              ; Draw tile DE at column H row L
   POP BC
@@ -364,9 +415,11 @@ LA941:
   CP $02                  ; left?
   JR Z,LA94A
   INC H                   ; right
+  inc h
   RET
 LA94A:
   DEC H                   ; left
+  dec h
   RET
 LA94C:
   LD A,16                 ; was: $08
@@ -376,6 +429,7 @@ LA94C:
   CP $04
   JR Z,LA941
   RET
+;
 LA956:
   LD C,$00
   LD A,(LDB75)            ; Direction/orientation
@@ -385,7 +439,7 @@ LA956:
   RET Z
   CP $03                  ; right?
   RET Z
-  LD C,$80
+  LD C,$80                ; looking left => reflect the tile horizontal
   RET
 
 ; Move Down
@@ -793,7 +847,7 @@ LAC54:
   CALL LAB73              ; Set penRow/penCol for small message popup
   LD HL,SE0C3             ; " Another Dead Person"
   CALL LBEDE              ; Load archived string and show message char-by-char
-  LD HL,$3309
+  LD HL,$6612
   LD ($86D7),HL           ; Set penRow/penCol
   LD HL,SE0C5             ; " Search Reveals Nothing"
   CALL LBEDE              ; Load archived string and show message char-by-char
@@ -1017,11 +1071,12 @@ LAE23:
   LD A,(LDC8B)
   LD D,$00
   LD E,A
-  LD HL,LDCA2
+  LD HL,LDCA2             ; Table with accepted rooms??
   ADD HL,DE
   LD A,(HL)
-  CP $01
-  JP Z,LB00E
+;  CP $01                  ; accepted?
+  xor a ;DEBUG: No need for access codes
+  JP Z,LB00E              ; yes => jump
   LD B,$04
   LD HL,LDC8D
 LAE3D:
@@ -1131,7 +1186,7 @@ LAEEF:
   INC C
   inc c
   LD A,C
-  CP 12 ;was: $06
+  CP 12     ;was: $06
   JP NZ,LAEEF
   CALL L9FEA              ; Copy shadow screen to ZX screen
   JP LAE99
@@ -1169,7 +1224,7 @@ LAF34:
   LD E,A
   LD HL,LDCA2
   ADD HL,DE
-  LD (HL),$01
+  LD (HL),$01             ; Mark code here was accepted
   JP LB00E
 ;
 LAF5A:
@@ -1271,7 +1326,7 @@ LAFFE
   LD H,(HL)
   LD L,A
   RET
-;
+; Going to the next room
 LB00E:
   XOR A
   LD (LDB82),A
@@ -1295,7 +1350,7 @@ LB030:
   LD (LDB79),A            ; set the room number
   JP L9E2E                ; Show the screen, continue the game main loop
 LB03E:
-  LD A,$18
+  LD A,$30      ; was: $18
   LD (LDB77),A            ; Set Y pixel coord
   XOR A
   LD (LDB75),A            ; Direction/orientation
@@ -1303,7 +1358,7 @@ LB03E:
   LD (LDB78),A            ; Set Y tile coord
   JP LB02E
 LB04F:
-  LD A,$30
+  LD A,$60      ; was: $30
   LD (LDB77),A            ; Set Y pixel coord
   LD A,$01
   LD (LDB75),A            ; Direction/orientation
@@ -1919,6 +1974,14 @@ LB960:
 ;
 ; Display Health
 LB96B:
+;DEBUG: Show room number at the bottom-left
+  LD HL,$7610
+  ld ($86D7),hl           ; Set penRow/penCol
+  ld a,(LDB79)
+  ld l,a
+  ld h,$00
+  call DrawNumber3
+;
   LD HL,$012C
   LD ($86D7),HL           ; Set penRow/penCol
   LD HL,(LDB7A)           ; get Health

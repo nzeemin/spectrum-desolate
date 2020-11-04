@@ -1,0 +1,1 @@
+C:\bin\skoolkit-8.2\skool2ctl.py -h desolate.skool >new.ctl

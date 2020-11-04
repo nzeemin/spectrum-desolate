@@ -1,6 +1,10 @@
+/x-*
+/.vscode
+/SpriteRotate/bin
+/SpriteRotate/obj
+/desolate.txt
 /*.tap
 /*.tzx
 /*.bin
-/x-*
-/.vscode
-/desolate.txt
+/original/skoolkit/desolate
+/original/x-*
