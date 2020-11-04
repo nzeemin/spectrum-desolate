@@ -38,6 +38,22 @@ SE071: DEFM "ABlakRain",0
 SE073: DEFM "Travis Supalla",0
 SE075: DEFM "Jim Dieckmann",0
 SE077: DEFM "tr1p1ea@yahoo.com.au",0
+SE079: DEFM "Im hurt bad . . . I dont|think im gonna make it.|I changed the Level 1|Access Code to: 4057|Maybe that will hold|them off for a while . . .",0
+SE07B: DEFM "For security reasons I|had to change the|Level 2 Access Code.|Maybe now the crew|will stop stealing stuff!|It is:",0
+SE07D: DEFM "The system is going|haywire. The Level 3|Access Code was over-|written. I only just|recovered it. Turns out|It is:",0
+SE07F: DEFM "Crew I am honoured to|have served as your|captain. The Level 4|Access Code will get|to the evacuation deck|It is:",0
+SE081: DEFM "Willis and I are stuck.|Needless to say we are|both done for. We might|have had a chance, but|some idiot changed the|Level 1 Access Code!",0
+SE083: DEFM "I dont see why I should|be the one who has to|fix the generator.|There is no way im|going with those things|all over the place . . .",0
+SE085: DEFM "DrMorgan: Meteorite|shower claimed a lot|of the crew, however|some feature strange|abrations. Almost like|bite marks . . ?",0
+SE087: DEFM "DrMorgan: I found a|strange creature. At|first i thought it was|deceased. But it sprang|up and attacked my|associate! . . .",0
+SE089: DEFM "DrMorgan: To make|matters worse the|creatures are|evolving rapidly. My|associate claims he|saw one over 7 feet!",0
+SE08B: DEFM "It truly baffles me|considering our cargo|why they insist on|equipping the ship with|ONLY Ion-Phasers.|They are useless!!!",0
+SE08D: DEFM "Capt Millin: We are|losing crew fast. I sent|Willis to re-animate|the clones. Right now|they are the only|chance we have . . .",0
+SE08F: DEFM "Capt Millin: I am very|anxious to see the|clones in action. I|hear that they are the|most advanced clone|soldiers ever created.",0
+SE091: DEFM "Capt Millin: We are|transporting a cargo|of genetically|modified clones to a|IH-2 Military Facility|for field testing . . .",0
+SE093: DEFM "Capt Millin: I have|just recieved word|that the facility on|earth was destroyed.|We now carry the only|clone prototypes.",0
+SE095: DEFM "Willis: We are in BIG|trouble. Only 1 clone|survived the meteorite|shower. And the system|says Re-animation will|take over 6 hours!!!",0
+SE097: DEFM "This is ludicrous!|65 credits for a proton|bar? How are we|meant to snack while|we work? The agency|is getting on my nerves.",0
 SE09B: DEFM "         No Data Cartridge| Selected",0
 SE09D: DEFM "MaxCoderz Presents",0
 SE09F: DEFM "a tr1p1ea game",0
@@ -71,20 +87,20 @@ SE0D5: DEFM "It is not wise to proceed|       without a weapon.",0
 SE0D7: DEFM "You cant enter that sector|   Life-Support is offline.",0
 SE0D9: DEFM "You cant enter until the|AirLock is re-pressurised",0
 SE0DB: DEFM "    ---- N o  I t e m ----",0
-SE0DD: DEFM ": Door Locked :",0
+SE0DD: DEFM "Door Locked",0
 SE0DF: DEFM " INVALID CODE",0
 SE0E1: DEFM "       Accepted!      ",0
 SE0E3: DEFM "                    You Need A|Data Cartridge Reader",0
 SE0E5: DEFM "    Data Cartridge Reader",0
-SE0E7: DEFM "             Data Cartridge 1",0
-SE0E9: DEFM "             Data Cartridge 2",0
-SE0EB: DEFM "             Data Cartridge 3",0
-SE0ED: DEFM "             Data Cartridge 4",0
-SE0EF: DEFM "             Data Cartridge 5",0
-SE0F1: DEFM "             Data Cartridge 6",0
-SE0F3: DEFM "             Data Cartridge 7",0
-SE0F5: DEFM "             Data Cartridge 8",0
-SE0F7: DEFM "             Data Cartridge 9",0
+SE0E7: DEFM "           Data Cartridge 1",0
+SE0E9: DEFM "           Data Cartridge 2",0
+SE0EB: DEFM "           Data Cartridge 3",0
+SE0ED: DEFM "           Data Cartridge 4",0
+SE0EF: DEFM "           Data Cartridge 5",0
+SE0F1: DEFM "           Data Cartridge 6",0
+SE0F3: DEFM "           Data Cartridge 7",0
+SE0F5: DEFM "           Data Cartridge 8",0
+SE0F7: DEFM "           Data Cartridge 9",0
 SE0F9: DEFM "          Data Cartridge 10",0
 SE0FB: DEFM "          Data Cartridge 11",0
 SE0FD: DEFM "          Data Cartridge 12",0
@@ -105,10 +121,10 @@ SE119: DEFM "The ship sustains heavy|damage. Onboard a cryo-|genic incubation ce
 SE11B: DEFM "The onboard guidance|system picks up a mining|facility close by. The course|is set and you sit back, finally|free of 'The Desolate' & its|murderous hord of Aliens.|You were a clone, an|experiment. Now, 'you' are|the sole survivor .",0
 SE11D: DEFM "System Alert triggered: |'Foreign Objects Detected|OnBoard'. The Aliens have|attached to the hull!|'Main Drive System Offline'|The ship was on a crash|course for the Mining Facility||It wasnt over yet  .  .  .",0
 SE11F: DEFM "The End",0
-SE121: DEFM "            Level 1|    Access Code|         Required",0
-SE123: DEFM "            Level 2|    Access Code|         Required",0
-SE125: DEFM "            Level 3|    Access Code|         Required",0
-SE127: DEFM "            Level 4|    Access Code|         Required",0
+SE121: DEFM "         Level 1|   Access Code|       Required",0
+SE123: DEFM "         Level 2|   Access Code|       Required",0
+SE125: DEFM "         Level 3|   Access Code|       Required",0
+SE127: DEFM "         Level 4|   Access Code|       Required",0
 SE129: DEFM "You dont seem to be able|     to use this item here",0
 SE12B: DEFM "You dont have any time|    to play with this now",0
 SE12D: DEFM "       It doesnt look like you|  can do anything else here",0
