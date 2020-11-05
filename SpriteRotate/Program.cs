@@ -18,15 +18,16 @@ namespace SpriteRotate
         private static readonly Color[] colorsY = new Color[]
         {
             Color.AntiqueWhite,
-            Color.FromArgb(255, 120,120,120),
-            Color.FromArgb(255, 180,180,180),
+            Color.FromArgb(255, 120, 120, 120),
+            Color.FromArgb(255, 180, 180, 180),
             Color.Black
         };
+
         private static readonly Color[] colorsB = new Color[]
         {
             Color.PowderBlue,
-            Color.FromArgb(255, 120,120,120),
-            Color.FromArgb(255, 180,180,180),
+            Color.FromArgb(255, 120, 120, 120),
+            Color.FromArgb(255, 180, 180, 180),
             Color.Black
         };
 
@@ -45,20 +46,21 @@ namespace SpriteRotate
             //}
 
             //ProcessRooms();
+            ProcessRoomsMap();
 
             //DumpChangedAreas();
             //DumpArchivedStrings();
             //PrepareArchivedStrings();
             //PrepareLineAddresses();
             //PrepareFontProto();
-            PrepareTilesetMasked();
-            PrepareTileset3();
+            //PrepareTilesetMasked();
+            //PrepareTileset3();
         }
 
         static void ParseMemoryDump()
         {
             string textdump = File.ReadAllText("desolatemenu.txt");
-            var lines = textdump.Split(new[] { Environment.NewLine }, StringSplitOptions.None);
+            var lines = textdump.Split(new[] {Environment.NewLine}, StringSplitOptions.None);
             //line 16491 RAM 00/01
             for (int linei = 16490; linei < 17514; linei++)
             {
@@ -73,6 +75,7 @@ namespace SpriteRotate
                     memdmp[addr + i] = v;
                 }
             }
+
             File.WriteAllBytes("memdmp.bin", memdmp);
             Console.WriteLine("memdmp.bin saved");
         }
@@ -102,7 +105,7 @@ namespace SpriteRotate
                                 val |= (v << (7 - b));
                             }
 
-                            octets[i] = (byte)val;
+                            octets[i] = (byte) val;
                         }
 
                         bool lowered = octets[10] != 0;
@@ -110,7 +113,7 @@ namespace SpriteRotate
                         for (int i = 0; i < 11; i++)
                             mask |= octets[i];
                         if (mask == 0)
-                            continue;  // Skip empty symbol
+                            continue; // Skip empty symbol
 
                         int width = 0;
                         for (int b = 0; b < 8; b++)
@@ -119,7 +122,7 @@ namespace SpriteRotate
                                 width = b + 1;
                         }
 
-                        byte descbyte = (byte)((lowered ? 128 : 0) + width);
+                        byte descbyte = (byte) ((lowered ? 128 : 0) + width);
 
                         writer.Write($"  DB ${descbyte:X2}, ");
                         var start = lowered ? 1 : 0;
@@ -129,11 +132,12 @@ namespace SpriteRotate
                             if (i < start + 9) writer.Write(",");
                         }
 
-                        var ch = (char)(' ' + col + row * 16);
+                        var ch = (char) (' ' + col + row * 16);
                         writer.Write($"  ; {ch}");
                         writer.WriteLine();
                     }
                 }
+
                 Console.WriteLine("fontproto.txt saved");
             }
         }
@@ -179,6 +183,7 @@ namespace SpriteRotate
                         int vm = (c.R == 120 && c.G == 120 && c.B == 120) ? 1 : 0;
                         valm |= (vm << (15 - b));
                     }
+
                     words[i] = val;
                     masks[i] = valm;
                 }
@@ -190,6 +195,7 @@ namespace SpriteRotate
                     writer.Write($"${(masks[i] & 0xFF):X2},${(words[i] & 0xFF):X2}");
                     if (i < 7) writer.Write(",");
                 }
+
                 writer.WriteLine();
             }
         }
@@ -216,6 +222,7 @@ namespace SpriteRotate
                             int v = (c.GetBrightness() > 0.5f) ? 0 : 1;
                             val |= (v << (15 - b));
                         }
+
                         words[i] = val;
                     }
 
@@ -225,9 +232,11 @@ namespace SpriteRotate
                         writer.Write($"${(words[i] >> 8):X2},${(words[i] & 0xFF):X2}");
                         if (i < 15) writer.Write(",");
                     }
+
                     writer.WriteLine();
                 }
             }
+
             Console.WriteLine("tileset3.asm saved");
         }
 
@@ -259,6 +268,7 @@ namespace SpriteRotate
                 var offset = memdmp[oaddr] + memdmp[oaddr + 1] * 256;
                 offsets.Add(oaddr, offset);
             }
+
             for (int oaddr = 0xE029; oaddr < 0xE099; oaddr += 2)
             {
                 var offset = memdmp[oaddr] + memdmp[oaddr + 1] * 256;
@@ -280,13 +290,15 @@ namespace SpriteRotate
                         var v = desdata[offset + 0x48];
                         if (v == 0)
                             break;
-                        sb.Append((char)v);
+                        sb.Append((char) v);
                         offset++;
                     }
+
                     filetxt.WriteLine($"W ${addr:X4},2 -> \"{sb.ToString()}\"");
                     fileasm.WriteLine($"S{addr:X4}: DEFM \"{sb.ToString()}\",0");
                 }
             }
+
             Console.WriteLine("strings.txt ans strings.asm saved");
         }
 
@@ -310,6 +322,7 @@ namespace SpriteRotate
                     }
                 }
             }
+
             Console.WriteLine("memchanged.txt saved");
         }
 
@@ -320,17 +333,17 @@ namespace SpriteRotate
             using (var file = new StreamWriter("strings.asm"))
             {
                 StringBuilder sb = new StringBuilder();
-                var eaddr = 0xE09B;  // address in the memory dump
+                var eaddr = 0xE09B; // address in the memory dump
                 while (eaddr < 0xE147)
                 {
                     var offset = memdmp[eaddr] + memdmp[eaddr + 1] * 256;
                     sb.Clear();
-                    for (; ; )
+                    for (;;)
                     {
                         var v = desdata[offset + 0x48];
                         if (v == 0)
                             break;
-                        sb.Append((char)v);
+                        sb.Append((char) v);
                         offset++;
                     }
 
@@ -338,6 +351,7 @@ namespace SpriteRotate
                     eaddr += 2;
                 }
             }
+
             Console.WriteLine("strings.asm saved");
         }
 
@@ -388,13 +402,13 @@ namespace SpriteRotate
             var bmp = new Bitmap(128 * 10 + 12, 64 * 8 + 24, PixelFormat.Format32bppArgb);
             ProcessSprites8x8x2(bmp, 6);
             //ProcessSprites8x8x4(bmp, 12 + 32 * 8);
-            ProcessTiles8x8x4(bmp, 978, 42 + 32 * 8, 0xE147, 0xEB27);  // Tileset 1
-            ProcessTiles8x8x4(bmp, 1080, 42 + 32 * 8, 0xEB39, 0xF329);  // Tileset 2
-            ProcessTiles8x8x4(bmp, 1162, 42 + 32 * 8, 0xF34F, 0xF34F+0xE0);
+            ProcessTiles8x8x4(bmp, 978, 42 + 32 * 8, 0xE147, 0xEB27); // Tileset 1
+            ProcessTiles8x8x4(bmp, 1080, 42 + 32 * 8, 0xEB39, 0xF329); // Tileset 2
+            ProcessTiles8x8x4(bmp, 1162, 42 + 32 * 8, 0xF34F, 0xF34F + 0xE0);
             ProcessScreen(bmp, 6 + 180, 42 + 32 * 8, 0x9340, 0x9872);
             ProcessScreen(bmp, 6 + 310, 42 + 32 * 8, 0xA28F, 0xA58F);
-            ProcessSavRoom(bmp, 6 + 310, 42 + 32 * 8 + 70, 0xE147);  // Room in Tileset 1
-            ProcessSavRoom(bmp, 6 + 410, 42 + 32 * 8 + 70, 0xEB39);  // Room in Tileset 2
+            ProcessSavRoom(bmp, 6 + 310, 42 + 32 * 8 + 70, 0xE147); // Room in Tileset 1
+            ProcessSavRoom(bmp, 6 + 410, 42 + 32 * 8 + 70, 0xEB39); // Room in Tileset 2
             var bmpfilename = Path.GetFileNameWithoutExtension(infilename) + "-8.png";
             bmp.Save(bmpfilename);
 
@@ -445,6 +459,7 @@ namespace SpriteRotate
                     addr++;
                 }
             }
+
             g.Flush();
             //Console.WriteLine($"{addr:X}");
         }
@@ -476,6 +491,7 @@ namespace SpriteRotate
                     addr += 8;
                 }
             }
+
             //Console.WriteLine($"{addr:X}");
         }
 
@@ -508,9 +524,11 @@ namespace SpriteRotate
                     if (addr >= addrend)
                         break;
                 }
+
                 if (addr >= addrend)
                     break;
             }
+
             //Console.WriteLine($"{addr:X}");
         }
 
@@ -538,12 +556,13 @@ namespace SpriteRotate
                     }
                 }
             }
+
             //Console.WriteLine($"{addr1:X} {addr2:X}");
         }
 
         static void ProcessSavRoom(Bitmap bmp, int x0, int y0, int tileaddr)
         {
-            int addr = 0xDBF5;  // Здесь комната в тайлах
+            int addr = 0xDBF5; // Здесь комната в тайлах
             for (int row = 0; row < 8; row++)
             {
                 for (int col = 0; col < 12; col++)
@@ -589,65 +608,66 @@ namespace SpriteRotate
             g.TextRenderingHint = TextRenderingHint.AntiAliasGridFit;
             var font = new Font("Tahoma", 8);
 
-            int addr, xr, yr, roomlen;
+            int addr, xr, yr;
             for (int r = 0; r < 72; r++)
             {
-                int aaddr = 0xDE97 + r * 2;  // Здесь адреса закодированных комнат
+                int aaddr = 0xDE97 + r * 2;
                 addr = memdmp[aaddr] + memdmp[aaddr + 1] * 256;
                 if (addr == 0xD6CE)
-                    continue;  // Not a valid room
+                    continue; // Not a valid room
+                byte[] room = DecodeRoom(addr, 96);
 
                 xr = x0 + (r / 6) * 106;
                 yr = y0 + (r % 6) * 74 + 6;
 
-                roomlen = DrawRoom(bmp, xr, yr, addr, 0xE147);
+                DrawRoom(bmp, xr, yr, room, 0xE147);
 
                 g.DrawString($"{r}: {addr:X4}", font, Brushes.Navy, xr, yr - 12);
 
-                filerooms.WriteLine($"B ${addr:X4},{roomlen},16 Room #{r}");
+                //filerooms.WriteLine($"B ${addr:X4},{roomlen},16 Room #{r}");
             }
 
             addr = 0xEB27;
             xr = x0 + 12 * 106;
             yr = y0 + 0 * 74 + 6;
-            roomlen = DrawRoom(bmp, xr, yr, addr, 0xEB39);
+            DrawRoom(bmp, xr, yr, DecodeRoom(addr, 96), 0xEB39);
             g.DrawString($"{addr:X4}", font, Brushes.Navy, xr, yr - 12);
-            filerooms.WriteLine($"B ${addr:X4},{roomlen},16 Room");
+            //filerooms.WriteLine($"B ${addr:X4},{roomlen},16 Room");
 
             addr = 0xF329;
             xr = x0 + 12 * 106;
             yr = y0 + 1 * 74 + 6;
-            roomlen = DrawRoom(bmp, xr, yr, addr, 0xEB39);
+            DrawRoom(bmp, xr, yr, DecodeRoom(addr, 96), 0xEB39);
             g.DrawString($"{addr:X4}", font, Brushes.Navy, xr, yr - 12);
-            filerooms.WriteLine($"B ${addr:X4},{roomlen},16 Room");
+            //filerooms.WriteLine($"B ${addr:X4},{roomlen},16 Room");
 
             addr = 0xF42F;
             xr = x0 + 12 * 106;
             yr = y0 + 2 * 74 + 6;
-            roomlen = DrawRoom(bmp, xr, yr, addr, 0xEB39);
+            DrawRoom(bmp, xr, yr, DecodeRoom(addr, 96), 0xEB39);
             g.DrawString($"{addr:X4}", font, Brushes.Navy, xr, yr - 12);
-            filerooms.WriteLine($"B ${addr:X4},{roomlen},16 Room");
+            //filerooms.WriteLine($"B ${addr:X4},{roomlen},16 Room");
 
             addr = 0xF468;
             xr = x0 + 12 * 106;
             yr = y0 + 3 * 74 + 6;
-            roomlen = DrawRoom(bmp, xr, yr, addr, 0xEB39);
+            DrawRoom(bmp, xr, yr, DecodeRoom(addr, 96), 0xEB39);
             g.DrawString($"{addr:X4}", font, Brushes.Navy, xr, yr - 12);
-            filerooms.WriteLine($"B ${addr:X4},{roomlen},16 Room");
+            //filerooms.WriteLine($"B ${addr:X4},{roomlen},16 Room");
 
             addr = 0xF4B5;
             xr = x0 + 12 * 106;
             yr = y0 + 4 * 74 + 6;
-            roomlen = DrawRoom(bmp, xr, yr, addr, 0xEB39);
+            DrawRoom(bmp, xr, yr, DecodeRoom(addr, 96), 0xEB39);
             g.DrawString($"{addr:X4}", font, Brushes.Navy, xr, yr - 12);
-            filerooms.WriteLine($"B ${addr:X4},{roomlen},16 Room");
+            //filerooms.WriteLine($"B ${addr:X4},{roomlen},16 Room");
 
             addr = 0xF515;
             xr = x0 + 12 * 106;
             yr = y0 + 5 * 74 + 6;
-            roomlen = DrawRoom(bmp, xr, yr, addr, 0xE147);
+            DrawRoom(bmp, xr, yr, DecodeRoom(addr, 96), 0xE147);
             g.DrawString($"{addr:X4}", font, Brushes.Navy, xr, yr - 12);
-            filerooms.WriteLine($"B ${addr:X4},{roomlen},16 Room");
+            //filerooms.WriteLine($"B ${addr:X4},{roomlen},16 Room");
 
             // Room description blocks
             for (int r = 0; r < 72; r++)
@@ -661,9 +681,9 @@ namespace SpriteRotate
                     addrnext = memdmp[daddrnext] + memdmp[daddrnext + 1] * 256;
                 }
 
-                roomlen = addrnext - addr;
+                //roomlen = addrnext - addr;
 
-                filerooms.WriteLine($"B ${addr:X4},{roomlen},16 Room #{r} desc");
+                //filerooms.WriteLine($"B ${addr:X4},{roomlen},16 Room #{r} desc");
             }
 
             filerooms.Flush();
@@ -673,12 +693,106 @@ namespace SpriteRotate
             Console.WriteLine($"{roomsfilename} saved");
         }
 
-        static int DrawRoom(Bitmap bmp, int xr, int yr, int addr, int tileaddr)
+        static void ProcessRoomsMap()
         {
-            byte[] room = new byte[12 * 8];
+            const int colwid = 120;
+            const int rowhei = 80;
+
+            var bmp = new Bitmap(colwid * 8 + 40, rowhei * 14 + 40, PixelFormat.Format32bppArgb);
+
+            byte[] savdmp = File.ReadAllBytes("memdmp.bin");
+            Array.Copy(savdmp, 0, memdmp, 0, 65536);
+
+            Graphics g = Graphics.FromImage(bmp);
+            g.InterpolationMode = InterpolationMode.HighQualityBicubic;
+            g.PixelOffsetMode = PixelOffsetMode.HighQuality;
+            g.TextRenderingHint = TextRenderingHint.AntiAliasGridFit;
+            var font = new Font("Tahoma", 8);
+
+            int[] coords = new[]
+            {
+                //       --0-  --1-  --2-  --3-  --4-  --5-  --6   --7-  --8-  --9-
+                /*  0 */ 1, 0, 1, 1, 1, 2, 2, 2, 2, 1, 1, 3, 0, 4, 2, 4, 1, 5, 2, 5,
+                /*  1 */ 2, 3, 3, 3, 3, 2, 3, 1, 3, 0, 2, 0, 4, 0, 4, 1, 4, 2, 4, 3,
+                /*  2 */ 4, 4, 4, 5, 5, 0, 6, 1, 5, 2, 6, 3, 5, 4, 5, 5, 3, 4, 3, 5,
+                /*  3 */ 5, 6, 4, 6, 3, 6, 3, 7, 0, 6, 2, 6, 0, 0, 2, 7, 1, 7, 1, 8,
+                /*  4 */ 1, 9, 1,10, 4, 7, 5, 7, 4, 8, 5, 8, 3, 8, 3, 9, 2, 8, 2, 9,
+                /*  5 */ 2,10, 3,10, 4,10, 4, 9, 5, 9, 5,10, 5,11, 4,11, 0,11, 2,11,
+                /*  6 */ 1,11, 1,12, 2,12, 3,12, 4,12, 5,12, 1,13, 2,13, 3,13, 4,13,
+                /*  7 */ 5,13, 6,13
+            };
+
+            var pen = new Pen(Color.Goldenrod, 18);
+            for (int r = 0; r < coords.Length / 2; r++)
+            {
+                if (r == 6 || r == 23 || r == 25 || r == 34 || r == 36 || r == 58)
+                    continue;
+
+                int daaddr = 0xDF27 + r * 2;
+                int daddr = memdmp[daaddr] + memdmp[daaddr + 1] * 256;
+                byte[] rdesc = DecodeRoom(daddr, 49);
+
+                int xr = coords[r * 2] * colwid + 20 + 48;
+                int yr = coords[r * 2 + 1] * rowhei + 20 + 32;
+
+                int roomdown = rdesc[35];
+                if (roomdown < 72)
+                {
+                    int x = coords[roomdown * 2] * colwid + 20 + 48;
+                    int y = coords[roomdown * 2 + 1] * rowhei + 20 + 32;
+                    g.DrawLine(pen, xr, yr + 24, x, y - 24);
+                }
+                int roomright = rdesc[38];
+                if (roomright < 72)
+                {
+                    int x = coords[roomright * 2] * colwid + 20 + 48;
+                    int y = coords[roomright * 2 + 1] * rowhei + 20 + 32;
+                    g.DrawLine(pen, xr + 32, yr, x - 32, y);
+                }
+            }
+
+            for (int r = 0; r < coords.Length / 2; r++)
+            {
+                int aaddr = 0xDE97 + r * 2;
+                int addr = memdmp[aaddr] + memdmp[aaddr + 1] * 256;
+                if (addr == 0xD6CE)
+                    continue; // Not a valid room
+                byte[] room = DecodeRoom(addr, 12 * 8);
+
+                int daaddr = 0xDF27 + r * 2;
+                int daddr = memdmp[daaddr] + memdmp[daaddr + 1] * 256;
+                byte[] rdesc = DecodeRoom(daddr, 49);
+
+                int xr = coords[r * 2] * colwid + 20;
+                int yr = coords[r * 2 + 1] * rowhei + 20;
+
+                DrawRoom(bmp, xr, yr, room, 0xE147, rdesc);
+                g.DrawString($"{r}", font, Brushes.Navy, xr, yr - 8);
+
+                int roomdown = rdesc[35];
+                if (roomdown < 72)
+                    g.DrawString($"{roomdown}", font, Brushes.Navy, xr + 3 * 8, yr + 7 * 8);
+                int roomup = rdesc[36];
+                if (roomup < 72)
+                    g.DrawString($"{roomup}", font, Brushes.Navy, xr + 7 * 8, yr - 8);
+                int roomleft = rdesc[37];
+                if (roomleft < 72)
+                    g.DrawString($"{roomleft}", font, Brushes.Navy, xr - 8, yr + 5 * 8);
+                int roomright = rdesc[38];
+                if (roomright < 72)
+                    g.DrawString($"{roomright}", font, Brushes.Navy, xr + 11 * 8 + 2, yr + 2 * 8);
+            }
+
+            var roomsfilename = "roomsmap.png";
+            bmp.Save(roomsfilename);
+            Console.WriteLine($"{roomsfilename} saved");
+        }
+
+        static byte[] DecodeRoom(int addr, int count)
+        {
+            byte[] room = new byte[count];
             int roomi = 0;
-            int startaddr = addr;
-            while (roomi < 12 * 8)
+            while (roomi < count)
             {
                 byte v = memdmp[addr++];
                 if (v != 0xff)
@@ -694,6 +808,11 @@ namespace SpriteRotate
                 }
             }
 
+            return room;
+        }
+
+        static void DrawRoom(Bitmap bmp, int xr, int yr, byte[] room, int tileaddr, byte[] rdesc = null)
+        {
             for (int row = 0; row < 8; row++)
             {
                 for (int col = 0; col < 12; col++)
@@ -722,7 +841,29 @@ namespace SpriteRotate
                 }
             }
 
-            return addr - startaddr;
+            if (rdesc != null)
+            {
+                /*Graphics g = Graphics.FromImage(bmp);
+                g.InterpolationMode = InterpolationMode.HighQualityBicubic;
+                g.PixelOffsetMode = PixelOffsetMode.HighQuality;
+                g.TextRenderingHint = TextRenderingHint.AntiAliasGridFit;
+                var font = new Font("Tahoma", 7);
+
+                for (int row = 0; row < 8; row++)
+                {
+                    for (int col = 0; col < 12; col++)
+                    {
+                        int x = col * 8 + xr;
+                        int y = row * 8 + yr;
+                        int index = (row - 3) * 10 + (col - 1) + 9;
+                        if (index >= 0 && index < 49 && col > 0 && col < 11)
+                        {
+                            byte b = rdesc[index];
+                            g.DrawString($"{b:X2}", font, Brushes.Blue, x - 8, y - 8);
+                        }
+                    }
+                }*/
+            }
         }
     }
 }

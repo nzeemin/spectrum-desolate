@@ -730,17 +730,17 @@ LAB7A:
   LD A,$01
   LD (LDC8A),A
   CALL LAE09              ; Decode current room description to LDBF5
-  LD DE,$001C
+  LD DE,$001C             ; Access level offset
 LAB85:
   ADD HL,DE
   LD A,(HL)
   LD (LDC8C),A            ; Set Access code level
   LD DE,$0007
-  ADD HL,DE
+  ADD HL,DE               ; HL = $1C+$07=$23 - offset for room number
   LD A,(HL)
   LD (LDC86),A            ; new room number??
   LD DE,$0004
-  ADD HL,DE
+  ADD HL,DE               ; HL = $1C+$07+$04=$27 - offset for Access code level
   LD A,(HL)
   LD (LDC8B),A
   LD A,(LDC8C)            ; Get Access code level
@@ -752,7 +752,7 @@ LABA4:
   CALL LAE09              ; Decode current room description to LDBF5
   LD DE,$0005
   CALL LAC4C
-  JP NZ,LAADA              ; => Show the screen, continue the game main loop
+  JP NZ,LAADA             ; => Show the screen, continue the game main loop
   LD A,$02
   LD (LDC8A),A
   CALL LAE09              ; Decode current room description to LDBF5
@@ -1074,8 +1074,7 @@ LAE23:
   LD HL,LDCA2             ; Table with accepted rooms??
   ADD HL,DE
   LD A,(HL)
-;  CP $01                  ; accepted?
-  xor a ;DEBUG: No need for access codes
+  CP $01                  ; accepted?
   JP Z,LB00E              ; yes => jump
   LD B,$04
   LD HL,LDC8D

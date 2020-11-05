@@ -9,6 +9,14 @@ start:
 ;  call LBA07  ; Show titles and go to Menu
 ;  jp L9DBE
 
+; Cheat code to get all door access codes
+  LD HL,LDCA2
+  LD B,$48
+start_1:
+  LD (HL),$01
+  INC HL
+  DJNZ start_1
+
 ;  ld a,$01
 ;  ld (LDB9C+0),a
 ;  ld (LDB9C+1),a
