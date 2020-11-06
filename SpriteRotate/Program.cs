@@ -693,6 +693,23 @@ namespace SpriteRotate
             Console.WriteLine($"{roomsfilename} saved");
         }
 
+        static Color GetRoomPassageColorByAccessLevel(int access)
+        {
+            switch (access)
+            {
+                case 1:
+                    return Color.Goldenrod;
+                case 2:
+                    return Color.Salmon;
+                case 3:
+                    return Color.Orange;
+                case 4:
+                    return Color.OrangeRed;
+                default:
+                    return Color.Aquamarine;
+            }
+        }
+
         static void ProcessRoomsMap()
         {
             const int colwid = 120;
@@ -702,6 +719,8 @@ namespace SpriteRotate
 
             byte[] savdmp = File.ReadAllBytes("memdmp.bin");
             Array.Copy(savdmp, 0, memdmp, 0, 65536);
+
+            var fileroomdescs = new StreamWriter("roomdescs.txt");
 
             Graphics g = Graphics.FromImage(bmp);
             g.InterpolationMode = InterpolationMode.HighQualityBicubic;
@@ -722,7 +741,6 @@ namespace SpriteRotate
                 /*  7 */ 5,13, 6,13
             };
 
-            var pen = new Pen(Color.Goldenrod, 18);
             for (int r = 0; r < coords.Length / 2; r++)
             {
                 if (r == 6 || r == 23 || r == 25 || r == 34 || r == 36 || r == 58)
@@ -732,12 +750,30 @@ namespace SpriteRotate
                 int daddr = memdmp[daaddr] + memdmp[daaddr + 1] * 256;
                 byte[] rdesc = DecodeRoom(daddr, 49);
 
+                fileroomdescs.WriteLine($"Room #{r} description:");
+                fileroomdescs.WriteLine(" 0  1  2  3  4  5  6  7  8  9  A  B  C  D  E  F");
+                for (int i = 0; i < rdesc.Length; i++)
+                {
+                    if (rdesc[i] == 0x61)
+                        fileroomdescs.Write("--");
+                    else
+                        fileroomdescs.Write($"{rdesc[i]:X2}");
+                    if (i >= 28 && i < 31 || i >= 35 && i < 38 || i >= 39 && i < 42)
+                        fileroomdescs.Write("=");
+                    else
+                        fileroomdescs.Write(" ");
+                    if (i % 16 == 15) fileroomdescs.WriteLine();
+                }
+                fileroomdescs.WriteLine();
+
                 int xr = coords[r * 2] * colwid + 20 + 48;
                 int yr = coords[r * 2 + 1] * rowhei + 20 + 32;
 
                 int roomdown = rdesc[35];
                 if (roomdown < 72)
                 {
+                    var accesscolor = GetRoomPassageColorByAccessLevel(rdesc[28]);
+                    var pen = new Pen(accesscolor, 18);
                     int x = coords[roomdown * 2] * colwid + 20 + 48;
                     int y = coords[roomdown * 2 + 1] * rowhei + 20 + 32;
                     g.DrawLine(pen, xr, yr + 24, x, y - 24);
@@ -745,11 +781,15 @@ namespace SpriteRotate
                 int roomright = rdesc[38];
                 if (roomright < 72)
                 {
+                    var accesscolor = GetRoomPassageColorByAccessLevel(rdesc[31]);
+                    var pen = new Pen(accesscolor, 18);
                     int x = coords[roomright * 2] * colwid + 20 + 48;
                     int y = coords[roomright * 2 + 1] * rowhei + 20 + 32;
                     g.DrawLine(pen, xr + 32, yr, x - 32, y);
                 }
             }
+            fileroomdescs.Flush();
+            Console.WriteLine("roomdescs.txt saved");
 
             for (int r = 0; r < coords.Length / 2; r++)
             {
@@ -843,26 +883,80 @@ namespace SpriteRotate
 
             if (rdesc != null)
             {
-                /*Graphics g = Graphics.FromImage(bmp);
+                Graphics g = Graphics.FromImage(bmp);
                 g.InterpolationMode = InterpolationMode.HighQualityBicubic;
                 g.PixelOffsetMode = PixelOffsetMode.HighQuality;
                 g.TextRenderingHint = TextRenderingHint.AntiAliasGridFit;
-                var font = new Font("Tahoma", 7);
+                //var font = new Font("Tahoma", 7);
+                var pen = new Pen(Color.Coral, 1);
 
-                for (int row = 0; row < 8; row++)
+                for (int i = 0; i < rdesc.Length; i++)
                 {
-                    for (int col = 0; col < 12; col++)
+                    var b = rdesc[i];
+                    if (b < 36 || b > 84)
+                        continue;
+
+                    int doffset = -1;
+                    switch (i)
                     {
-                        int x = col * 8 + xr;
-                        int y = row * 8 + yr;
-                        int index = (row - 3) * 10 + (col - 1) + 9;
-                        if (index >= 0 && index < 49 && col > 0 && col < 11)
+                        case 0: case 1:
+                            doffset = 2;
+                            break;
+                        case 3: case 4:
+                            doffset = 5;
+                            break;
+                        case 6: case 7:
+                            doffset = 8;
+                            break;
+                        case 11: case 12:
+                            doffset = 13;
+                            break;
+                        case 15: case 16:
+                            doffset = 17;
+                            break;
+                        case 25: case 26:
+                            doffset = 27;
+                            break;
+                        case 32: case 33:
+                            doffset = 34;
+                            break;
+                    }
+
+                    int row = b / 12;
+                    int col = b % 12;
+                    int x = col * 8 + xr;
+                    int y = row * 8 + yr;
+
+                    if (doffset < 0)
+                        g.DrawRectangle(pen, x + 1, y + 1, 7, 7);
+                    else
+                    {
+                        var d = rdesc[doffset];
+                        switch (d)
                         {
-                            byte b = rdesc[index];
-                            g.DrawString($"{b:X2}", font, Brushes.Blue, x - 8, y - 8);
+                            case 0:  // down
+                                g.DrawLine(pen, x + 4, y + 1, x + 4, y + 8);
+                                g.DrawLine(pen, x + 4, y + 8, x + 0, y + 4);
+                                g.DrawLine(pen, x + 4, y + 8, x + 8, y + 4);
+                                break;
+                            case 1:  // up
+                                g.DrawLine(pen, x + 4, y + 1, x + 4, y + 8);
+                                g.DrawLine(pen, x + 4, y + 1, x + 0, y + 5);
+                                g.DrawLine(pen, x + 4, y + 1, x + 8, y + 5);
+                                break;
+                            case 2:  // left
+                                g.DrawLine(pen, x + 1, y + 4, x + 8, y + 4);
+                                g.DrawLine(pen, x + 0, y + 4, x + 4, y + 0);
+                                g.DrawLine(pen, x + 0, y + 4, x + 4, y + 8);
+                                break;
+                            case 3:  // right
+                                g.DrawLine(pen, x + 1, y + 4, x + 8, y + 4);
+                                g.DrawLine(pen, x + 8, y + 4, x + 4, y + 0);
+                                g.DrawLine(pen, x + 8, y + 4, x + 4, y + 8);
+                                break;
                         }
                     }
-                }*/
+                }
             }
         }
     }

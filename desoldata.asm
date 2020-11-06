@@ -675,7 +675,7 @@ LDB90:  DEFB $00
   DEFB $00,$00,$00,$00,$00,$00,$00
   DEFB $00,$00,$00,$00
 LDB9C:
-  DEFB $00,$00,$00,$00,$00,$00,$00,$00 ; Inventory items??
+  DEFB $00,$00,$00,$00,$00,$00,$00,$00 ; Inventory items: $00 = not having, $01 = have it
   DEFB $00,$00,$00,$00,$00,$00,$00,$00 ;
   DEFB $00,$00,$00,$00,$00,$00,$00,$00 ;
   DEFB $00,$00,$00,$00,$00,$00,$00,$00 ;
@@ -708,7 +708,7 @@ LDBF5:
   DEFB $00,$00,$00,$00,$00,$00,$00,$00
   DEFB $00,$00,$00,$00,$00,$00,$00,$00
 LDC55:  DEFB $03          ; ??
-LDC56:  DEFB $00          ; ??
+LDC56:  DEFB $00          ; Offset in the room, in tiles ??
 LDC57:  DEFB $00
   DEFB $00
 LDC59:  DEFB $44          ; Delay factor: $64 $28 $00 $44 $96 $FF
@@ -726,10 +726,10 @@ LDC85:  DEFB $00          ; Delay and copy screen flag used in LBEDE
 LDC86:  DEFB $00
 LDC87:  DEFB $00          ; ??
 LDC88:  DEFB $00          ; ?? counter
-LDC89:  DEFB $00          ; Current inventory item??
+LDC89:  DEFB $00          ; Current inventory item / Picked up item??
 LDC8A:  DEFB $00
 LDC8B:  DEFB $FF
-LDC8C:  DEFB $00
+LDC8C:  DEFB $00          ; Access code level ??
 LDC8D:  DEFB $00,$00,$00,$00,$00
 LDC92:  DEFB $1E,$1A,$1F,$21
 LDC96:  DEFB $1E,$1A,$1F,$21
@@ -750,7 +750,7 @@ LDCF2:  DEFB $00          ;
 LDCF3:  DEFB $00          ; Left margin size for text, usually $00
 LDCF4:  DEFB $0E          ; Line interval for text
 LDCF5:  DEFB $00,$00
-LDCF7:  DEFB $00          ; Weapon ??
+LDCF7:  DEFB $00          ; Weapon: $00 $01
 LDCF8:  DEFB $00
 LDCF9:  
   DEFB $20,$20,$20,$20,$20,$20,$20,$20
@@ -992,7 +992,7 @@ LDFB7:
   DEFW LDD53
   DEFW LDD53
   DEFW LDD53
-LDFF3:          ; Table ??
+LDFF3:          ; Table of strings: Data cartridge messages
   DEFW SE079    ; "Im hurt bad . . .
   DEFW SE079    ; "Im hurt bad . . .
   DEFW SE07B    ; "For security reasons I had to change ...

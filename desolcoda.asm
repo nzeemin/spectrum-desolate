@@ -1,8 +1,5 @@
 
 
-ClearShadowScreen   EQU L9FCF
-ClearPenRowCol      EQU LBC84
-
   ORG $5E00
 
 start:

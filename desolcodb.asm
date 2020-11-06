@@ -265,6 +265,7 @@ L9FEA EQU ShowShadowScreen
 
 ; Clear shadow screen
 ;
+ClearShadowScreen:
 L9FCF:
   ld bc,24*138-1	        ; 64 line pairs
   ld hl,ShadowScreen
@@ -574,7 +575,7 @@ LAA60:
   CALL LAA7D              ; For direction left - dec E, right - inc E
   LD D,$00
   ADD HL,DE
-  LD A,(LDB74)
+  LD A,(LDB74)            ; $0C - line width in tiles ??
   LD E,A
   LD A,(LDB78)            ; Get Y tile coord
   LD B,A
@@ -615,16 +616,18 @@ LAA9B:
   DEC B                   ; going up 1 tile
   RET
 ;
+; Get room offset in tiles for X = LDB76, Y = LDB78
+;   Returns the room offset in E, A, and LDC56
 LAA9D:
-  LD A,(LDB74)
+  LD A,(LDB74)            ; $0C - line width in tiles ??
   LD E,A
   LD A,(LDB78)            ; Get Y tile coord
   LD B,A
   LD A,(LDB76)            ; Get X tile coord
 LAAA8:
-  ADD A,E
+  ADD A,E                 ; add a,12
   DJNZ LAAA8
-  LD (LDC56),A
+  LD (LDC56),A            ; (LDC56) = Y * 12 + X
   RET
 ;
 ; Look / Shoot
@@ -635,14 +638,14 @@ LAAAF:
 ; Look action
   XOR A
   LD (LDC88),A
-  CALL LAA9D
+  CALL LAA9D              ; Get room offset in tiles for X = LDB76, Y = LDB78
   CALL LAE09              ; Decode current room description to LDBF5
 LAAC1:
   LD A,(HL)
   LD C,A
-  LD A,(LDC56)
+  LD A,(LDC56)            ; get offset in the room
   SUB C
-  JP Z,LAADD
+  JP Z,LAADD              ; found the action point for the current position
   LD A,(LDC88)
   CP $31
   JP Z,LAADA              ; => Show the screen, continue the game main loop
@@ -653,8 +656,9 @@ LAAC1:
 ; Show the screen, continue the game main loop
 LAADA:
   JP L9E2E                ; Show the screen, continue the game main loop
+; Found the action point for the current position in the room description
 LAADD:
-  LD A,(LDC88)
+  LD A,(LDC88)            ; get offset in the room description
   OR A
   JP Z,LAB3F
   CP $01
@@ -699,16 +703,18 @@ LAB28:
   POP BC
   RET
 ;
+; Found action point at room description offset $00..$01
 LAB3F:
   CALL LAE09              ; Decode current room description to LDBF5
-  LD DE,$0002
-  CALL LAC4C
+  LD DE,$0002             ; offset in the room description
+  CALL LAC4C              ; Compare byte at (HL+DE) with Direction/orientation LDB75
   JP NZ,LAADA             ; => Show the screen, continue the game main loop
   LD A,(LDB79)            ; Get room number
-  CP $1B
-  JP NZ,LAB7A
+  CP $1B                  ; room #27?
+  JP NZ,LAB7A             ; no => jump
+; Room #27
   LD A,(LDCF7)            ; Weapon slot
-  OR A
+  OR A                    ; do we have it?
   JP NZ,LAB7A             ; have weapon => jump
   LD A,$0B
   LD (LDCF3),A            ; Left margin size for text
@@ -730,7 +736,7 @@ LAB7A:
   LD A,$01
   LD (LDC8A),A
   CALL LAE09              ; Decode current room description to LDBF5
-  LD DE,$001C             ; Access level offset
+  LD DE,$001C             ; offset in the room description - access level
 LAB85:
   ADD HL,DE
   LD A,(HL)
@@ -748,25 +754,28 @@ LAB85:
   JP Z,LB00E
   JP LAE23
 ;
+; Found action point at room description offset $03..$04
 LABA4:
   CALL LAE09              ; Decode current room description to LDBF5
-  LD DE,$0005
-  CALL LAC4C
+  LD DE,$0005             ; offset in the room description - direction
+  CALL LAC4C              ; Compare byte at (HL+DE) with Direction/orientation LDB75
   JP NZ,LAADA             ; => Show the screen, continue the game main loop
   LD A,$02
   LD (LDC8A),A
   CALL LAE09              ; Decode current room description to LDBF5
-  LD DE,$001D
+  LD DE,$001D             ; offset in the room description
   JP LAB85
 ;
+; Found action point at room description offset $19..$1A
 LABBE:
   CALL LAE09              ; Decode current room description to LDBF5
-  LD DE,$001B
-  CALL LAC4C
-  JP NZ,LAADA
+  LD DE,$001B             ; offset in the room description - direction byte
+  CALL LAC4C              ; Compare byte at (HL+DE) with Direction/orientation LDB75
+  JP NZ,LAADA             ; => Show the screen, continue the game main loop
   LD A,(LDB79)            ; Get the room number
-  CP $21
+  CP $21                  ; room #33?
   JP NZ,LABF7
+; Room #33
   LD DE,$0004
   CALL LB531
   JP NZ,LABF7
@@ -784,17 +793,19 @@ LABF7:
   LD A,$03
   LD (LDC8A),A
   CALL LAE09              ; Decode current room description to LDBF5
-  LD DE,$001E
+  LD DE,$001E             ; offset in the room description
   JP LAB85
 ;
+; Found action point at room description offset $21..$22 (possibly an error, should be $20-$21)
 LAC05:
-  CALL LAE09
-  LD DE,$0022
-  CALL LAC4C
-  JP NZ,LAADA
+  CALL LAE09              ; Decode current room description to LDBF5
+  LD DE,$0022             ; offset in the room description
+  CALL LAC4C              ; Compare byte at (HL+DE) with Direction/orientation LDB75
+  JP NZ,LAADA             ; => Show the screen, continue the game main loop
   LD A,(LDB79)            ; Get the room number
-  CP $45                  ; room $69?
-  JP NZ,LAC3E
+  CP $45                  ; room #69?
+  JP NZ,LAC3E             ; no => jump
+; Room #69
   LD DE,$0005
   CALL LB531
   JP NZ,LAC3E
@@ -811,10 +822,11 @@ LAC05:
 LAC3E:
   LD A,$04
   LD (LDC8A),A
-  CALL LAE09
-  LD DE,$001F
+  CALL LAE09              ; Decode current room description to LDBF5
+  LD DE,$001F             ; offset in the room description
   JP LAB85
 ;
+; Compare byte at (HL+DE) with Direction/orientation LDB75
 LAC4C:
   ADD HL,DE
   LD A,(HL)
@@ -823,26 +835,28 @@ LAC4C:
   SUB C
   RET
 ;
+; Found action point at room description offset $06..$07
 LAC54:
   CALL LAE09              ; Decode current room description to LDBF5
-  LD DE,$0008
+  LD DE,$0008             ; offset in the room description
   ADD HL,DE
   LD A,(HL)
   LD C,A
   LD A,(LDB75)            ; Direction/orientation
   SUB C
-  JP NZ,LAADA              ; => Show the screen, continue the game main loop
+  JP NZ,LAADA             ; => Show the screen, continue the game main loop
   CALL LAE09              ; Decode current room description to LDBF5
-  LD DE,$000A
+  LD DE,$000A             ; offset in the room description
   ADD HL,DE
   LD A,(HL)
-  LD (LDC89),A
-  CALL LAE09              ; Decode current room description to LDBF5
-  LD DE,$0009
+  LD (LDC89),A            ; set as current item
+  CALL LAE09              ; Decode current room description to LDBF5 (again?)
+  LD DE,$0009             ; offset in the room description
   ADD HL,DE
   LD A,(HL)
   CP $01
   JP Z,LAC97
+; Found dead body, no items on it
   CALL LAB28              ; Show small message popup
   CALL LAB73              ; Set penRow/penCol for small message popup
   LD HL,SE0C3             ; " Another Dead Person"
@@ -852,10 +866,11 @@ LAC54:
   LD HL,SE0C5             ; " Search Reveals Nothing"
   CALL LBEDE              ; Load archived string and show message char-by-char
   JP LAD8C
+; Found dead body with some item on it
 LAC97:
-  CALL LAD4F
-  CP $01
-  JP Z,LAADA              ; => Show the screen, continue the game main loop
+  CALL LAD4F              ; Get inventory item flag for item number in LDC89
+  CP $01                  ; do we have it already?
+  JP Z,LAADA              ; have it => Show the screen, continue the game main loop
   LD A,(LDB79)            ; Get the room number
   OR A                    ; room #0 ?
   JP Z,LACC5              ; yes => Small message popup "OMG! This Person Is DEAD! What Happened Here!?!"
@@ -866,7 +881,7 @@ LAC97:
   CALL LACB8              ; Show arrow sign as prompt to continue
   JP LAD00
 ;
-; Show arrow sign as prompt to continue
+; Show arrow sign in bottom-right corner, as a prompt to continue
 LACB8:
   LD HL,$66B0
   LD ($86D7),HL           ; Set penRow/penCol
@@ -887,15 +902,16 @@ LACC5:
   CALL LACB8              ; Show arrow sign as prompt to continue
   JP LAD00
 ;
+; Found action point at room description offset $0B..$0C
 LACE3:
-  CALL LAE09
-  LD DE,$000D
+  CALL LAE09              ; Decode current room description to LDBF5
+  LD DE,$000D             ; offset in the room description
   ADD HL,DE
   LD A,(HL)
   LD C,A
   LD A,(LDB75)            ; Direction/orientation
   SUB C
-  JP NZ,LAADA
+  JP NZ,LAADA             ; => Show the screen, continue the game main loop
   JP LAD5B
 ;
 ; Show screen, wait for down key, show small message popup
@@ -929,35 +945,35 @@ LAD22:
   LD ($86D7),HL           ; Set penRow/penCol
   CALL LAE19              ; Get inventory item description string
   CALL LBEDE              ; Load archived string and show message char-by-char
-  LD A,(LDC89)
+  LD A,(LDC89)            ; get the current item number
   LD H,$00
   LD L,A
-  LD DE,LDB9C
-  ADD HL,DE
-  LD (HL),$01
+  LD DE,LDB9C             ; Inventory table address
+  ADD HL,DE               ; HL = item address in my Inventory
+  LD (HL),$01             ; Mark that we have the item now
   JP LAD8C
 ;
-; ??
+; Get inventory item flag for item number in LDC89
 LAD4F:
-  LD A,(LDC89)
+  LD A,(LDC89)            ; get current item number
   LD H,$00
   LD L,A
-  LD DE,LDB9C
-  ADD HL,DE
-  LD A,(HL)
+  LD DE,LDB9C             ; Inventory table address
+  ADD HL,DE               ; HL = item address in my Inventory
+  LD A,(HL)               ; A = item flag: $00 = not having, $01 = have it
   RET
 ;
 LAD5B:
-  CALL LAE09
-  LD DE,$000E
+  CALL LAE09              ; Decode current room description to LDBF5
+  LD DE,$000E             ; offset in the room description
   ADD HL,DE
   LD A,(HL)
-  LD (LDC89),A
-  CP $23
-  JP Z,LADA9
-  CALL LAD4F
-  CP $01
-  JP Z,LAADA
+  LD (LDC89),A            ; set as current item
+  CP $23                  ; weapon?
+  JP Z,LADA9              ; yes => jump
+  CALL LAD4F              ; Get inventory item flag for item number in LDC89
+  CP $01                  ; do we have it?
+  JP Z,LAADA              ; yes => Show the screen, continue the game main loop
   CALL LAB28              ; Show small message popup
   LD HL,$5816
   LD ($86D7),HL           ; Set penRow/penCol
@@ -990,11 +1006,12 @@ LADA1:
   JR NZ,LADA1
   RET
 ;
-; We've got weapon
+; We found the weapon
 LADA9:
   LD A,(LDCF7)            ; Weapon slot
-  OR A
-  JP NZ,LAADA
+  OR A                    ; do we have it already?
+  JP NZ,LAADA             ; yes => Show the screen, continue the game main loop
+; Picking up the weapon
   CALL LAB28              ; Show small message popup
   LD A,$01
   LD (LDCF7),A            ; We've got the weapon
@@ -1060,7 +1077,7 @@ LAE09:
 ;
 ; Inventory item to item description string
 LAE19:
-  LD A,(LDC89)
+  LD A,(LDC89)            ; get current item number
   LD HL,LDFB7
   CALL LADFF              ; Get address from table by index A
   RET
@@ -1429,7 +1446,7 @@ LB0A2:
   LD HL,SE0BB             ; " - INVENTORY - "
   call DrawString         ; was: CALL LBEDE
 ;
-  LD HL,LDB9C             ; Inventory items??
+  LD HL,LDB9C             ; Inventory table address
   LD B,$1D                ; 29 items
 LB0E0:                    ; loop by B
   PUSH HL
@@ -1437,7 +1454,7 @@ LB0E0:                    ; loop by B
   CP $01                  ; do we have the item
   CALL Z,LB12A            ; yes => put in the list and draw
   POP HL
-  INC HL                  ; next item
+  INC HL                  ; next item in the Inventory
   DJNZ LB0E0              ; continue loop
 ;
   LD A,(LDC5A)            ; Inventory items count
@@ -1697,7 +1714,7 @@ LB2AF:
   LD A,(HL)
   CP $63                  ; empty slot?
   JP Z,LB2CC
-  LD (LDC89),A
+  LD (LDC89),A            ; set as current item
   CALL LAE19              ; Get inventory item description string
   RET
 LB2CC:
@@ -1753,7 +1770,7 @@ LB307:
   LD A,(HL)               ; get item
   CP $63                  ; empty slot?
   JP Z,LB1C1
-  LD (LDC89),A
+  LD (LDC89),A            ; set as current item
   OR A                    ; $00 - Data cartridge reader?
   JP Z,LB33F
   CP $13                  ; Power Drill?
@@ -1792,7 +1809,7 @@ LB36C:
   POP HL                  ; restore the message address
 LB373:
   CALL LBEDE              ; Load archived string and show message char-by-char
-  LD A,(LDC89)
+  LD A,(LDC89)            ; get current item number
   CP $02
   CALL Z,LB39A
   CP $03
@@ -1825,8 +1842,8 @@ LB3AF:
   LD A,(LDCF5)            ; Data cartridge reader
   OR A                    ; do we have the reader?
   JP Z,LB3C8              ; no => jump
-  LD A,(LDC89)
-  LD HL,LDFF3             ; Table address for messages
+  LD A,(LDC89)            ; get current item number
+  LD HL,LDFF3             ; Table address for data cartridge messages
   CALL LADFF              ; Get address from table by index A
   PUSH HL
   LD A,$01
@@ -1841,7 +1858,7 @@ LB3C8:                    ; We don't have data cartridge reader
   JP LB1C1
 LB3DA:
   CALL LAE09              ; Decode current room description to LDBF5
-  LD DE,$0011
+  LD DE,$0011             ; offset in the room description
   ADD HL,DE
   LD A,(HL)
   LD C,A
@@ -1868,7 +1885,12 @@ LB4C4:
 
 ; Rubik's Cube selected in the Inventory
 LB501:
-  ret ;STUB
+  CALL LB2DE
+  LD HL,$5C18
+  LD ($86D7),HL
+  LD HL,SE12B             ; "You dont have any time to play with this now"
+  CALL LB513              ; Show message
+  JP LB1C1
 
 ; Show message HL
 LB513:
@@ -2174,7 +2196,7 @@ LBADE:
   LD HL,$0000
   LD (LDBC3),HL
   LD (LDBC5),HL
-  LD HL,LDB9C
+  LD HL,LDB9C             ; Inventory table address
   LD B,$22
 LBADE_0:
   LD (HL),$00
@@ -2350,11 +2372,13 @@ LBC7D:
   RET
 
 ; Set zero penRow/penCol
+ClearPenRowCol:
 LBC84:
   LD HL,$0000             ; Left-top corner
   LD ($86D7),HL           ; Set penRow/penCol
   RET
 ;
+; Found action point at room description offset $0F..$10
 LBC8B:
   ret ;STUB
 
