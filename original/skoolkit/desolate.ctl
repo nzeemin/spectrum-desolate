@@ -478,9 +478,11 @@ R $BC3C HL ??
 C $BC4E,1 rBR_CALL
 W $BC4F,2,2
 C $BC53,1 rBR_CALL
-W $BC54,2,2
+W $BC54,2,2 _DispOP1A - Rounds a floating-point number to the current fix setting and display it at the current pen location
 C $BC66,1 rBR_CALL
-W $BC67,2,2
+W $BC67,2,2 _VPutMap - Displays either a small variable width or large 5x7 character at the current pen location and updates penCol.
+c $BC6B Routine??
+c $BC7D Clear screen 9340/9872 and copy to A28F/A58F
 C $BC7D,3 Clear screen 9340/9872
 C $BC80,3 Copy screen 9340/9872 to A28F/A58F
 c $BC84 Set zero penRow/penCol

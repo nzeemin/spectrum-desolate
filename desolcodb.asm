@@ -929,9 +929,9 @@ LAD00:
   LD ($86D7),HL           ; Set penRow/penCol
   LD HL,SE0CB             ; "Something"
   CALL LBEDE              ; Load archived string and show message char-by-char
-  LD A,(LDBC7)
+  LD A,(LDBC7)            ; get Items Found count
   INC A
-  LD (LDBC7),A
+  LD (LDBC7),A            ; set Items Found count
 LAD22:
   CALL LACB8
   CALL LACF6
@@ -977,9 +977,9 @@ LAD5B:
   LD ($86D7),HL           ; Set penRow/penCol
   LD HL,SE0CD             ; " Hey Whats This . . . ?"
   CALL LBEDE              ; Load archived string and show message char-by-char
-  LD A,(LDBC7)
+  LD A,(LDBC7)            ; get Items Found count
   INC A
-  LD (LDBC7),A
+  LD (LDBC7),A            ; set Items Found count
   JP LAD22
 ;
 LAD8C:
@@ -1824,16 +1824,16 @@ LB38B:
   LD (LDC85),A            ; Skip delay and copy screen in LBEDE
   JP L9DDD                ; return to the main game loop
 LB39A:
-  LD HL,LDC96
-  CALL LBC3C
+  LD HL,LDC96             ; Get code address
+  CALL LBC3C              ; Draw code ??
   RET
 LB3A1:
   LD HL,LDC9A
-  CALL LBC3C
+  CALL LBC3C              ; Draw code ??
   RET
 LB3A8:
   LD HL,LDC9E
-  CALL LBC3C
+  CALL LBC3C              ; Draw code ??
   RET
 ;
 ; Data cartridge selected in the Inventory
@@ -2079,7 +2079,8 @@ LB57B:
   OR A
   JP Z,LB622
   LD B,$08
-;TODO:  CALL $4086
+;TODO: Generate random number
+;  CALL $4086
   OR A
   JP Z,LB59D
   CP $02
@@ -2307,9 +2308,9 @@ LB71F:
   XOR A
   LD (LDB84),A
   CALL LB8DC
-  LD HL,(LDBC5)
+  LD HL,(LDBC5)           ; get Enemies Killed count
   INC HL
-  LD (LDBC5),HL
+  LD (LDBC5),HL           ; set Enemies Killed count
   RET
 ;
 LB72E:
@@ -2637,9 +2638,11 @@ LB96B:
   LD HL,(LDB7A)           ; get Health
   jp DrawNumber3          ; Show 3-digit decimal number HL
 
+; Draw 5-digit number HL and show the screen
 LB97D:
-;TODO
-  ret ;STUB
+  call DrawNumber5
+  call L9FEA              ; Copy shadow screen to ZX screen
+  ret
 
 ; Decrease Health
 LB994:
@@ -2822,43 +2825,43 @@ LBACE:
 ;
 LBADE:
   XOR A
-  LD (LDCF7),A            ; Weapon slot
-  LD (LDB7D),A            ; Get look/shoot switch value
-  LD (LDBC7),A
+  LD (LDCF7),A            ; clear Weapon slot
+  LD (LDB7D),A            ; set look/shoot switch value = Look
+  LD (LDBC7),A            ; clear Items Found count
   CALL LB9D6
   LD HL,$0000
   LD (LDBC3),HL           ; clear Player deaths count
-  LD (LDBC5),HL
+  LD (LDBC5),HL           ; clear Enemies Killed count
   LD HL,LDB9C             ; Inventory table address
   LD B,$22
-LBADE_0:
+LBAF9:
   LD (HL),$00
   INC HL
-  DJNZ LBADE_0
+  DJNZ LBAF9
   LD HL,LDC5B             ; Inventory list
   LD B,$22
-LBADE_1:
+LBB03:
   LD (HL),$00
   INC HL
-  DJNZ LBADE_1
+  DJNZ LBB03
   LD HL,LDB90
   LD B,$09
-LBADE_2:
+LBB09:
   LD (HL),$00
   INC HL
-  DJNZ LBADE_2
+  DJNZ LBB09
   LD HL,LDCA2
   LD B,$48
-LBADE_3:
+LBB17:
   LD (HL),$00
   INC HL
-  DJNZ LBADE_3
+  DJNZ LBB17
   LD HL,LDC96
-  CALL LBC6B
+  CALL LBC6B              ; Generate random code
   LD HL,LDC9A
-  CALL LBC6B
+  CALL LBC6B              ; Generate random code
   LD HL,LDC9E
-  CALL LBC6B
+  CALL LBC6B              ; Generate random code
   CALL LBC7D              ; Clear shadow screen and copy to ZX screen
   LD A,$44
   LD (LDC59),A            ; set delay factor
@@ -2990,15 +2993,61 @@ LBC36:
   DJNZ LBC36
   RET
 ;
-;  HL = ??
+; Draw code ??
+;   HL = code address??
 LBC3C:
+  LD DE,$5038
+  LD ($86D7),DE
+  LD B,$04
+LBC45:
+  PUSH BC
+  PUSH HL
+  LD A,(HL)
+  CP $24                  ; '$'
+  JR Z,LBC64
+  SUB $1A
 ;TODO
-  ret ;STUB
-
+;  RST $28                 ; rBR_CALL
+;  DEFW $478C
+  LD A,$01
+;TODO
+;  RST $28                 ; rBR_CALL
+;  DEFW $4BF7              ; _DispOP1A - Rounds a floating-point number to the current fix setting and display it at the current pen location
+  LD A,($86D7)
+  DEC A
+  DEC A
+  LD ($86D7),A
+LBC5E:
+  POP HL
+  INC HL
+  POP BC
+  DJNZ LBC45
+  RET
+LBC64:
+  LD A,$2D                 ; '-'
+;TODO
+;  RST $28                 ; rBR_CALL
+;  DEFW $455E              ; _VPutMap - Displays either a small variable width or large 5x7 character at the current pen location and updates penCol.
+  JR LBC5E
+;
+; Generate random code
+;   HL = 4-byte buffer
 LBC6B:
-;TODO
-  ret ;STUB
-
+  LD B,$04
+LBC6D:
+  PUSH BC
+  PUSH HL
+;TODO: Get random digit 0..9
+;  LD B,$0B
+;  CALL $4086  
+  ADD A,$1A
+  POP HL
+  LD (HL),A
+  INC HL
+  POP BC
+  DJNZ LBC6D
+  RET
+;
 ; Clear shadow screen and copy to ZX screen
 LBC7D:
   CALL L9FCF              ; Clear shadow screen
@@ -3163,20 +3212,20 @@ LBD85:
   CALL LBEDE              ; Load archived string and show message char-by-char
   CALL LBC34
   LD DE,$0C8C
-  LD A,(LDBC7)
+  LD A,(LDBC7)            ; get Items Found count
   LD L,A
   LD H,$00
-  CALL LB97D
+  CALL LB97D              ; Draw 5-digit number HL and show the screen
   CALL LBC34
   LD DE,$0D46
-  LD HL,(LDBC5)
-  CALL LB97D
+  LD HL,(LDBC5)           ; get Enemies Killed count
+  CALL LB97D              ; Draw 5-digit number HL and show the screen
   CALL LBC34
   LD DE,$1446
-  LD HL,(LDBC3)           ; get Player deaths count
-  CALL LB97D
+  LD HL,(LDBC3)           ; get Player Deaths count
+  CALL LB97D              ; Draw 5-digit number HL and show the screen
   CALL LBC34
-  LD A,(LDBC7)
+  LD A,(LDBC7)            ; get Items Found count
   SUB $14
   JP C,LBE06
   LD HL,$520C
@@ -3194,7 +3243,7 @@ LBE06:
   CALL LBEDE              ; Load archived string and show message char-by-char
 LBE12:
   LD DE,$0032             ; 50
-  LD HL,(LDBC5)
+  LD HL,(LDBC5)           ; get Enemies Killed count
   call CpHLDE             ; Compare HL and DE
   JR C,LBE32
   LD HL,$600C

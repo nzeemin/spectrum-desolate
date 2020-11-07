@@ -128,7 +128,7 @@ SE127: DEFM "         Level 4|   Access Code|       Required",0
 SE129: DEFM "You dont seem to be able|     to use this item here",0
 SE12B: DEFM "You dont have any time|    to play with this now",0
 SE12D: DEFM "       It doesnt look like you|  can do anything else here",0
-SE12F: DEFM "This Generator is damaged| All of the panels are loose",0
+SE12F: DEFM "This Generator is damaged|All of the panels are loose",0
 SE131: DEFM "     This Workstation doesnt|seem to have any power...?",0
 SE133: DEFM "    The Workstation has now|   successfully booted up    ",0
 SE135: DEFM " The Workstation Ejected A|                Data Cartridge 2",0

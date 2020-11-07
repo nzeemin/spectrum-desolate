@@ -690,9 +690,9 @@ LDB9C:
   DEFB $00,$00,$00,$00,$00,$00,$00,$00 ;
   DEFB $00,$00,$00,$00,$00,$00,$00,$00 ;
   DEFB $00,$00,$00,$00,$00,$00,$00     ;
-LDBC3:  DEFW $0000        ; Player deaths count ??
-LDBC5:  DEFW $0000        ; Counter??
-LDBC7:  DEFB $00          ; Counter?? $00 INC
+LDBC3:  DEFW $0000        ; Player Deaths count
+LDBC5:  DEFW $0000        ; Enemies Killed count
+LDBC7:  DEFB $00          ; Items Found count
   DEFB $08                ; ??
   DEFW $4014              ; data??
   DEFB $05,$44,$45,$53,$44,$41,$54,$41
