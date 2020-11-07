@@ -25,6 +25,7 @@ start_1:
 ;  call LBADE  ; New game
   call LBB7E  ; Game start
 ;  call LB9A2  ; Player is dead
+;  call LBD85  ; Final
 
 ;  ld de,Tileset1+$10*32
 ;  ld a,0
@@ -58,7 +59,7 @@ start_1:
 ;  call WaitAnyKey
 
 ;  ld hl,$3A14
-;  ld ($86D7),hl
+;  ld (L86D7),hl
 ;  ld hl,SE115
 ;  call DrawString
 ;  call WaitAnyKey
@@ -67,7 +68,7 @@ start_1:
 ;  ld hl,SE117
 ;  call DrawString
 ;  ld hl,$72B6
-;  ld ($86D7),hl
+;  ld (L86D7),hl
 ;  ld a,$60
 ;  call DrawChar
 ;  call WaitAnyKey
@@ -157,10 +158,10 @@ CpHLDE:
   sbc hl,de
   pop hl
   ret
-  
-; Get shadow screen address using penCol in $86D7
+
+; Get shadow screen address using penCol in L86D7
 ;   A = row 0..137
-;   ($86D7) = penCol
+;   (L86D7) = penCol
 ; Returns HL = address
 GetScreenAddr:
   push de
@@ -175,7 +176,7 @@ GetScreenAddr:
   add hl,hl     ; now HL = A * 24
   ld de,ShadowScreen
   add hl,de
-  ld a,($86D7)  ; get penCol
+  ld a,(L86D7)  ; get penCol
   srl a         ; shift right
   srl a         ;
   srl a         ; now A = column
@@ -189,7 +190,7 @@ GetScreenAddr:
 ;   L = penRow; E = penCol; IX = Tile address
 DrawTile:
   ld a,e
-  ld ($86D7),a  ; penCol
+  ld (L86D7),a  ; penCol
   ld a,l        ; penRow
   ld b,16       ; 16 rows
   call GetScreenAddr  ; now HL = screen addr
@@ -210,7 +211,7 @@ DrawTile_1:
 ;   L = penRow; E = penCol; IX = tile address
 DrawTileMasked:
   ld a,e
-  ld ($86D7),a  ; penCol
+  ld (L86D7),a  ; penCol
   ld a,l        ; penRow
   ld b,8        ; 8 row pairs
   call GetScreenAddr	; now HL = screen addr
@@ -255,18 +256,20 @@ DrawString:
   jr DrawString
 
 ; Draw character on the screen using FontProto
-;   A = character to show
+;   A = character to show: $00-$1F space with A width; $20 space
 DrawChar:
   push hl
   push bc
-  cp $20        ; space char?
-  jr nz, DrawChar_0
-  ld a,$01      ; space char gap size
+  cp $20        ; $00-$1F ?
+  jr c,DrawChar_00  ; yes => set char width and process like space char
+  jr nz,DrawChar_0  ; not space char => jump
+  ld a,$03      ; space char gap size
+DrawChar_00:
   ld (DrawChar_width),a
   jp DrawChar_fin
 DrawChar_0:
   cp $27        ; char less than apostroph?
-  jr nc, DrawChar_1
+  jr nc,DrawChar_1
   add a,$3A     ; for '!', quotes, '#' '$' '%' '&'
   jr DrawChar_2
 DrawChar_1:
@@ -287,7 +290,7 @@ DrawChar_2:
   ld de,FontProto
   add hl,de     ; now hl = addr of the symbol
   ex de,hl      ; now de=symbol addr
-  ld a,($86D8)  ; get penRow
+  ld a,(L86D8)  ; get penRow
   ld (DrawChar_row),a
   ld a,(de)     ; get flag/width byte
   inc de
@@ -297,12 +300,13 @@ DrawChar_2:
   inc (hl)      ; start on the next line
 DrawChar_3:
   and $0f       ; keep width 1..8
+  add a,$02     ; gap 2px after the symbol
   ld (DrawChar_width),a
   ld a,(DrawChar_row)
   call GetScreenAddr
   push hl       ; store addr on the screen
   push de       ; store symbol data addr
-  ld a,($86D7)	; get penCol
+  ld a,(L86D7)	; get penCol
   and $07       ; shift 0..7
   inc a
   ld c,a
@@ -327,7 +331,7 @@ DrawChar_6:
   djnz DrawChar_4
   pop de        ; restore symbol data addr
   pop hl        ; restore addr on the screen
-  ld a,($86D7)  ; get penCol
+  ld a,(L86D7)  ; get penCol
   and $7        ; shift 0..7
   ld b,a
   ld a,(DrawChar_width)
@@ -335,7 +339,7 @@ DrawChar_6:
   cp $08        ; shift + width <= 8 ?
   jr c,DrawChar_fin	; yes => no need for 2nd pass
 ; Second pass
-  ld a,($86D7)  ; get penCol
+  ld a,(L86D7)  ; get penCol
   and $07       ; shift 1..7
   sub $08
   neg           ; a = 8 - shift; result is 1..7
@@ -368,10 +372,9 @@ DrawChar_A:
   djnz DrawChar_8
 ; All done, finalizing
 DrawChar_fin:
-  ld hl,$86D7   ; penCol address
+  ld hl,L86D7   ; penCol address
   ld a,(DrawChar_width)
   add a,(hl)
-  add a,$02     ; gap 2px between symbols
   ld (hl),a     ; updating penCol
   pop bc
   pop hl

@@ -25,7 +25,7 @@ L9DDD:
   XOR A                   ; Not a valid key
   LD (LDB7C),A
   JP LA8C6
-
+;
 ; Ending of main game loop
 L9E19:
   CALL LB653
@@ -43,7 +43,14 @@ L9E2E:
 
 ; Quit menu item selected
 L9E51:
-  ret ;STUB
+  call LBC7D              ; Clear shadow screen and copy on ZX screen
+  ld hl,$3014
+  ld (L86D7),hl
+  ld hl,SQuit
+  call LBEDE              ; Show the message
+  call ShowShadowScreen
+  call WaitAnyKey
+  jp LBA3D                ; Return to Menu
 
 ; Put tile on the screen (NOT aligned to 8px column), 16x8 -> 16x16 on shadow screen
 ; Uses XOR operation so it is revertable.
@@ -101,7 +108,7 @@ L9EAD:
   add a,a
   add a,a
   add a,a
-  ld ($86D7),a          ; penCol
+  ld (L86D7),a          ; penCol
   ld a,l                ; penRow
   ld b,8                ; 8 row pairs
   call GetScreenAddr    ; now HL = screen addr
@@ -727,7 +734,7 @@ LAB3F:
 ; Set penRow/penCol for small message popup
 LAB73:
   LD HL,$5812
-  LD ($86D7),HL           ; Set penRow/penCol
+  LD (L86D7),HL           ; Set penRow/penCol
   RET
 ;
 LAB7A:
@@ -783,7 +790,7 @@ LABBE:
   LD (LDCF4),A            ; Line interval for text
   CALL LAB28              ; Show small message popup
   LD HL,$580C
-  LD ($86D7),HL           ; Set penRow/penCol
+  LD (L86D7),HL           ; Set penRow/penCol
   LD HL,SE0D7             ; -> "You cant enter that sector Life-Support is offline."
   CALL LBEDE              ; Load archived string and show message char-by-char
   JP LAD8C
@@ -813,7 +820,7 @@ LAC05:
   LD (LDCF4),A            ; Line interval for text
   CALL LAB28              ; Show small message popup
   LD HL,$5814
-  LD ($86D7),HL           ; Set penRow/penCol
+  LD (L86D7),HL           ; Set penRow/penCol
   LD HL,SE0D9             ; -> "You cant enter until the AirLock is re-pressurised"
   CALL LBEDE              ; Load archived string and show message char-by-char
   JP LAD8C
@@ -860,7 +867,7 @@ LAC54:
   LD HL,SE0C3             ; " Another Dead Person"
   CALL LBEDE              ; Load archived string and show message char-by-char
   LD HL,$6612
-  LD ($86D7),HL           ; Set penRow/penCol
+  LD (L86D7),HL           ; Set penRow/penCol
   LD HL,SE0C5             ; " Search Reveals Nothing"
   CALL LBEDE              ; Load archived string and show message char-by-char
   JP LAD8C
@@ -882,7 +889,7 @@ LAC97:
 ; Show arrow sign in bottom-right corner, as a prompt to continue
 LACB8:
   LD HL,$66B0
-  LD ($86D7),HL           ; Set penRow/penCol
+  LD (L86D7),HL           ; Set penRow/penCol
   LD HL,SE0B9             ; String with arrow down sign
   CALL LBEDE              ; Load archived string and show message char-by-char
   RET
@@ -894,7 +901,7 @@ LACC5:
   LD HL,SE0BF             ; "OMG! This Person Is DEAD!"
   CALL LBEDE              ; Load archived string and show message char-by-char
   LD HL,$6612
-  LD ($86D7),HL           ; Set penRow/penCol
+  LD (L86D7),HL           ; Set penRow/penCol
   LD HL,SE0C1             ; "What Happened Here!?!"
   CALL LBEDE              ; Load archived string and show message char-by-char
   CALL LACB8              ; Show arrow sign as prompt to continue
@@ -922,11 +929,11 @@ LACF6:
 LAD00:
   CALL LACF6              ; Show screen, wait for down key, show small message popup
   LD HL,$5816
-  LD ($86D7),HL           ; Set penRow/penCol
+  LD (L86D7),HL           ; Set penRow/penCol
   LD HL,SE0C9             ; "They Seem To Be Holding"
   CALL LBEDE              ; Load archived string and show message char-by-char
   LD HL,$663E
-  LD ($86D7),HL           ; Set penRow/penCol
+  LD (L86D7),HL           ; Set penRow/penCol
   LD HL,SE0CB             ; "Something"
   CALL LBEDE              ; Load archived string and show message char-by-char
   LD A,(LDBC7)            ; get Items Found count
@@ -936,11 +943,11 @@ LAD22:
   CALL LACB8
   CALL LACF6
   LD HL,$5830
-  LD ($86D7),HL           ; Set penRow/penCol
+  LD (L86D7),HL           ; Set penRow/penCol
   LD HL,SE0CF             ; "You Picked Up A"
   CALL LBEDE              ; Load archived string and show message char-by-char
   LD HL,$6612
-  LD ($86D7),HL           ; Set penRow/penCol
+  LD (L86D7),HL           ; Set penRow/penCol
   CALL LAE19              ; Get inventory item description string
   CALL LBEDE              ; Load archived string and show message char-by-char
   LD A,(LDC89)            ; get the current item number
@@ -974,7 +981,7 @@ LAD5B:
   JP Z,LAADA              ; yes => Show the screen, continue the game main loop
   CALL LAB28              ; Show small message popup
   LD HL,$5816
-  LD ($86D7),HL           ; Set penRow/penCol
+  LD (L86D7),HL           ; Set penRow/penCol
   LD HL,SE0CD             ; " Hey Whats This . . . ?"
   CALL LBEDE              ; Load archived string and show message char-by-char
   LD A,(LDBC7)            ; get Items Found count
@@ -1014,17 +1021,17 @@ LADA9:
   LD A,$01
   LD (LDCF7),A            ; We've got the weapon
   LD HL,$581C
-  LD ($86D7),HL           ; Set penRow/penCol
+  LD (L86D7),HL           ; Set penRow/penCol
   LD HL,SE0CD             ; -> "     Hey Whats This  .  .  . ?"
   CALL LBEDE              ; Load archived string and show message char-by-char
   CALL LACB8
   CALL LACF6
   LD HL,$5830
-  LD ($86D7),HL           ; Set penRow/penCol
+  LD (L86D7),HL           ; Set penRow/penCol
   LD HL,SE0CF             ; "You Picked Up A"
   CALL LBEDE              ; Load archived string and show message char-by-char
   LD HL,$662C
-  LD ($86D7),HL           ; Set penRow/penCol
+  LD (L86D7),HL           ; Set penRow/penCol
   LD HL,SE0B7             ; " Ion Phaser"
   CALL LBEDE              ; Load archived string and show message char-by-char
   JP LAD8C
@@ -1109,7 +1116,7 @@ LAE3D:
   LD HL,SE0DD             ; ": Door Locked :"
   CALL LBEDE              ; Load archived string and show message char-by-char
   LD HL,$440A
-  LD ($86D7),HL           ; Set penRow/penCol
+  LD (L86D7),HL           ; Set penRow/penCol
   CALL LAFFE              ; Get "Access code level N required" string by access level in DC8C
   CALL LBEDE              ; Load archived string and show message char-by-char
   LD A,$25
@@ -1416,7 +1423,7 @@ LB08F:
 ;
 LB09B:
   LD HL,$3410
-  LD ($86D7),HL           ; Set penRow/penCol
+  LD (L86D7),HL           ; Set penRow/penCol
   RET
 ;
 ; Open the Inventory pop-up
@@ -1440,7 +1447,7 @@ LB0A2:
   LD A,$24                ; was: $12
   LD (LDC84),A            ; set Y pos
   LD HL,$1630
-  LD ($86D7),HL           ; Set penRow/penCol
+  LD (L86D7),HL           ; Set penRow/penCol
   LD HL,SE0BB             ; " - INVENTORY - "
   call DrawString         ; was: CALL LBEDE
 ;
@@ -1703,7 +1710,7 @@ LB295:
 ;   Returns: HL = item description string
 LB2AF:
   LD HL,$6812
-  LD ($86D7),HL           ; Set penRow/penCol
+  LD (L86D7),HL           ; Set penRow/penCol
   LD HL,LDC5B             ; Inventory list
   LD A,(LDC82)            ; get Inventory current
   LD D,$00
@@ -1745,7 +1752,7 @@ LB2EC:
   LD (LDCF2),A
   RET
 LB2F7:
-  LD ($86D7),HL           ; Set penRow/penCol
+  LD (L86D7),HL           ; Set penRow/penCol
   LD HL,LDCF9
   call DrawString
   ;RST $28                 ; rBR_CALL
@@ -1799,12 +1806,12 @@ LB33F:
   LD A,$21
   LD (LDCF3),A            ; Left margin size for text
   LD HL,$2C16
-  LD ($86D7),HL           ; Set penRow/penCol
+  LD (L86D7),HL           ; Set penRow/penCol
   LD HL,SE09B             ; "No Data Cartridge Selected"
   JP LB373
 LB36C:
   LD HL,$1416
-  LD ($86D7),HL           ; Set penRow/penCol
+  LD (L86D7),HL           ; Set penRow/penCol
   POP HL                  ; restore the message address
 LB373:
   CALL LBEDE              ; Load archived string and show message char-by-char
@@ -1851,7 +1858,7 @@ LB3AF:
 LB3C8:                    ; We don't have data cartridge reader
   CALL LB2DE              ; Print string LDCF9
   LD HL,$2E0C
-  LD ($86D7),HL           ; Set penRow/penCol
+  LD (L86D7),HL           ; Set penRow/penCol
   LD HL,SE0E3             ; "You Need A Data Cartridge Reader"
   CALL LB513              ; Show message
   JP LB1C1
@@ -1866,8 +1873,11 @@ LB3DA:
   RET
 ; Something other selected in the Inventory
 LB3E8:
-  ret ;STUB
-
+  CALL LB51F
+  LD HL,SE129             ; "You dont seem to be able| to use this item here"
+  CALL LB513              ; Show message
+  JP LB1C1
+;
 ; Power drill selected in the Inventory
 LB3F4:
   CALL LB3DA
@@ -1904,7 +1914,7 @@ LB42E:
   LD (LDCF4),A
   CALL LB2DE
   LD HL,$5C0A
-  LD ($86D7),HL           ; Set penRow/penCol
+  LD (L86D7),HL           ; Set penRow/penCol
   LD HL,SE12D             ; "It doesnt look like you can do anything else here"
   CALL LB513              ; Show message
   JP LB1C1
@@ -2000,7 +2010,7 @@ LB4EC:
 LB501:
   CALL LB2DE
   LD HL,$5C18
-  LD ($86D7),HL
+  LD (L86D7),HL
   LD HL,SE12B             ; "You dont have any time to play with this now"
   CALL LB513              ; Show message
   JP LB1C1
@@ -2016,7 +2026,7 @@ LB513:
 LB51F:
   CALL LB2DE
   LD HL,$5C12
-  LD ($86D7),HL	
+  LD (L86D7),HL	
   RET
 ;
 LB529:
@@ -2357,17 +2367,17 @@ LB76B:
   CP $01
   JP Z,LB797
   LD A,$01
-  LD ($DB8D),A
-  LD A,($DB75)
-  LD ($DB8B),A
-  LD A,($DB76)
-  LD ($DB88),A
-  LD A,($DB77)
-  LD ($DB89),A
-  LD A,($DB78)
-  LD ($DB8A),A
+  LD (LDB8D),A
+  LD A,(LDB75)
+  LD (LDB8B),A
+  LD A,(LDB76)
+  LD (LDB88),A
+  LD A,(LDB77)
+  LD (LDB89),A
+  LD A,(LDB78)
+  LD (LDB8A),A
 LB797:
-  LD A,($DB8B)
+  LD A,(LDB8B)
   OR A
   JP Z,LB7AD
   CP $01
@@ -2603,7 +2613,7 @@ LB930:
   CALL LB925
   CALL LAB28              ; Show small message popup
   LD HL,$582C
-  LD ($86D7),HL           ; Set penRow/penCol
+  LD (L86D7),HL           ; Set penRow/penCol
   LD HL,SE0D3             ; "You dont have a Weapon to equip!"
   CALL LBEDE              ; Load archived string and show message char-by-char
   JP LAD8C
@@ -2627,19 +2637,20 @@ LB960:
 LB96B:
 ;DEBUG: Show room number at the bottom-left
   LD HL,$7610
-  ld ($86D7),hl           ; Set penRow/penCol
+  ld (L86D7),hl           ; Set penRow/penCol
   ld a,(LDB79)            ; Get the room number
   ld l,a
   ld h,$00
   call DrawNumber3
 ;
   LD HL,$012C
-  LD ($86D7),HL           ; Set penRow/penCol
+  LD (L86D7),HL           ; Set penRow/penCol
   LD HL,(LDB7A)           ; get Health
   jp DrawNumber3          ; Show 3-digit decimal number HL
 
-; Draw 5-digit number HL and show the screen
+; Draw 5-digit number HL and show the screen at row/col DE
 LB97D:
+  LD (L86D7),DE
   call DrawNumber5
   call L9FEA              ; Copy shadow screen to ZX screen
   ret
@@ -2665,7 +2676,7 @@ LB9A2:
   LD (LDCF4),A            ; Line interval for text
   CALL LAB28              ; Show small message popup
   LD HL,$580E
-  LD ($86D7),HL           ; Set penRow/penCol
+  LD (L86D7),HL           ; Set penRow/penCol
   LD HL,SE0BD             ; "The Desolate has claimed your life too . . ."
   CALL LBEDE              ; Load archived string and show message char-by-char
   XOR A
@@ -2723,19 +2734,19 @@ LBA07:
   LD (LDC59),A            ; set delay factor
   LD (LDC85),A            ; Use delay and copy screen in LBEDE
   LD HL,$3A1E
-  LD ($86D7),HL           ; Set penRow/penCol
+  LD (L86D7),HL           ; Set penRow/penCol
   LD HL,SE09D             ; "MaxCoderz Presents"
   CALL LBEDE              ; Load archived string and show message char-by-char
   CALL LBA81              ; Delay x2
   CALL LBC7D              ; Clear shadow screen and copy to ZX screen
-  CALL LBC34
+  CALL LBC34              ; Delay x20
   LD HL,$3A2E
-  LD ($86D7),HL           ; Set penRow/penCol
+  LD (L86D7),HL           ; Set penRow/penCol
   LD HL,SE09F             ; "a tr1p1ea game"
   CALL LBEDE              ; Load archived string and show message char-by-char
   CALL LBA81              ; Delay x2
   CALL LBC7D              ; Clear shadow screen and copy to ZX screen
-  CALL LBC34
+  CALL LBC34              ; Delay x20
   XOR A
   LD (LDC85),A            ; Skip delay and copy screen in LBEDE
 
@@ -2774,8 +2785,8 @@ LBA3D:
   JP LBA3D
 
 LBA81:
-  CALL LBC34	
-  CALL LBC34	
+  CALL LBC34              ; Delay x20
+  CALL LBC34              ; Delay x20
   RET
 ;
 ; Draw menu item selection triangles
@@ -2809,7 +2820,7 @@ LBAB2:
   CALL LB925
   CALL LAB28              ; Show small message popup
   LD HL,$2C07
-  LD ($86D7),HL           ; Set penRow/penCol
+  LD (L86D7),HL           ; Set penRow/penCol
   LD HL,SE0A3             ; "OverWrite Current Game? Alpha = Yes :: Clear = No"
   CALL LBEDE              ; Load archived string and show message char-by-char
   CALL L9FEA              ; Copy shadow screen to ZX screen
@@ -2871,7 +2882,7 @@ LBB17:
   XOR A
   LD (LDCF3),A            ; Left margin size for text
   LD HL,$3A14
-  LD ($86D7),HL           ; Set penRow/penCol
+  LD (L86D7),HL           ; Set penRow/penCol
   LD HL,SE115             ; "In the Distant Future . . ."
   CALL LBEDE              ; Load archived string and show message char-by-char
   CALL LBA81              ; Delay x2
@@ -2881,7 +2892,7 @@ LBB17:
   LD HL,SE117             ; "'The Desolate' Space Cruiser leaves orbit. ..."
   CALL LBEDE              ; Load archived string and show message char-by-char
   LD HL,$72B6
-  LD ($86D7),HL           ; Set penRow/penCol
+  LD (L86D7),HL           ; Set penRow/penCol
   LD HL,SE0B9             ; String with arrow down sign
   CALL LBEDE              ; Load archived string and show message char-by-char
   CALL WaitAnyKey         ; Wait for any (was: Wait for Down key)
@@ -2964,11 +2975,11 @@ LBBEC:
   LD A,$0E
   LD (LDCF4),A            ; Line interval for text
   LD HL,$163C
-  LD ($86D7),HL           ; Set penRow/penCol
+  LD (L86D7),HL           ; Set penRow/penCol
   LD HL,SE0A5             ; "- Controls -"
   CALL LBEDE              ; Load archived string and show message char-by-char
   LD HL,$240A
-  LD ($86D7),HL           ; Set penRow/penCol
+  LD (L86D7),HL           ; Set penRow/penCol
   LD HL,SE0A7             ; "2nd = Look / Shoot Alpha = Inventory ..."
   CALL LBEDE              ; Load archived string and show message char-by-char
   CALL L9FEA              ; Copy shadow screen to ZX screen
@@ -2985,7 +2996,7 @@ LBC2F:
   XOR A
   LD (LDC55),A
   RET
-; Looooooooong delay
+; Delay x20
 LBC34:
   LD B,$14                ; x20
 LBC36:
@@ -2997,7 +3008,7 @@ LBC36:
 ;   HL = code address??
 LBC3C:
   LD DE,$5038
-  LD ($86D7),DE
+  LD (L86D7),DE
   LD B,$04
 LBC45:
   PUSH BC
@@ -3013,10 +3024,10 @@ LBC45:
 ;TODO
 ;  RST $28                 ; rBR_CALL
 ;  DEFW $4BF7              ; _DispOP1A - Rounds a floating-point number to the current fix setting and display it at the current pen location
-  LD A,($86D7)
+  LD A,(L86D7)
   DEC A
   DEC A
-  LD ($86D7),A
+  LD (L86D7),A
 LBC5E:
   POP HL
   INC HL
@@ -3058,7 +3069,7 @@ LBC7D:
 ClearPenRowCol:
 LBC84:
   LD HL,$0000             ; Left-top corner
-  LD ($86D7),HL           ; Set penRow/penCol
+  LD (L86D7),HL           ; Set penRow/penCol
   RET
 ;
 ; Found action point at room description offset $0F..$10
@@ -3175,7 +3186,7 @@ LBD60:
 ; Set penRow/penCol = $580A
 LBD69:
   LD HL,$580A
-  LD ($86D7),HL           ; Set penRow/penCol
+  LD (L86D7),HL           ; Set penRow/penCol
   RET
 ; RoomDesc[$13] == $07
 LBD70:
@@ -3199,7 +3210,7 @@ LBD85:
   LD (LDCF4),A            ; Line interval for text
   CALL L9FCF              ; Clear shadow screen
   LD HL,$0000
-  LD ($86D7),HL           ; Set penRow/penCol
+  LD (L86D7),HL           ; Set penRow/penCol
   LD HL,SE11B             ; -> "The onboard guidance system picks up a ...
   CALL LBEDE              ; Load archived string and show message char-by-char
   CALL LADA1              ; Wait for MODE key
@@ -3207,29 +3218,29 @@ LBD85:
   LD (LDCF3),A            ; Left margin size for text
   CALL L9FCF              ; Clear shadow screen
   LD HL,$0C0C
-  LD ($86D7),HL           ; Set penRow/penCol
+  LD (L86D7),HL           ; Set penRow/penCol
   LD HL,SE0A1             ; -> "Items Found (/24): Enemies Killed: PlayerDeaths: Awards:
   CALL LBEDE              ; Load archived string and show message char-by-char
-  CALL LBC34
+  CALL LBC34              ; Delay x20
   LD DE,$0C8C
   LD A,(LDBC7)            ; get Items Found count
   LD L,A
   LD H,$00
-  CALL LB97D              ; Draw 5-digit number HL and show the screen
-  CALL LBC34
-  LD DE,$0D46
+  CALL LB97D              ; Draw 5-digit number HL and show the screen at row/col DE
+  CALL LBC34              ; Delay x20
+  LD DE,$1A8C
   LD HL,(LDBC5)           ; get Enemies Killed count
-  CALL LB97D              ; Draw 5-digit number HL and show the screen
-  CALL LBC34
-  LD DE,$1446
+  CALL LB97D              ; Draw 5-digit number HL and show the screen at row/col DE
+  CALL LBC34              ; Delay x20
+  LD DE,$288C
   LD HL,(LDBC3)           ; get Player Deaths count
-  CALL LB97D              ; Draw 5-digit number HL and show the screen
-  CALL LBC34
+  CALL LB97D              ; Draw 5-digit number HL and show the screen at row/col DE
+  CALL LBC34              ; Delay x20
   LD A,(LDBC7)            ; get Items Found count
   SUB $14
   JP C,LBE06
   LD HL,$520C
-  LD ($86D7),HL           ; Set penRow/penCol
+  LD (L86D7),HL           ; Set penRow/penCol
   LD HL,SE0AD             ; -> "Sherlock Holmes"
   CALL LBEDE              ; Load archived string and show message char-by-char
   LD A,(LDBF4)
@@ -3238,7 +3249,7 @@ LBD85:
   JR LBE12
 LBE06:
   LD HL,$520C
-  LD ($86D7),HL           ; Set penRow/penCol
+  LD (L86D7),HL           ; Set penRow/penCol
   LD HL,SE0AB             ; -> "Sir Miss-A-Lot"
   CALL LBEDE              ; Load archived string and show message char-by-char
 LBE12:
@@ -3247,7 +3258,7 @@ LBE12:
   call CpHLDE             ; Compare HL and DE
   JR C,LBE32
   LD HL,$600C
-  LD ($86D7),HL           ; Set penRow/penCol
+  LD (L86D7),HL           ; Set penRow/penCol
   LD HL,SE0B1             ; -> "Terminator"
   CALL LBEDE              ; Load archived string and show message char-by-char
   LD A,(LDBF4)
@@ -3256,7 +3267,7 @@ LBE12:
   JR LBE3E
 LBE32:
   LD HL,$600C
-  LD ($86D7),HL           ; Set penRow/penCol
+  LD (L86D7),HL           ; Set penRow/penCol
   LD HL,SE0AF             ; -> "Running Scared"
   CALL LBEDE              ; Load archived string and show message char-by-char
 LBE3E:
@@ -3265,7 +3276,7 @@ LBE3E:
   call CpHLDE             ; Compare HL and DE
   JR NZ,LBE5E
   LD HL,$6E0C
-  LD ($86D7),HL           ; Set penRow/penCol
+  LD (L86D7),HL           ; Set penRow/penCol
   LD HL,SE0B5             ; -> "Survivor"
   CALL LBEDE              ; Load archived string and show message char-by-char
   LD A,(LDBF4)
@@ -3274,7 +3285,7 @@ LBE3E:
   JR LBE6A
 LBE5E:
   LD HL,$6E0C
-  LD ($86D7),HL           ; Set penRow/penCol
+  LD (L86D7),HL           ; Set penRow/penCol
   LD HL,SE0B3             ; "Over & Over Again" (achievement)
   CALL LBEDE              ; Load archived string and show message char-by-char
 LBE6A:
@@ -3286,7 +3297,7 @@ LBE6A:
   XOR A
   LD (LDCF3),A            ; Left margin size for text
   LD HL,$0000
-  LD ($86D7),HL           ; Set penRow/penCol
+  LD (L86D7),HL           ; Set penRow/penCol
   LD HL,SE11D             ; "System Alert triggered: ..."
   CALL LBEDE              ; Load archived string and show message char-by-char
   JP LBE9B
@@ -3294,17 +3305,17 @@ LBE8A:
   LD A,$0F
   LD (LDCF3),A            ; Left margin size for text
   LD HL,$3418
-  LD ($86D7),HL           ; Set penRow/penCol
+  LD (L86D7),HL           ; Set penRow/penCol
   LD HL,SE0A9             ; "Earn 3 Good Awards for|an Extended Ending!"
   CALL LBEDE              ; Load archived string and show message char-by-char
 LBE9B:
   CALL LADA1              ; Wait for MODE key
   CALL L9FCF              ; Clear shadow screen
   LD HL,$3A46
-  LD ($86D7),HL           ; Set penRow/penCol
+  LD (L86D7),HL           ; Set penRow/penCol
   LD HL,SE11F             ; "The End"
   CALL LBEDE              ; Load archived string and show message char-by-char
-  CALL LBC34
+  CALL LBC34              ; Delay x20
   JP LBF6F                ; The End
 ;
 ; Draw string on the screen using FontProto
@@ -3328,13 +3339,13 @@ LBEF9_1:
   jr LBEDE
 LBF1B:
   PUSH BC
-  LD A,($86D8)            ; Get penRow
+  LD A,(L86D8)            ; Get penRow
   LD C,A
   LD A,(LDCF4)            ; Line interval for text
   ADD A,C
-  LD ($86D8),A            ; Set penRow
+  LD (L86D8),A            ; Set penRow
   LD A,(LDCF3)            ; Get left margin size for text
-  LD ($86D7),A            ; Set penCol
+  LD (L86D7),A            ; Set penCol
   POP BC
   jr LBEDE
 
@@ -3362,7 +3373,7 @@ LBF6F:
   CALL L9FCF              ; Clear shadow screen
   CALL LBF54
   LD HL,$2E46
-  LD ($86D7),HL           ; Set penRow/penCol
+  LD (L86D7),HL           ; Set penRow/penCol
   LD HL,SE11F             ; "The End"
   CALL LBEDE              ; Load archived string and show message char-by-char
 ;
@@ -3370,7 +3381,7 @@ LBF6F:
 ;
 LBF81:
   LD A,126                ; To draw new strings on the very bottom
-  LD ($86D8),A            ; Set penRow
+  LD (L86D8),A            ; Set penRow
 LBF686:
   JP LBF6F_4
 LBF6F_2:
@@ -3397,7 +3408,7 @@ LBF6F_4:
   LD HL,LDDF2
   ADD HL,DE
   LD A,(HL)
-  LD ($86D7),A           ; Set penCol
+  LD (L86D7),A           ; Set penCol
   LD A,(LDD57)
   LD HL,LDD58
   CALL LADFF              ; Get address from table by index A

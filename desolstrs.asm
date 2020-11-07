@@ -54,10 +54,10 @@ SE091: DEFM "Capt Millin: We are|transporting a cargo|of genetically|modified cl
 SE093: DEFM "Capt Millin: I have|just recieved word|that the facility on|earth was destroyed.|We now carry the only|clone prototypes.",0
 SE095: DEFM "Willis: We are in BIG|trouble. Only 1 clone|survived the meteorite|shower. And the system|says Re-animation will|take over 6 hours!!!",0
 SE097: DEFM "This is ludicrous!|65 credits for a proton|bar? How are we|meant to snack while|we work? The agency|is getting on my nerves.",0
-SE09B: DEFM "         No Data Cartridge| Selected",0
+SE09B: DEFM $1B,"No Data Cartridge| Selected",0
 SE09D: DEFM "MaxCoderz Presents",0
 SE09F: DEFM "a tr1p1ea game",0
-SE0A1: DEFM "Items Found (/24):|            Enemies Killed:|               PlayerDeaths:||Awards:",0
+SE0A1: DEFM "Items Found (/24):|",$1F,"Enemies Killed:|",$1F,$05,"PlayerDeaths:||Awards:",0
 SE0A3: DEFM "OverWrite Current Game?|Alpha = Yes :: Clear = No",0
 SE0A5: DEFM "- Controls -",0
 SE0A7: DEFM "QAOP 1234 6789: Arrows|Space ZBMN05: Look/shoot|U I: Inventory|S D: Look/shoot mode|W E: Close all pop-ups|G: Quit to Menu",0
@@ -68,75 +68,76 @@ SE0AF: DEFM "Running Scared",0
 SE0B1: DEFM "Terminator",0
 SE0B3: DEFM "Over & Over Again",0
 SE0B5: DEFM "Survivor",0
-SE0B7: DEFM "        Ion Phaser",0
+SE0B7: DEFM $18,"Ion Phaser",0
 SE0B9: DEFM "$",0  ; Arrow down
 SE0BB: DEFM " - INVENTORY - ",0
 SE0BD: DEFM "The Desolate has claimed|your life too . . .",0
 SE0BF: DEFM "OMG! This Person Is DEAD!",0
 SE0C1: DEFM "What Happened Here!?!",0
-SE0C3: DEFM "     Another Dead Person",0
+SE0C3: DEFM $0F,"Another Dead Person",0
 SE0C5: DEFM " Search Reveals Nothing",0
-SE0C7: DEFM "     This Person is Dead . . .",0
+SE0C7: DEFM $0F,"This Person is Dead . . .",0
 SE0C9: DEFM "They Seem To Be Holding",0
 SE0CB: DEFM "Something",0
-SE0CD: DEFM "     Hey Whats This  .  .  . ?",0
+SE0CD: DEFM $0F,"Hey Whats This  .  .  . ?",0
 SE0CF: DEFM "You Picked Up A",0
 SE0D1: DEFM "You Already Have The",0
-SE0D3: DEFM "You dont have a|          Weapon to equip!",0
-SE0D5: DEFM "It is not wise to proceed|       without a weapon.",0
-SE0D7: DEFM "You cant enter that sector|   Life-Support is offline.",0
+SE0D3: DEFM "You dont have a|",$1E,"Weapon to equip!",0
+SE0D5: DEFM "It is not wise to proceed|",$15,"without a weapon.",0
+SE0D7: DEFM "You cant enter that sector|",$09,"Life-Support is offline.",0
 SE0D9: DEFM "You cant enter until the|AirLock is re-pressurised",0
-SE0DB: DEFM "    ---- N o  I t e m ----",0
+SE0DB: DEFM $0C,"---- N o  I t e m ----",0
 SE0DD: DEFM "Door Locked",0
 SE0DF: DEFM " INVALID CODE",0
-SE0E1: DEFM "       Accepted!      ",0
-SE0E3: DEFM "                    You Need A|Data Cartridge Reader",0
-SE0E5: DEFM "    Data Cartridge Reader",0
-SE0E7: DEFM "           Data Cartridge 1",0
-SE0E9: DEFM "           Data Cartridge 2",0
-SE0EB: DEFM "           Data Cartridge 3",0
-SE0ED: DEFM "           Data Cartridge 4",0
-SE0EF: DEFM "           Data Cartridge 5",0
-SE0F1: DEFM "           Data Cartridge 6",0
-SE0F3: DEFM "           Data Cartridge 7",0
-SE0F5: DEFM "           Data Cartridge 8",0
-SE0F7: DEFM "           Data Cartridge 9",0
-SE0F9: DEFM "          Data Cartridge 10",0
-SE0FB: DEFM "          Data Cartridge 11",0
-SE0FD: DEFM "          Data Cartridge 12",0
-SE0FF: DEFM "          Data Cartridge 13",0
-SE101: DEFM "          Data Cartridge 14",0
-SE103: DEFM "          Data Cartridge 15",0
-SE105: DEFM "          Data Cartridge 16",0
-SE107: DEFM "                 Power Drill",0
-SE109: DEFM "    Life Support Data Disk",0
-SE10B: DEFM "                 Air-Lock Tool",0
-SE10D: DEFM "         Box of Power Cells",0
-SE10F: DEFM "                 Pile of Parts",0
-SE111: DEFM "                   Duck Idol ;)",0
-SE113: DEFM "                  Rubik's Cube",0
+SE0E1: DEFM $15,"Accepted!      ",0
+SE0E3: DEFM $1F,$1D,"You Need A|Data Cartridge Reader",0
+SE0E5: DEFM $0C,"Data Cartridge Reader",0
+SE0E7: DEFM $1F,$02,"Data Cartridge 1",0
+SE0E9: DEFM $1F,$02,"Data Cartridge 2",0
+SE0EB: DEFM $1F,$02,"Data Cartridge 3",0
+SE0ED: DEFM $1F,$02,"Data Cartridge 4",0
+SE0EF: DEFM $1F,$02,"Data Cartridge 5",0
+SE0F1: DEFM $1F,$02,"Data Cartridge 6",0
+SE0F3: DEFM $1F,$02,"Data Cartridge 7",0
+SE0F5: DEFM $1F,$02,"Data Cartridge 8",0
+SE0F7: DEFM $1F,$02,"Data Cartridge 9",0
+SE0F9: DEFM $1E,"Data Cartridge 10",0
+SE0FB: DEFM $1E,"Data Cartridge 11",0
+SE0FD: DEFM $1E,"Data Cartridge 12",0
+SE0FF: DEFM $1E,"Data Cartridge 13",0
+SE101: DEFM $1E,"Data Cartridge 14",0
+SE103: DEFM $1E,"Data Cartridge 15",0
+SE105: DEFM $1E,"Data Cartridge 16",0
+SE107: DEFM $1F,$14,"Power Drill",0
+SE109: DEFM $0C,"Life Support Data Disk",0
+SE10B: DEFM $1F,$14,"Air-Lock Tool",0
+SE10D: DEFM $1B,"Box of Power Cells",0
+SE10F: DEFM $1F,$14,"Pile of Parts",0
+SE111: DEFM $1F,$1A,"Duck Idol ;)",0
+SE113: DEFM $1F,$17,"Rubik's Cube",0
 SE115: DEFM "In the Distant Future . . .",0
 SE117: DEFM "'The Desolate' Space Cruiser|leaves orbit. Its mission is|secret, its cargo classified.|6014 Cycles into the journey|the ship encounters a savage|meteorite shower.||Contact with Desolate is lost.",0
 SE119: DEFM "The ship sustains heavy|damage. Onboard a cryo-|genic incubation cell|finishes re-animation. Its|occupant steps out of the|chamber not knowing who he|is, or what he is going to do.||But at least he is alive.",0
 SE11B: DEFM "The onboard guidance|system picks up a mining|facility close by. The course|is set and you sit back, finally|free of 'The Desolate' & its|murderous hord of Aliens.|You were a clone, an|experiment. Now, 'you' are|the sole survivor .",0
 SE11D: DEFM "System Alert triggered: |'Foreign Objects Detected|OnBoard'. The Aliens have|attached to the hull!|'Main Drive System Offline'|The ship was on a crash|course for the Mining Facility||It wasnt over yet  .  .  .",0
 SE11F: DEFM "The End",0
-SE121: DEFM "         Level 1|   Access Code|       Required",0
-SE123: DEFM "         Level 2|   Access Code|       Required",0
-SE125: DEFM "         Level 3|   Access Code|       Required",0
-SE127: DEFM "         Level 4|   Access Code|       Required",0
-SE129: DEFM "You dont seem to be able|     to use this item here",0
-SE12B: DEFM "You dont have any time|    to play with this now",0
-SE12D: DEFM "       It doesnt look like you|  can do anything else here",0
+SE121: DEFM $1B,"Level 1|",$09,"Access Code|",$15,"Required",0
+SE123: DEFM $1B,"Level 2|",$09,"Access Code|",$15,"Required",0
+SE125: DEFM $1B,"Level 3|",$09,"Access Code|",$15,"Required",0
+SE127: DEFM $1B,"Level 4|",$09,"Access Code|",$15,"Required",0
+SE129: DEFM "You dont seem to be able|",$0F,"to use this item here",0
+SE12B: DEFM "You dont have any time|",$0C,"to play with this now",0
+SE12D: DEFM $15,"It doesnt look like you|",$06,"can do anything else here",0
 SE12F: DEFM "This Generator is damaged|All of the panels are loose",0
-SE131: DEFM "     This Workstation doesnt|seem to have any power...?",0
-SE133: DEFM "    The Workstation has now|   successfully booted up    ",0
-SE135: DEFM " The Workstation Ejected A|                Data Cartridge 2",0
+SE131: DEFM $0F,"This Workstation doesnt|seem to have any power...?",0
+SE133: DEFM $0C,"The Workstation has now|",$09,"successfully booted up    ",0
+SE135: DEFM " The Workstation Ejected A|",$1F,$11,"Data Cartridge 2",0
 SE137: DEFM " You use the Power Drill|to Repair the Generator",0
-SE139: DEFM "      Life-Support System|has been fully restored",0
-SE13B: DEFM "The Evacuation Deck has|   been re-pressurised",0
+SE139: DEFM $12,"Life-Support System|has been fully restored",0
+SE13B: DEFM "The Evacuation Deck has|",$09,"been re-pressurised",0
 SE13D: DEFM "You Insert a Power Cell.|Guidance System Online",0
-SE13F: DEFM "    The Life Support System|       needs Re-Configuring",0
-SE141: DEFM "              AirLock Control &| Re-Pressurisation Station",0
-SE143: DEFM "   This MainFrame is missing|                        a Power Cell",0
-SE145: DEFM "   This Pod cant naviagate.|Guidance System is offline",0
+SE13F: DEFM $0C,"The Life Support System|",$15,"needs Re-Configuring",0
+SE141: DEFM $1F,$0B,"AirLock Control &| Re-Pressurisation Station",0
+SE143: DEFM $09,"This MainFrame is missing|",$1F,$1F,$0A,"a Power Cell",0
+SE145: DEFM $09,"This Pod cant naviagate.|Guidance System is offline",0
+SQuit: DEFM "Its now safe to turn off|",$1F,$0E,"your computer.",0
