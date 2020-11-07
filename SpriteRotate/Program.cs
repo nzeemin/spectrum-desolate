@@ -55,6 +55,7 @@ namespace SpriteRotate
             //PrepareFontProto();
             //PrepareTilesetMasked();
             //PrepareTileset3();
+            //PrepareCreditsMargins();
         }
 
         static void ParseMemoryDump()
@@ -958,6 +959,26 @@ namespace SpriteRotate
                     }
                 }
             }
+        }
+
+        static void PrepareCreditsMargins()
+        {
+            var file = new StreamWriter("credits.txt");
+
+            for (int addr = 0xDDF2; addr < 0xDE47; addr++)
+            {
+                if ((addr - 0xDDF2) % 16 == 0)
+                    file.Write("  DEFB ");
+                var value = memdmp[addr] * 2;
+                file.Write($"${value:X2}");
+                if ((addr - 0xDDF2) % 16 == 15)
+                    file.WriteLine();
+                else
+                    file.Write(",");
+            }
+
+            file.Flush();
+            Console.WriteLine("credits.txt saved");
         }
     }
 }

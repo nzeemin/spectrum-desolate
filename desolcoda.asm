@@ -531,6 +531,12 @@ ShowShadowScreen_9:
 ShowShadowScreen_sp: DW 0
 ShowShadowScreen_src: DW 0
 
+; Get random number 0..7
+GetRandom8:
+  ld a,r
+  and $07
+  ret
+
 ;----------------------------------------------------------------------------
 
   INCLUDE "desolcodb.asm"

@@ -10,7 +10,7 @@ L9DDD:
   CALL LB96B              ; Display Health
   CALL LB8EA              ; Show look/shoot selection indicator
   CALL LB76B
-  CALL LB551
+  CALL LB551              ; Process alien in the room
   CALL LA0F1              ; Scan keyboard
   CP $0F                  ; CLEAR
   JP Z,LBA3D
@@ -263,7 +263,6 @@ ReflectByte:
   pop bc
   ret
 
-
 ; Copy shadow screen to ZX screen
 ;
 L9FEA EQU ShowShadowScreen
@@ -313,7 +312,7 @@ LA88F_0:
   ADD HL,HL               ;
   ADD HL,HL               ;
   ADD HL,HL               ;
-  add hl,hl	; HL <- HL * 32
+  add hl,hl               ; HL <- HL * 32
   LD BC,Tileset1
   ADD HL,BC
   PUSH HL
@@ -447,7 +446,7 @@ LA956:
   RET Z
   LD C,$80                ; looking left => reflect the tile horizontal
   RET
-
+;
 ; Move Down
 LA966:
   LD A,(LDB75)            ; Direction/orientation
@@ -504,12 +503,13 @@ LA9D1:
   LD A,(LDB84)
   OR A
   JP Z,LA9E6
-  CALL LB72E
-  OR A
-  JP Z,LA9E6
+  CALL LB72E              ; Get value at offset $2F in the room description
+  OR A                    ; do we have the alien?
+  JP Z,LA9E6              ; we don't have it => jump
+; We have an alien in the room
   CALL LB74C
   OR A
-  JP Z,LB07B           ; Decrease Health by 4, restore Y coord
+  JP Z,LB07B              ; Decrease Health by 4, restore Y coord
 LA9E6:
   POP AF
   POP AF
@@ -563,9 +563,10 @@ LAA47:
   LD A,(LDB84)
   OR A
   JP Z,LAA5C
-  CALL LB72E
-  OR A
-  JP Z,LAA5C
+  CALL LB72E              ; Get value at offset $2F in the room description
+  OR A                    ; do we have the alien?
+  JP Z,LAA5C              ; we don't have it => jump
+; We have an alien in the room
   CALL LB74C
   OR A
   JP Z,LB08D              ; Decrease Health by 4, restore X coord
@@ -1350,7 +1351,7 @@ LAFFE
 ; Going to the next room
 LB00E:
   XOR A
-  LD (LDB82),A
+  LD (LDB82),A            ; mark we don't have an alien in the room
   LD A,$40
   LD (LDC59),A
   LD A,(LDC8A)
@@ -1882,30 +1883,31 @@ LB3E8:
 LB3F4:
   CALL LB3DA
   JP NZ,LB3E8
-  CALL LB538
+  CALL LB538              ; Get value at $13 offset in the room description
   CP $01
   JP NZ,LB3E8
   LD HL,LDB90
   INC HL
   LD A,(HL)
-  OR A
-  JP NZ,LB42E
-  CALL LB541
-  SUB C
-  JP Z,LB41C
+  OR A                    ; Generator working?
+  JP NZ,LB42E             ; yes => jump
+  CALL LB541              ; Get value at $0F offset in the room description
+  SUB C                   ; compare current offset in the room with the value
+  JP Z,LB41C              ; equal => jump
   INC HL
   LD A,(HL)
   LD C,A
-  LD A,(LDC56)
+  LD A,(LDC56)            ; get offset in the room
   SUB C
   JP NZ,LB3E8
+; Using Power Drill in the proper spot
 LB41C:
   CALL LB51F
   LD HL,SE137             ; "You use the Power Drill to Repair the Generator"
   CALL LB513              ; Show message
   LD HL,LDB90
-  INC HL
-  LD (HL),$01
+  INC HL                  ; HL = LDB90 + $01
+  LD (HL),$01             ; mark the Generator is working now
   JP LB1C1
 LB42E:
   LD A,$05
@@ -1923,21 +1925,22 @@ LB42E:
 LB44A:
   CALL LB3DA
   JP NZ,LB3E8
-  CALL LB538
+  CALL LB538              ; Get value at $13 offset in the room description
   CP $04
   JP NZ,LB3E8
   LD DE,$0004
   CALL LB531
   JP NZ,LB42E
-  CALL LB541
-  SUB C
-  JP Z,LB472
+  CALL LB541              ; Get value at $0F offset in the room description
+  SUB C                   ; compare current offset in the room with the value
+  JP Z,LB472              ; equal => jump
   INC HL
   LD A,(HL)
   LD C,A
-  LD A,(LDC56)
+  LD A,(LDC56)            ; get offset in the room
   SUB C
   JP NZ,LB3E8
+; Using Life Support Data Disk in the proper spot
 LB472:
   CALL LB51F
   LD HL,SE139             ; "Life-Support System has been fully restored"
@@ -1945,65 +1948,67 @@ LB472:
   LD DE,$0004
   LD HL,LDB90
   ADD HL,DE
-  LD (HL),$01
+  LD (HL),$01             ; mark that Life-Support System is working
   JP LB1C1
 ;
 ; Air-Lock Tool selected in the Inventory
 LB487:
   CALL LB3DA
   JP NZ,LB3E8
-  CALL LB538
+  CALL LB538              ; Get value at $13 offset in the room description
   CP $05
   JP NZ,LB3E8
   LD DE,$0005
   CALL LB531
   JP NZ,LB42E
-  CALL LB541
-  SUB C
-  JP Z,LB4AF
+  CALL LB541              ; Get value at $0F offset in the room description
+  SUB C                   ; compare current offset in the room with the value
+  JP Z,LB4AF              ; equal => jump
   INC HL
   LD A,(HL)
   LD C,A
-  LD A,(LDC56)
+  LD A,(LDC56)            ; get offset in the room
   SUB C
   JP NZ,LB3E8
+; Using Air-Lock Tool in the proper spot
 LB4AF:
   CALL LB51F
-  LD HL,SE13B             ; "The Evacuation Deck has| been re-pressurised"
+  LD HL,SE13B             ; "The Evacuation Deck has been re-pressurised"
   CALL LB513              ; Show message
   LD DE,$0005
   LD HL,LDB90
   ADD HL,DE
-  LD (HL),$01
+  LD (HL),$01             ; mark that the Evacuation Deck re-pressurised
   JP LB1C1
 ;
 ; Box of Power Cells selected in the Inventory
 LB4C4:
   CALL LB3DA
   JP NZ,LB3E8
-  CALL LB538
+  CALL LB538              ; Get value at $13 offset in the room description
   CP $06
   JP NZ,LB3E8
   LD DE,$0006
   CALL LB531
   JP NZ,LB42E
-  CALL LB541
-  SUB C
-  JP Z,LB4EC
+  CALL LB541              ; Get value at $0F offset in the room description
+  SUB C                   ; compare current offset in the room with the value
+  JP Z,LB4EC              ; equal => jump
   INC HL
   LD A,(HL)
   LD C,A
-  LD A,(LDC56)
+  LD A,(LDC56)            ; get offset in the room
   SUB C
   JP NZ,LB3E8
+; Using Box of Power Cells in the proper spot
 LB4EC:
   CALL LB51F
-  LD HL,SE13D             ; "You Insert a Power Cell.|Guidance System Online"
+  LD HL,SE13D             ; "You Insert a Power Cell. Guidance System Online"
   CALL LB513              ; Show message
   LD DE,$0006
   LD HL,LDB90
   ADD HL,DE
-  LD (HL),$01
+  LD (HL),$01             ; mark we have Guidance System working
   JP LB1C1
 ;
 ; Rubik's Cube selected in the Inventory
@@ -2044,42 +2049,48 @@ LB531:
   OR A
   RET
 ;
+; Get value at $13 offset in the room description
 LB538:
-  CALL LAE09
-  LD DE,$0013
+  CALL LAE09              ; Decode current room description to LDBF5
+  LD DE,$0013             ; offset in the room description
   ADD HL,DE
   LD A,(HL)
   RET
 ;
+; Get value at $0F offset in the room description
+;   Returns: C = value from the offset; A = LDC56 = offset in the room
 LB541:
-  CALL LAA9D
-  CALL LAE09
-  LD DE,$000F
+  CALL LAA9D              ; Get room offset in tiles for X = LDB76, Y = LDB78
+  CALL LAE09              ; Decode current room description to LDBF5
+  LD DE,$000F             ; offset in the room description
   ADD HL,DE
   LD A,(HL)
   LD C,A
-  LD A,(LDC56)
+  LD A,(LDC56)            ; get offset in the room
   RET
 ;
+; Process alien in the room
 LB551:
-  CALL LB72E
-  OR A
-  RET Z
+  CALL LB72E              ; Get value at offset $2F in the room description
+  OR A                    ; do we have the alien?
+  RET Z                   ; we don't have it => return
+; We have an alien in the room description
   LD A,(LDB82)
-  OR A
-  JP NZ,LB57B
-  DEC HL
+  OR A                    ; do we have it already in the room?
+  JP NZ,LB57B             ; yes => jump
+  DEC HL                  ; now HL = RoomDesc + $2E
   LD A,(HL)
-  LD (LDB81),A
-  DEC HL
+  LD (LDB81),A            ; set Alien type
+  DEC HL                  ; now HL = RoomDesc + $2D
   LD A,(HL)
-  LD (LDB80),A
-  DEC HL
+  LD (LDB80),A            ; Alien Y tile coord ??
+  DEC HL                  ; now HL = RoomDesc + $2C
   LD A,(HL)
-  LD (LDB7F),A
-  DEC HL
+  add a,a
+  LD (LDB7F),A            ; set Alien Y coord
+  DEC HL                  ; now HL = RoomDesc + $2B
   LD A,(HL)
-  LD (LDB7E),A
+  LD (LDB7E),A            ; set Alien X coord
   LD A,$03
   LD (LDB85),A
   LD A,$01
@@ -2088,9 +2099,9 @@ LB57B:
   LD A,(LDB84)
   OR A
   JP Z,LB622
-  LD B,$08
-;TODO: Generate random number
+;  LD B,$08
 ;  CALL $4086
+  call GetRandom8         ; Generate random number 0..7
   OR A
   JP Z,LB59D
   CP $02
@@ -2109,9 +2120,9 @@ LB59D:
   CALL LB6B0
   CP $01
   JP NZ,LB622
-  LD A,(LDB7F)
-  ADD A,$08
-  LD (LDB7F),A
+  LD A,(LDB7F)            ; get Alien Y coord
+  ADD A,16    ; was: $08  ; down one tile
+  LD (LDB7F),A            ; set Alien Y coord
   LD A,(LDB80)
   INC A
   LD (LDB80),A
@@ -2125,9 +2136,9 @@ LB5C3:
   CALL LB6B0
   CP $01
   JP NZ,LB622
-  LD A,(LDB7F)
-  ADD A,$F8
-  LD (LDB7F),A
+  LD A,(LDB7F)            ; get Alien Y coord
+  ADD A,-16   ; was: $F8  ; up one tile
+  LD (LDB7F),A            ; set Alien Y coord
   LD A,(LDB80)
   DEC A
   LD (LDB80),A
@@ -2141,9 +2152,9 @@ LB5E9:
   CALL LB6B0
   CP $01
   JP NZ,LB622
-  LD A,(LDB7E)
-  DEC A
-  LD (LDB7E),A
+  LD A,(LDB7E)            ; get Alien X coord
+  DEC A                   ; decrease Y
+  LD (LDB7E),A            ; set Alien X coord
   JP LB622
 LB607:
   LD A,$03
@@ -2154,26 +2165,26 @@ LB607:
   CALL LB6B0
   CP $01
   JP NZ,LB622
-  LD A,(LDB7E)
-  INC A
-  LD (LDB7E),A
+  LD A,(LDB7E)            ; get Alien X coord
+  INC A                   ; increase Y
+  LD (LDB7E),A            ; set Alien X coord
 ;
 LB622:
-  LD A,(LDB7E)
-  LD H,A
-  LD A,(LDB7F)
-  LD L,A
-  LD A,$00
-  CALL LB67B
-  CALL L9EDE
+  LD A,(LDB7E)            ; get Alien X coord
+  LD H,A                  ; column
+  LD A,(LDB7F)            ; get Alien Y coord
+  LD L,A                  ; row
+  LD A,$00                ; clear draw flags
+  CALL LB67B              ; Get alien tile address in DE
+  CALL L9EDE              ; Draw tile DE at column H row L
   LD A,$01
-  LD (LDB82),A
+  LD (LDB82),A            ; mark that we already have an alien in the room
   LD A,(LDB83)
   INC A
   CP $01
   CALL NZ,LB676
   LD (LDB83),A
-  LD A,(LDB81)
+  LD A,(LDB81)            ; get Alien type
   CP $02
   JP Z,LB82B
 LB64B:
@@ -2186,20 +2197,21 @@ LB653:
   LD A,(LDB84)
   OR A
   RET Z
-  CALL LB72E
-  OR A
-  RET Z
-  LD A,(LDB81)
+  CALL LB72E              ; Get value at offset $2F in the room description
+  OR A                    ; do we have the alien?
+  RET Z                   ; we don't have it => jump
+; We have an alien in the room description
+  LD A,(LDB81)            ; get Alien type
   CP $02
   RET NZ
-  LD A,(LDB7E)
+  LD A,(LDB7E)            ; get Alien X coord
   LD H,A
-  LD A,(LDB7F)
-  ADD A,$F8
+  LD A,(LDB7F)            ; get Alien Y coord
+  ADD A,-16   ; $F8
   LD L,A
   LD A,$00
-  CALL LB69D
-  CALL L9EDE
+  CALL LB69D              ; Get alien tile address
+  CALL L9EDE              ; Draw tile DE at column H row L
   RET
 ;
 LB676:
@@ -2207,26 +2219,28 @@ LB676:
   LD (LDB83),A
   RET
 ;
+; Get alien tile address
 LB67B:
   LD A,(LDB84)
   JP NZ,LB685
-  LD DE,$EA67   ;TODO
+  LD DE,Tileset1+$92*32   ; was $EA67 = $E147 + $0920 = tile $92
   RET
 LB685:
-  LD A,(LDB81)
+  LD A,(LDB81)            ; get Alien type
   CP $02
   JP Z,LB698
-  LD DE,$EA57   ;TODO
+  LD DE,Tileset1+$91*32   ; was $EA57 = $E147 + $0910 = tile $91
   LD A,(LDB83)
   OR A
   RET Z
   LD A,$40
   RET
-LB698:
-  LD DE,$EA87
+LB698:                    ; Alien type 2
+  LD DE,Tileset1+$94*32   ; was $EA87 = $E147 + $0940 = tile $94
   JR LB6A0
 LB69D:
-  LD DE,$EA77
+  LD DE,Tileset1+$93*32   ; was $EA77 = $E147 + $0930 = tile $93
+; Now DE = tile address
 LB6A0:
   LD A,(LDB83)
   OR A
@@ -2242,7 +2256,7 @@ LB6A0:
 ;
 LB6B0:
   CALL LADE5              ; Decode current room
-  LD A,(LDB7E)
+  LD A,(LDB7E)            ; get Alien X coord
   LD E,A
   CALL LB6CD
   LD D,$00
@@ -2285,7 +2299,7 @@ LB6EB:
 ;
 LB6ED:
   CALL LB6FA
-  LD A,(LDB7E)
+  LD A,(LDB7E)            ; get Alien X coord
 LB6F3:
   ADD A,C
   DJNZ LB6F3
@@ -2297,23 +2311,24 @@ LB6FA:
   LD A,(LDB80)
   LD B,A
   RET
+;
 LB703:
   CALL LB6FA
   CALL LB6DD
-  LD A,(LDB7E)
+  LD A,(LDB7E)            ; get Alien X coord
   LD E,A
   CALL LB6CD
   LD A,E
   JR LB6F3
 ;
 LB713:
-  CALL LAA9D
+  CALL LAA9D              ; Get room offset in tiles for X = LDB76, Y = LDB78
   CALL LB703
   LD C,A
-  LD A,(LDC56)
+  LD A,(LDC56)            ; get offset in the room
   SUB C
   RET
-;
+; Killed the alien
 LB71F:
   XOR A
   LD (LDB84),A
@@ -2323,9 +2338,11 @@ LB71F:
   LD (LDBC5),HL           ; set Enemies Killed count
   RET
 ;
+; Get value at offset $2F in the room description
+;   Returns: A = value
 LB72E:
-  CALL LAE09
-  LD DE,$002F
+  CALL LAE09              ; Decode current room description to LDBF5
+  LD DE,$002F             ; offset in the room description
   ADD HL,DE
   LD A,(HL)
   RET
@@ -2334,17 +2351,17 @@ LB737:
   XOR A
   LD (LDB8D),A
   CALL LB994              ; Decrease Health
-  LD A,(LDB81)
+  LD A,(LDB81)            ; get Alien type
   CP $02
   JP NZ,LB622
   CALL LB994              ; Decrease Health
   JP LB622
 ;
 LB74C:
-  CALL LAA9D
+  CALL LAA9D              ; Get room offset in tiles for X = LDB76, Y = LDB78
   CALL LB6ED
   LD C,A
-  LD A,(LDC56)
+  LD A,(LDC56)            ; get offset in the room
   SUB C
   RET
 ;
@@ -2433,10 +2450,10 @@ LB805:
   LD A,(LDB89)
   LD L,A
   CALL LB84F
-  CALL L9EDE
+  CALL L9EDE              ; Draw tile DE at column H row L
   LD A,$01
   LD (LDB8C),A
-  LD A,(LDB81)
+  LD A,(LDB81)            ; get Alien type
   CP $02
   JP Z,LB82B
   CALL LB64B
@@ -2599,9 +2616,9 @@ LB91C:
   RET                     ;
 ;
 LB925:
-  LD A,$0B
+  LD A,14   ; was: $0B
   LD (LDCF3),A
-  LD A,$07
+  LD A,14   ; was: $07
   LD (LDCF4),A
   RET
 ;
@@ -2815,22 +2832,22 @@ LBA93:
 ; New menu item selected
 LBAB2:
   LD A,(LDB73)
-  OR A
-  JP Z,LBADE
+  OR A                    ; do we have current game?
+  JP Z,LBADE              ; no => New Game
   CALL LB925
   CALL LAB28              ; Show small message popup
-  LD HL,$2C07
+  LD HL,$580E
   LD (L86D7),HL           ; Set penRow/penCol
-  LD HL,SE0A3             ; "OverWrite Current Game? Alpha = Yes :: Clear = No"
+  LD HL,SE0A3             ; "OverWrite Current Game? Enter - Yes :: G - No"
   CALL LBEDE              ; Load archived string and show message char-by-char
   CALL L9FEA              ; Copy shadow screen to ZX screen
 LBACE:
   CALL LA0F1              ; Scan keyboard
-  CP $0F
-  JP Z,LBA3D
-  CP $30
-  JP Z,LBADE
-  JP LBACE
+  CP $0F                  ; Menu button?
+  JP Z,LBA3D              ; yes => return to Menu
+  CP $09                  ; Enter?
+  JP Z,LBADE              ; yes => New Game
+  jr LBACE                ; wait some more
 ;
 ; New Game
 ;
@@ -2858,7 +2875,7 @@ LBB03:
   LD HL,LDB90
   LD B,$09
 LBB09:
-  LD (HL),$00
+  LD (HL),$00             ; Clear 9 variables about the progress
   INC HL
   DJNZ LBB09
   LD HL,LDCA2
@@ -3048,7 +3065,7 @@ LBC6B:
 LBC6D:
   PUSH BC
   PUSH HL
-;TODO: Get random digit 0..9
+;TODO: Get random number 0..10
 ;  LD B,$0B
 ;  CALL $4086  
   ADD A,$1A
@@ -3097,7 +3114,7 @@ LBC8B:
   LD HL,LDB90
   ADD HL,DE
   LD A,(HL)
-  OR A
+  OR A                    ; do we have it working?
   JP Z,LBCD5
   CALL LBD69              ; Set penRow/penCol = $580A
   LD HL,SE12D             ; " It doesnt look like you can do anything else here"
@@ -3112,31 +3129,31 @@ LBCCB:
   JP L9E2E                ; Show the screen, continue the game main loop
 ;
 LBCD5:
-  LD A,(LDC87)            ; get RoomDesc[$13] value
-  CP $01
+  LD A,(LDC87)            ; get RoomDesc[$13] value - important object in the room
+  CP $01                  ; the Generator
   JP Z,LBCF6
-  CP $02
+  CP $02                  ; the Workstation
   JP Z,LBCFF
-  CP $04
+  CP $04                  ; Life-Support System
   JP Z,LBD4E
-  CP $05
+  CP $05                  ; Evacuation Deck re-pressure
   JP Z,LBD57
-  CP $06
+  CP $06                  ; Guidance System
   JP Z,LBD60
-  CP $07
+  CP $07                  ; the Pod
   JP Z,LBD70
-; RoomDesc[$13] == $01
+; RoomDesc[$13] == $01 - the Generator
 LBCF6:
   CALL LBD69              ; Set penRow/penCol = $580A
   LD HL,SE12F             ; -> "This Generator is damaged All of the panels are loose"
   JP LBCC5                ; Show the message/screen, wait for key, continue game main loop
-; RoomDesc[$13] == $02
+; RoomDesc[$13] == $02 - the Workstation
 LBCFF:
   LD HL,LDB90
-  INC HL
+  INC HL                  ; HL = LDB90 + $01
   LD A,(HL)
-  OR A
-  JP NZ,LBD11
+  OR A                    ; Generator working?
+  JP NZ,LBD11             ; yes => jump
   CALL LBD69              ; Set penRow/penCol = $580A
   LD HL,SE131             ; -> "This Workstation doesnt seem to have any power...?"
   JP LBCC5                ; Show the message/screen, wait for key, continue game main loop
@@ -3149,7 +3166,7 @@ LBD11:
   CALL LBD69              ; Set penRow/penCol = $580A
   LD HL,SE133             ; -> "The Workstation has now successfully booted up"
   CALL LBEDE              ; Load archived string and show message char-by-char
-  CALL L9FEA              ; Copy screen 9340/9872 to A28F/A58F
+  CALL L9FEA              ; Copy shadow screen to ZX screen
   CALL LAB28              ; Show small message popup
 LBD2B:
   CALL LA0F1              ; Scan keyboard
@@ -3157,7 +3174,7 @@ LBD2B:
   JR NZ,LBD2B             ; no => wait some more
   LD HL,LDB90
   INC HL
-  INC HL
+  INC HL                  ; HL = LDB90 + $02
   LD (HL),$01
   LD A,(LDC89)            ; get the current item number
   LD H,$00
@@ -3168,17 +3185,17 @@ LBD2B:
   CALL LBD69              ; Set penRow/penCol = $580A
   LD HL,SE135             ; -> "The Workstation Ejected A Data Cartridge 2"
   JP LBCC5                ; Show the message/screen, wait for key, continue game main loop
-; RoomDesc[$13] == $04
+; RoomDesc[$13] == $04 - Life-Support System
 LBD4E:
   CALL LBD69              ; Set penRow/penCol = $580A
   LD HL,SE13F             ; -> "The Life Support System needs Re-Configuring"
   JP LBCC5                ; Show the message/screen, wait for key, continue game main loop
-; RoomDesc[$13] == $05
+; RoomDesc[$13] == $05 - Evacuation Deck re-pressurised
 LBD57:
   CALL LBD69              ; Set penRow/penCol = $580A
   LD HL,SE141             ; -> "AirLock Control & Re-Pressurisation Station"
   JP LBCC5                ; Show the message/screen, wait for key, continue game main loop
-; RoomDesc[$13] == $06
+; RoomDesc[$13] == $06 - Guidance System
 LBD60:
   CALL LBD69              ; Set penRow/penCol = $580A
   LD HL,SE143             ; -> "This MainFrame is missing a Power Cell"
@@ -3192,9 +3209,9 @@ LBD69:
 LBD70:
   LD DE,$0006
   LD HL,LDB90
-  ADD HL,DE
+  ADD HL,DE               ; HL = address of Guidance System mark
   LD A,(HL)
-  OR A
+  OR A                    ; does it work?
   JP NZ,LBD85
   CALL LBD69              ; Set penRow/penCol = $580A
   LD HL,SE145             ; -> "This Pod cant naviagate. Guidance System is offline"
@@ -3237,8 +3254,8 @@ LBD85:
   CALL LB97D              ; Draw 5-digit number HL and show the screen at row/col DE
   CALL LBC34              ; Delay x20
   LD A,(LDBC7)            ; get Items Found count
-  SUB $14
-  JP C,LBE06
+  SUB $14                 ; 20 or more?
+  JP C,LBE06              ; no => jump
   LD HL,$520C
   LD (L86D7),HL           ; Set penRow/penCol
   LD HL,SE0AD             ; -> "Sherlock Holmes"
@@ -3349,12 +3366,12 @@ LBF1B:
   POP BC
   jr LBEDE
 
-; Set variables for Credits
 ;
+; Set variables for Credits
 LBF54:
   XOR A
-  LD (LDD57),A
-  LD (LDD56),A
+  LD (LDD57),A            ; clear Credits line number
+  LD (LDD56),A            ; clear Credits counter within one line
   LD (LDC85),A            ; Skip delay and copy screen in LBEDE
   LD A,$96
   LD (LDC59),A            ; set delay factor
@@ -3364,8 +3381,8 @@ LBF54:
 LBF64:
   CALL L9FCF              ; Clear shadow screen
   CALL L9FEA              ; Copy shadow screen to ZX screen
-  CALL LBF54
-  JR LBF81
+  CALL LBF54              ; Set variables for Credits
+  JR LBF81                ; Credits screen text scrolls up
 ;
 ; The End
 ;
@@ -3396,25 +3413,25 @@ LBF6F_3:
   JR LBF686
 LBF6F_4:
   LD A,(LDD56)
-  INC A
+  INC A                   ; increase counter within the line
   LD (LDD56),A
   CP 12
   JP NZ,LBF6F_2
-  XOR A
+  XOR A                   ; clear counter within the line
   LD (LDD56),A
   LD A,(LDD57)
   LD E,A
   LD D,$00
-  LD HL,LDDF2
+  LD HL,LDDF2             ; Table of left margins
   ADD HL,DE
   LD A,(HL)
-  LD (L86D7),A           ; Set penCol
+  LD (L86D7),A            ; Set penCol
   LD A,(LDD57)
-  LD HL,LDD58
+  LD HL,LDD58             ; Table of Credits strings
   CALL LADFF              ; Get address from table by index A
   CALL DrawString         ; Draw string on shadow screen without any delays
   LD A,(LDD57)
-  INC A                   ; increase the counter
+  INC A                   ; increase the Credits line counter
   LD (LDD57),A
   CP $47
   JP NZ,LBF6F_3
@@ -3426,9 +3443,9 @@ LBFD5:
   LD BC,137*24
   LDIR
   RET
-LBFEC:
+;LBFEC:
 ;  LD DE,$A2D7
 ;  LD HL,$9340
 ;  LD BC,$02B8
 ;  LDIR
-  RET
+;  RET

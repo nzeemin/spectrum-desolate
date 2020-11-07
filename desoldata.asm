@@ -663,14 +663,14 @@ LDB79:  DEFB $00          ; Room number
 LDB7A:  DEFW $0064        ; Health; initially $64
 LDB7C:  DEFB $00          ; ??
 LDB7D:  DEFB $00          ; Look/shoot switch: $00 look, $01 shoot
-LDB7E:  DEFB $00
-LDB7F:  DEFB $00
-LDB80:  DEFB $00
-LDB81:  DEFB $00
-LDB82:  DEFB $00
+LDB7E:  DEFB $00          ; Alien X coord ??
+LDB7F:  DEFB $00          ; Alien Y coord ??
+LDB80:  DEFB $00          ; Alien Y tile coord ??
+LDB81:  DEFB $00          ; Alien type: $02
+LDB82:  DEFB $00          ; Alien: $01 = we already have an alien in the room
 LDB83:  DEFB $00
-LDB84:  DEFB $02
-LDB85:  DEFB $03
+LDB84:  DEFB $02          ; Alien ??
+LDB85:  DEFB $03          ; Alien ??
 LDB86:  DEFB $00
 LDB87:  DEFB $00
 LDB88:  DEFB $00
@@ -680,9 +680,16 @@ LDB8B:  DEFB $00
 LDB8C:  DEFB $00
 LDB8D:  DEFB $00
   DEFB $00
-LDB8F:  DEFB $3A           ; Menu Y pos: $3A $46 $52 $5E $6A
-LDB90:  DEFB $00
-  DEFB $00,$00,$00,$00,$00,$00,$00
+LDB8F:  DEFB $3A          ; Menu Y pos: $3A $46 $52 $5E $6A
+LDB90:                    ; Flags about performed progress
+  DEFB $00
+  DEFB $00                ; +$01: $01 = the Generator is working
+  DEFB $00                ; +$02: $01 = the Workstation is working
+  DEFB $00
+  DEFB $00                ; +$04: $01 = Life-Support System is working
+  DEFB $00                ; +$05: $01 = Evacuation Deck re-pressurised
+  DEFB $00                ; +$06: $01 = Guidance System working
+  DEFB $00
   DEFB $00,$00,$00,$00
 LDB9C:
   DEFB $00,$00,$00,$00,$00,$00,$00,$00 ; Inventory items: $00 = not having, $01 = have it
@@ -778,9 +785,9 @@ LDCF9:
 LDD53:  DEFB $00                ; empty string
 LDD54:  DEFB $00                ; ??
 LDD55:  DEFB $00                ; ??
-LDD56:  DEFB $00                ; ??
-LDD57:  DEFB $00                ; ??
-LDD58:
+LDD56:  DEFB $00                ; Credits counter within one line 0..11
+LDD57:  DEFB $00                ; Credits line number
+LDD58:                    ; Table of Credits strings
   DEFW SE02B,SE02D,SE029,SE02F,SE031
   DEFW SE033,SE035,SE037,SE039,SE03B
   DEFW SE029,SE03D,SE03F,SE041,SE043
@@ -797,18 +804,13 @@ LDD58:
   DEFW SE029,SE029,SE029,SE029,SE029
   DEFW SE029,SE029,SE029,SE029,SE029
   DEFW SE029,SE029
-LDDF2:
-  DEFB $0E,$0E,$00,$10,$08,$0B
-  DEFB $0F,$06,$0A,$0C,$00,$25,$1C,$1D
-  DEFB $1D,$17,$13,$22,$20,$1C,$1C,$22
-  DEFB $23,$20,$19,$13,$1B,$20,$19,$18
-  DEFB $00,$08,$0A,$04,$1F,$00,$00,$04
-  DEFB $0F,$10,$00,$19,$00,$00,$11,$07
-  DEFB $00,$00,$00,$00,$00,$00,$00,$00
-  DEFB $00,$00,$00,$00,$04,$00,$00,$00
-  DEFB $00,$00,$00,$00,$00,$00,$00,$00
-  DEFB $00,$00,$00,$00,$00,$00,$00,$00
-  DEFB $00,$00,$00,$00,$00,$00,$00
+LDDF2:                    ; Table of left margins for Credits strings
+  DEFB $1C,$1C,$00,$20,$10,$16,$1E,$0C,$14,$18,$00,$4A,$38,$3A,$3A,$2E
+  DEFB $26,$44,$40,$38,$38,$44,$46,$40,$32,$26,$36,$40,$32,$30,$00,$10
+  DEFB $14,$08,$3E,$00,$00,$08,$1E,$20,$00,$32,$00,$00,$22,$0E,$00,$00
+  DEFB $00,$00,$00,$00,$00,$00,$00,$00,$00,$00,$08,$00,$00,$00,$00,$00
+  DEFB $00,$00,$00,$00,$00,$00,$00,$00,$00,$00,$00,$00,$00,$00,$00,$00
+  DEFB $00,$00,$00,$00,$00
 LDE47:
   DEFB $00,$01,$02,$03,$00,$01,$04,$05    ; $00 down
   DEFB $00,$01,$02,$03,$00,$01,$06,$07

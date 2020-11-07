@@ -58,7 +58,7 @@ SE09B: DEFM $1B,"No Data Cartridge| Selected",0
 SE09D: DEFM "MaxCoderz Presents",0
 SE09F: DEFM "a tr1p1ea game",0
 SE0A1: DEFM "Items Found (/24):|",$1F,"Enemies Killed:|",$1F,$05,"PlayerDeaths:||Awards:",0
-SE0A3: DEFM "OverWrite Current Game?|Alpha = Yes :: Clear = No",0
+SE0A3: DEFM "OverWrite Current Game?|Enter - Yes :: G - No",0
 SE0A5: DEFM "- Controls -",0
 SE0A7: DEFM "QAOP 1234 6789: Arrows|Space ZBMN05: Look/shoot|U I: Inventory|S D: Look/shoot mode|W E: Close all pop-ups|G: Quit to Menu",0
 SE0A9: DEFM "Earn 3 Good Awards for|an Extended Ending!",0
@@ -79,47 +79,47 @@ SE0C5: DEFM " Search Reveals Nothing",0
 SE0C7: DEFM $0F,"This Person is Dead . . .",0
 SE0C9: DEFM "They Seem To Be Holding",0
 SE0CB: DEFM "Something",0
-SE0CD: DEFM $0F,"Hey Whats This  .  .  . ?",0
+SE0CD: DEFM $0F,"Hey Whats This",$06,".",$06,".",$06,". ?",0
 SE0CF: DEFM "You Picked Up A",0
 SE0D1: DEFM "You Already Have The",0
 SE0D3: DEFM "You dont have a|",$1E,"Weapon to equip!",0
-SE0D5: DEFM "It is not wise to proceed|",$15,"without a weapon.",0
+SE0D5: DEFM "It is not wise to proceed|",$19,"without a weapon.",0
 SE0D7: DEFM "You cant enter that sector|",$09,"Life-Support is offline.",0
 SE0D9: DEFM "You cant enter until the|AirLock is re-pressurised",0
-SE0DB: DEFM $0C,"---- N o  I t e m ----",0
+SE0DB: DEFM $0C,"---- N o",$06,"I t e m ----",0
 SE0DD: DEFM "Door Locked",0
 SE0DF: DEFM " INVALID CODE",0
 SE0E1: DEFM $15,"Accepted!      ",0
 SE0E3: DEFM $1F,$1D,"You Need A|Data Cartridge Reader",0
-SE0E5: DEFM $0C,"Data Cartridge Reader",0
-SE0E7: DEFM $1F,$02,"Data Cartridge 1",0
-SE0E9: DEFM $1F,$02,"Data Cartridge 2",0
-SE0EB: DEFM $1F,$02,"Data Cartridge 3",0
-SE0ED: DEFM $1F,$02,"Data Cartridge 4",0
-SE0EF: DEFM $1F,$02,"Data Cartridge 5",0
-SE0F1: DEFM $1F,$02,"Data Cartridge 6",0
-SE0F3: DEFM $1F,$02,"Data Cartridge 7",0
-SE0F5: DEFM $1F,$02,"Data Cartridge 8",0
-SE0F7: DEFM $1F,$02,"Data Cartridge 9",0
-SE0F9: DEFM $1E,"Data Cartridge 10",0
-SE0FB: DEFM $1E,"Data Cartridge 11",0
-SE0FD: DEFM $1E,"Data Cartridge 12",0
-SE0FF: DEFM $1E,"Data Cartridge 13",0
-SE101: DEFM $1E,"Data Cartridge 14",0
-SE103: DEFM $1E,"Data Cartridge 15",0
-SE105: DEFM $1E,"Data Cartridge 16",0
-SE107: DEFM $1F,$14,"Power Drill",0
-SE109: DEFM $0C,"Life Support Data Disk",0
+SE0E5: DEFM $08,"Data Cartridge Reader",0
+SE0E7: DEFM $1B,"Data Cartridge 1",0
+SE0E9: DEFM $19,"Data Cartridge 2",0
+SE0EB: DEFM $19,"Data Cartridge 3",0
+SE0ED: DEFM $19,"Data Cartridge 4",0
+SE0EF: DEFM $19,"Data Cartridge 5",0
+SE0F1: DEFM $19,"Data Cartridge 6",0
+SE0F3: DEFM $19,"Data Cartridge 7",0
+SE0F5: DEFM $19,"Data Cartridge 8",0
+SE0F7: DEFM $19,"Data Cartridge 9",0
+SE0F9: DEFM $16,"Data Cartridge 10",0
+SE0FB: DEFM $16,"Data Cartridge 11",0
+SE0FD: DEFM $16,"Data Cartridge 12",0
+SE0FF: DEFM $16,"Data Cartridge 13",0
+SE101: DEFM $16,"Data Cartridge 14",0
+SE103: DEFM $16,"Data Cartridge 15",0
+SE105: DEFM $16,"Data Cartridge 16",0
+SE107: DEFM $1F,$0E,"Power Drill",0
+SE109: DEFM $0A,"Life Support Data Disk",0
 SE10B: DEFM $1F,$14,"Air-Lock Tool",0
-SE10D: DEFM $1B,"Box of Power Cells",0
+SE10D: DEFM $14,"Box of Power Cells",0
 SE10F: DEFM $1F,$14,"Pile of Parts",0
 SE111: DEFM $1F,$1A,"Duck Idol ;)",0
-SE113: DEFM $1F,$17,"Rubik's Cube",0
+SE113: DEFM $1F,$09,"Rubik's Cube",0
 SE115: DEFM "In the Distant Future . . .",0
 SE117: DEFM "'The Desolate' Space Cruiser|leaves orbit. Its mission is|secret, its cargo classified.|6014 Cycles into the journey|the ship encounters a savage|meteorite shower.||Contact with Desolate is lost.",0
 SE119: DEFM "The ship sustains heavy|damage. Onboard a cryo-|genic incubation cell|finishes re-animation. Its|occupant steps out of the|chamber not knowing who he|is, or what he is going to do.||But at least he is alive.",0
-SE11B: DEFM "The onboard guidance|system picks up a mining|facility close by. The course|is set and you sit back, finally|free of 'The Desolate' & its|murderous hord of Aliens.|You were a clone, an|experiment. Now, 'you' are|the sole survivor .",0
-SE11D: DEFM "System Alert triggered: |'Foreign Objects Detected|OnBoard'. The Aliens have|attached to the hull!|'Main Drive System Offline'|The ship was on a crash|course for the Mining Facility||It wasnt over yet  .  .  .",0
+SE11B: DEFM "The onboard guidance|system picks up a mining|facility close by. The course|is set and you sit back, finally|free of 'The Desolate' & its|murderous hord of Aliens.|You were a clone, an|experiment. Now, 'you' are|the sole survivor.",0
+SE11D: DEFM "System Alert triggered: |'Foreign Objects Detected|OnBoard'. The Aliens have|attached to the hull!|'Main Drive System Offline'|The ship was on a crash|course for the Mining Facility||It wasnt over yet",$06,".",$06,".",$06,".",0
 SE11F: DEFM "The End",0
 SE121: DEFM $1B,"Level 1|",$09,"Access Code|",$15,"Required",0
 SE123: DEFM $1B,"Level 2|",$09,"Access Code|",$15,"Required",0
