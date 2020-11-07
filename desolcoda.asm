@@ -150,6 +150,14 @@ ScreenAddrs:
   DW $5024,$5224,$5424,$5624,$5044,$5244,$5444,$5644
   DW $5064,$5264,$5464,$5664,$5084,$5284,$5484,$5684
 
+; Compare HL and DE
+CpHLDE:
+  push hl
+  or a
+  sbc hl,de
+  pop hl
+  ret
+  
 ; Get shadow screen address using penCol in $86D7
 ;   A = row 0..137
 ;   ($86D7) = penCol
@@ -533,6 +541,7 @@ ShowShadowScreen_src: DW 0
 ;----------------------------------------------------------------------------
 ShadowScreen:
   DEFS 3312,$00
+ShadowScreenEnd:
 
 ;----------------------------------------------------------------------------
 

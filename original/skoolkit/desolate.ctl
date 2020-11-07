@@ -311,6 +311,7 @@ C $B328,2,2 Air-Lock Tool?
 C $B32D,2,2 Box of Power Cells
 C $B332,2,2 Rubik's Cube
 C $B337,2 Data cartridge?
+c $B33F Data cartridge reader selected in the Inventory
 C $B34A,3 Data cartridge reader screen
 C $B350,3 Display screen from tiles with Tileset #2
 C $B363,3 Set penRow/penCol
@@ -319,7 +320,7 @@ C $B36F,3 Set penRow/penCol
 C $B373,3 Load archived string and show message char-by-char
 C $B388,3 Copy screen 9340/9872 to A28F/A58F
 C $B38B,3 Scan keyboard
-N $B3AF Data cartridge selected
+c $B3AF Data cartridge selected in the Inventory
 C $B3AF,3 Data cartridge reader
 C $B3BC,3 Get address from table
 C $B3CE,3 Set penRow/penCol
@@ -327,23 +328,25 @@ C $B3D1,3 " You Need A|Data Cartridge Reader"
 C $B3D4,3 Show message
 C $B3EB,3 "You dont seem to be able| to use this item here"
 C $B3EE,3 Show message
-N $B3F4 Power drill selected
+c $B3F4 Power drill selected in the Inventory
 C $B41F,3 " You use the Power Drill|to Repair the Generator"
 C $B422,3 Show message
 C $B43E,3 Set penRow/penCol
 C $B441,3 " It doesnt look like you| can do anything else here"
 C $B444,3 Show message
-N $B44A Life Support Data Disk selected
+c $B44A Life Support Data Disk selected in the Inventory
 C $B475,3 " Life-Support System|has been fully restored"
 C $B478,3 Show message
+c $B487 Air-Lock Tool selected in the Inventory
 C $B4B2,3 "The Evacuation Deck has| been re-pressurised"
 C $B4B5,3 Show message
+c $B4C4 Box of Power Cells selected in the Inventory
 C $B4EF,3 "You Insert a Power Cell.|Guidance System Online"
 C $B4F2,3 Show message
-N $B501 Rubik's Cube selected
+c $B501 Rubik's Cube selected in the Inventory
 C $B50A,3 "You dont have any time| to play with this now"
 C $B50D,3 Show message
-N $B513 Show message HL
+c $B513 Show message HL
 C $B513,3 Load archived string and show message char-by-char
 C $B516,3 Copy screen 9340/9872 to A28F/A58F
 c $B551 Routine??
@@ -351,12 +354,13 @@ c $B653 Routine??
 C $B6B0,3 Decode current room
 C $B73B,3 Decrease Health
 C $B746,3 Decrease Health
+c $B758 Shoot with the Weapon
 c $B76B Routine??
 C $B87C,3 Decode current room
 c $B8EA Show look/shoot selection indicator
 C $B8EA,3 Get look/shoot switch value
 c $B925 Routine??
-N $B930 Switch Look / Shoot mode
+c $B930 Switch Look / Shoot mode
 C $B930,3 Weapon slot
 C $B93A,3 Show small message popup
 C $B940,3 Set penRow/penCol

@@ -1,6 +1,4 @@
 
-;  ORG $9DBE
-
 ; Game main loop
 ;
 L9DDD:
@@ -718,7 +716,7 @@ LAB3F:
   JP NZ,LAB7A             ; have weapon => jump
   LD A,$0B
   LD (LDCF3),A            ; Left margin size for text
-  LD A,$07
+  LD A,$0E
   LD (LDCF4),A            ; Line interval for text
   CALL LAB28              ; Show small message popup
   CALL LAB73              ; Set penRow/penCol for small message popup
@@ -779,9 +777,9 @@ LABBE:
   LD DE,$0004
   CALL LB531
   JP NZ,LABF7
-  LD A,$08
+  LD A,16     ; was: $08
   LD (LDCF3),A            ; Left margin size for text
-  LD A,$07
+  LD A,14     ; was: $07
   LD (LDCF4),A            ; Line interval for text
   CALL LAB28              ; Show small message popup
   LD HL,$580C
@@ -809,9 +807,9 @@ LAC05:
   LD DE,$0005
   CALL LB531
   JP NZ,LAC3E
-  LD A,$06
+  LD A,12     ; was: $06
   LD (LDCF3),A            ; Left margin size for text
-  LD A,$07
+  LD A,14     ; was: $07
   LD (LDCF4),A            ; Line interval for text
   CALL LAB28              ; Show small message popup
   LD HL,$5814
@@ -1103,9 +1101,9 @@ LAE3D:
   LD HL,LF468             ; Encoded screen: Door access panel popup
   CALL LADF5              ; Decode the room to DBF5
   CALL LB177              ; Display screen from tiles with Tileset #2
-  LD A,10                 ; was: $05
+  LD A,10     ; was: $05
   LD (LDCF3),A            ; Left margin size for text
-  ld a,12
+  ld a,12     ; was: $06
   LD (LDCF4),A            ; Line interval for text
   CALL LB09B
   LD HL,SE0DD             ; ": Door Locked :"
@@ -1428,9 +1426,9 @@ LB0A2:
   LD HL,LF329             ; Encoded screen for Inventory/Info popup
   CALL LADF5              ; Decode the screen to DBF5
   CALL LB177              ; Display screen from tiles with Tileset #2
-  LD A,22                 ; was: $0B
+  LD A,22     ; was: $0B
   LD (LDCF3),A            ; Left margin size for text
-  LD A,12                 ; was: $06
+  LD A,12     ; was: $06
   LD (LDCF4),A            ; Line interval for text
   XOR A
   LD (LDCF5),A            ; Data cartridge reader slot??
@@ -1786,6 +1784,7 @@ LB307:
   SUB $11                 ; Data cartridge?
   JP C,LB3AF
   JP LB3E8                ; smth other
+; Data cartridge reader selected in the Inventory
 LB33F:
   LD A,$44
   LD (LDC59),A            ; set delay factor
@@ -1871,18 +1870,132 @@ LB3E8:
 
 ; Power drill selected in the Inventory
 LB3F4:
-  ret ;STUB
-
+  CALL LB3DA
+  JP NZ,LB3E8
+  CALL LB538
+  CP $01
+  JP NZ,LB3E8
+  LD HL,LDB90
+  INC HL
+  LD A,(HL)
+  OR A
+  JP NZ,LB42E
+  CALL LB541
+  SUB C
+  JP Z,LB41C
+  INC HL
+  LD A,(HL)
+  LD C,A
+  LD A,(LDC56)
+  SUB C
+  JP NZ,LB3E8
+LB41C:
+  CALL LB51F
+  LD HL,SE137             ; "You use the Power Drill to Repair the Generator"
+  CALL LB513              ; Show message
+  LD HL,LDB90
+  INC HL
+  LD (HL),$01
+  JP LB1C1
+LB42E:
+  LD A,$05
+  LD (LDCF3),A
+  LD A,$06
+  LD (LDCF4),A
+  CALL LB2DE
+  LD HL,$5C0A
+  LD ($86D7),HL           ; Set penRow/penCol
+  LD HL,SE12D             ; "It doesnt look like you can do anything else here"
+  CALL LB513              ; Show message
+  JP LB1C1
+;
 ; Life Support Data Disk selected in the Inventory
 LB44A:
-  ret ;STUB
-
+  CALL LB3DA
+  JP NZ,LB3E8
+  CALL LB538
+  CP $04
+  JP NZ,LB3E8
+  LD DE,$0004
+  CALL LB531
+  JP NZ,LB42E
+  CALL LB541
+  SUB C
+  JP Z,LB472
+  INC HL
+  LD A,(HL)
+  LD C,A
+  LD A,(LDC56)
+  SUB C
+  JP NZ,LB3E8
+LB472:
+  CALL LB51F
+  LD HL,SE139             ; "Life-Support System has been fully restored"
+  CALL LB513              ; Show message
+  LD DE,$0004
+  LD HL,LDB90
+  ADD HL,DE
+  LD (HL),$01
+  JP LB1C1
+;
+; Air-Lock Tool selected in the Inventory
 LB487:
-  ret ;STUB
-
+  CALL LB3DA
+  JP NZ,LB3E8
+  CALL LB538
+  CP $05
+  JP NZ,LB3E8
+  LD DE,$0005
+  CALL LB531
+  JP NZ,LB42E
+  CALL LB541
+  SUB C
+  JP Z,LB4AF
+  INC HL
+  LD A,(HL)
+  LD C,A
+  LD A,(LDC56)
+  SUB C
+  JP NZ,LB3E8
+LB4AF:
+  CALL LB51F
+  LD HL,SE13B             ; "The Evacuation Deck has| been re-pressurised"
+  CALL LB513              ; Show message
+  LD DE,$0005
+  LD HL,LDB90
+  ADD HL,DE
+  LD (HL),$01
+  JP LB1C1
+;
+; Box of Power Cells selected in the Inventory
 LB4C4:
-  ret ;STUB
-
+  CALL LB3DA
+  JP NZ,LB3E8
+  CALL LB538
+  CP $06
+  JP NZ,LB3E8
+  LD DE,$0006
+  CALL LB531
+  JP NZ,LB42E
+  CALL LB541
+  SUB C
+  JP Z,LB4EC
+  INC HL
+  LD A,(HL)
+  LD C,A
+  LD A,(LDC56)
+  SUB C
+  JP NZ,LB3E8
+LB4EC:
+  CALL LB51F
+  LD HL,SE13D             ; "You Insert a Power Cell.|Guidance System Online"
+  CALL LB513              ; Show message
+  LD DE,$0006
+  LD HL,LDB90
+  ADD HL,DE
+  LD (HL),$01
+  JP LB1C1
+;
 ; Rubik's Cube selected in the Inventory
 LB501:
   CALL LB2DE
@@ -1891,7 +2004,7 @@ LB501:
   LD HL,SE12B             ; "You dont have any time to play with this now"
   CALL LB513              ; Show message
   JP LB1C1
-
+;
 ; Show message HL
 LB513:
   CALL LBEDE              ; Load archived string and show message char-by-char
@@ -1899,7 +2012,13 @@ LB513:
   LD A,$01
   LD (LDCF2),A
   RET
-
+;
+LB51F:
+  CALL LB2DE
+  LD HL,$5C12
+  LD ($86D7),HL	
+  RET
+;
 LB529:
   OR A
   RET Z
@@ -1907,29 +2026,535 @@ LB529:
   RET NC
   LD A,$01
   RET
-
+;
 LB531:
-  ret ;STUB
-
+  LD HL,$DB90
+  ADD HL,DE
+  LD A,(HL)
+  OR A
+  RET
+;
+LB538:
+  CALL LAE09
+  LD DE,$0013
+  ADD HL,DE
+  LD A,(HL)
+  RET
+;
+LB541:
+  CALL LAA9D
+  CALL LAE09
+  LD DE,$000F
+  ADD HL,DE
+  LD A,(HL)
+  LD C,A
+  LD A,(LDC56)
+  RET
+;
 LB551:
-  ret ;STUB
-
-LB653
-  ret ;STUB
-
+  CALL LB72E
+  OR A
+  RET Z
+  LD A,(LDB82)
+  OR A
+  JP NZ,LB57B
+  DEC HL
+  LD A,(HL)
+  LD (LDB81),A
+  DEC HL
+  LD A,(HL)
+  LD (LDB80),A
+  DEC HL
+  LD A,(HL)
+  LD (LDB7F),A
+  DEC HL
+  LD A,(HL)
+  LD (LDB7E),A
+  LD A,$03
+  LD (LDB85),A
+  LD A,$01
+  LD (LDB84),A
+LB57B:
+  LD A,(LDB84)
+  OR A
+  JP Z,LB622
+  LD B,$08
+;TODO:  CALL $4086
+  OR A
+  JP Z,LB59D
+  CP $02
+  JP Z,LB5C3
+  CP $04
+  JP Z,LB5E9
+  CP $06
+  JP Z,LB607
+  JP LB622
+LB59D:
+  LD A,$00
+  LD (LDB86),A
+  CALL LB713
+  OR A
+  JP Z,LB737
+  CALL LB6B0
+  CP $01
+  JP NZ,LB622
+  LD A,(LDB7F)
+  ADD A,$08
+  LD (LDB7F),A
+  LD A,(LDB80)
+  INC A
+  LD (LDB80),A
+  JP LB622
+LB5C3:
+  LD A,$01
+  LD (LDB86),A
+  CALL LB713
+  OR A
+  JP Z,LB737
+  CALL LB6B0
+  CP $01
+  JP NZ,LB622
+  LD A,(LDB7F)
+  ADD A,$F8
+  LD (LDB7F),A
+  LD A,(LDB80)
+  DEC A
+  LD (LDB80),A
+  JP LB622
+LB5E9:
+  LD A,$02
+  LD (LDB86),A
+  CALL LB713
+  OR A
+  JP Z,LB737
+  CALL LB6B0
+  CP $01
+  JP NZ,LB622
+  LD A,(LDB7E)
+  DEC A
+  LD (LDB7E),A
+  JP LB622
+LB607:
+  LD A,$03
+  LD (LDB86),A
+  CALL LB713
+  OR A
+  JP Z,LB737
+  CALL LB6B0
+  CP $01
+  JP NZ,LB622
+  LD A,(LDB7E)
+  INC A
+  LD (LDB7E),A
+;
+LB622:
+  LD A,(LDB7E)
+  LD H,A
+  LD A,(LDB7F)
+  LD L,A
+  LD A,$00
+  CALL LB67B
+  CALL L9EDE
+  LD A,$01
+  LD (LDB82),A
+  LD A,(LDB83)
+  INC A
+  CP $01
+  CALL NZ,LB676
+  LD (LDB83),A
+  LD A,(LDB81)
+  CP $02
+  JP Z,LB82B
+LB64B:
+  CALL LB8CA
+  OR A
+  CALL Z,LB71F
+  RET
+;
+LB653:
+  LD A,(LDB84)
+  OR A
+  RET Z
+  CALL LB72E
+  OR A
+  RET Z
+  LD A,(LDB81)
+  CP $02
+  RET NZ
+  LD A,(LDB7E)
+  LD H,A
+  LD A,(LDB7F)
+  ADD A,$F8
+  LD L,A
+  LD A,$00
+  CALL LB69D
+  CALL L9EDE
+  RET
+;
+LB676:
+  XOR A
+  LD (LDB83),A
+  RET
+;
+LB67B:
+  LD A,(LDB84)
+  JP NZ,LB685
+  LD DE,$EA67   ;TODO
+  RET
+LB685:
+  LD A,(LDB81)
+  CP $02
+  JP Z,LB698
+  LD DE,$EA57   ;TODO
+  LD A,(LDB83)
+  OR A
+  RET Z
+  LD A,$40
+  RET
+LB698:
+  LD DE,$EA87
+  JR LB6A0
+LB69D:
+  LD DE,$EA77
+LB6A0:
+  LD A,(LDB83)
+  OR A
+  RET Z
+  PUSH HL
+  LD HL,$0020
+  ADD HL,DE
+  PUSH HL
+  POP DE
+  LD A,$00
+  POP HL
+  RET
+;
+LB6B0:
+  CALL LADE5              ; Decode current room
+  LD A,(LDB7E)
+  LD E,A
+  CALL LB6CD
+  LD D,$00
+  ADD HL,DE
+  LD A,(LDB74)
+  LD E,A
+  LD D,$00
+  LD A,(LDB80)
+  LD B,A
+  CALL LB6DD
+  JP LAA78
+;
+LB6CD:
+  LD A,(LDB86)
+  OR A
+  RET Z
+  CP $01
+  RET Z
+  CP $02
+  JR NZ,LB6DB
+  DEC E
+  RET
+LB6DB:
+  INC E
+  RET
+;
+LB6DD:
+  LD A,(LDB86)
+  CP $02
+  RET Z
+  CP $03
+  RET Z
+  OR A
+  JR NZ,LB6EB
+  INC B
+  RET
+LB6EB:
+  DEC B
+  RET
+;
+LB6ED:
+  CALL LB6FA
+  LD A,(LDB7E)
+LB6F3:
+  ADD A,C
+  DJNZ LB6F3
+  LD (LDB87),A
+  RET
+LB6FA:
+  LD A,(LDB74)
+  LD C,A
+  LD A,(LDB80)
+  LD B,A
+  RET
+LB703:
+  CALL LB6FA
+  CALL LB6DD
+  LD A,(LDB7E)
+  LD E,A
+  CALL LB6CD
+  LD A,E
+  JR LB6F3
+;
+LB713:
+  CALL LAA9D
+  CALL LB703
+  LD C,A
+  LD A,(LDC56)
+  SUB C
+  RET
+;
+LB71F:
+  XOR A
+  LD (LDB84),A
+  CALL LB8DC
+  LD HL,(LDBC5)
+  INC HL
+  LD (LDBC5),HL
+  RET
+;
 LB72E:
-  ret ;STUB
-
+  CALL LAE09
+  LD DE,$002F
+  ADD HL,DE
+  LD A,(HL)
+  RET
+;
+LB737:
+  XOR A
+  LD (LDB8D),A
+  CALL LB994              ; Decrease Health
+  LD A,(LDB81)
+  CP $02
+  JP NZ,LB622
+  CALL LB994              ; Decrease Health
+  JP LB622
+;
 LB74C:
-  ret ;STUB
-
+  CALL LAA9D
+  CALL LB6ED
+  LD C,A
+  LD A,(LDC56)
+  SUB C
+  RET
+;
 ; Shoot with the Weapon
 LB758:
-  ret ;STUB
-
+  LD A,(LDB8C)
+  CP $01
+  JP Z,LB768
+  LD A,$01
+  LD (LDB8D),A
+  LD (LDD55),A
+LB768:
+  JP L9E2E
+;
 LB76B:
-  ret ;STUB
-
+  LD A,(LDB8D)
+  OR A
+  JP Z,LB84A
+  LD A,(LDB8C)
+  CP $01
+  JP Z,LB797
+  LD A,$01
+  LD ($DB8D),A
+  LD A,($DB75)
+  LD ($DB8B),A
+  LD A,($DB76)
+  LD ($DB88),A
+  LD A,($DB77)
+  LD ($DB89),A
+  LD A,($DB78)
+  LD ($DB8A),A
+LB797:
+  LD A,($DB8B)
+  OR A
+  JP Z,LB7AD
+  CP $01
+  JP Z,LB7C7
+  CP $02
+  JP Z,LB7E1
+  CP $03
+  JP Z,LB7F3
+LB7AD:
+  CALL LB87C
+  CP $01
+  JP NZ,LB8D6
+  LD A,(LDB89)
+  ADD A,$08
+  LD (LDB89),A
+  LD A,(LDB8A)
+  INC A
+  LD (LDB8A),A
+  JP LB805
+LB7C7:
+  CALL LB87C
+  CP $01
+  JP NZ,LB8D6
+  LD A,(LDB89)
+  ADD A,$F8
+  LD (LDB89),A
+  LD A,(LDB8A)
+  DEC A
+  LD (LDB8A),A
+  JP LB805
+LB7E1:
+  CALL LB87C
+  CP $01
+  JP NZ,LB8D6
+  LD A,(LDB88)
+  DEC A
+  LD (LDB88),A
+  JP LB805
+LB7F3:
+  CALL LB87C
+  CP $01
+  JP NZ,LB8D6
+  LD A,(LDB88)
+  INC A
+  LD (LDB88),A
+  JP LB805
+LB805:
+  LD A,(LDB8D)
+  OR A
+  JP Z,LB8D6
+  LD A,(LDB88)
+  LD H,A
+  LD A,(LDB89)
+  LD L,A
+  CALL LB84F
+  CALL L9EDE
+  LD A,$01
+  LD (LDB8C),A
+  LD A,(LDB81)
+  CP $02
+  JP Z,LB82B
+  CALL LB64B
+LB82A:
+  RET
+;
+LB82B:
+  CALL LB8CA
+  OR A
+  JP NZ,LB82A
+  XOR A
+  LD (LDB8D),A
+  LD (LDB88),A
+  LD (LDB89),A
+  LD A,(LDB85)
+  DEC A
+  LD (LDB85),A
+  OR A
+  CALL Z,LB71F
+  JP LB82A
+LB84A:
+  XOR A
+  LD (LDB8C),A
+  RET
+;
+LB84F:
+  LD A,(LDB8B)
+  OR A
+  JP Z,LB865
+  CP $01
+  JP Z,LB86A
+  CP $02
+  JP Z,LB870
+  CP $03
+  JP Z,LB876
+LB865:
+  LD DE,$EAC7  ;TODO
+  XOR A
+  RET
+LB86A:
+  LD DE,$EAC7  ;TODO
+  LD A,$40
+  RET
+LB870:
+  LD DE,$EAB7  ;TODO
+  LD A,$80
+  RET
+LB876:
+  LD DE,$EAB7  ;TODO
+  LD A,$40
+  RET
+;
+LB87C:
+  CALL LADE5              ; Decode current room
+  LD A,(LDB88)
+  LD E,A
+  CALL LB89B
+  LD D,$00
+  ADD HL,DE
+  LD A,(LDB74)
+  LD E,A
+  LD D,$00
+  LD A,(LDB8A)
+  LD B,A
+  CALL LB8AB
+LB896:
+  ADD HL,DE
+  DJNZ LB896
+  LD A,(HL)
+  RET
+;
+LB89B:
+  LD A,(LDB8B)
+  OR A
+  RET Z
+  CP $01
+  RET Z
+  CP $02
+  JR NZ,LB8A9
+  DEC E
+  RET
+LB8A9:
+  INC E
+  RET
+;
+LB8AB:
+  LD A,(LDB8B)
+  CP $02
+  RET Z
+  CP $03
+  RET Z
+  OR A
+  JR NZ,LB8B9
+  INC B
+  RET
+LB8B9:
+  DEC B
+  RET
+;
+LB8BB:
+  LD A,(LDB74)
+  LD C,A
+  LD A,(LDB8A)
+  LD B,A
+  LD A,(LDB88)
+LB8C6:
+  ADD A,C
+  DJNZ LB8C6
+  RET
+;
+LB8CA:
+  CALL LB6ED
+  CALL LB8BB
+  LD C,A
+  LD A,(LDB87)
+  SUB C
+  RET
+LB8D6:
+  CALL LB8DC
+  JP LB8D6
+;
+LB8DC:
+  XOR A
+  LD (LDB8D),A
+  LD (LDB88),A
+  LD (LDB89),A
+  LD (LDB8A),A
+  RET
+;
 ; Show look/shoot selection indicator
 ;
 LB8EA:
@@ -1961,10 +2586,14 @@ LB91C:
   LD B,12                 ; Tile height
   LD L,$00                ; Y pos
   RET                     ;
-
+;
 LB925:
-  ret ;STUB
-
+  LD A,$0B
+  LD (LDCF3),A
+  LD A,$07
+  LD (LDCF4),A
+  RET
+;
 ; Switch Look / Shoot mode
 LB930:
   LD A,(LDCF7)            ; Weapon slot
@@ -1998,7 +2627,7 @@ LB96B:
 ;DEBUG: Show room number at the bottom-left
   LD HL,$7610
   ld ($86D7),hl           ; Set penRow/penCol
-  ld a,(LDB79)
+  ld a,(LDB79)            ; Get the room number
   ld l,a
   ld h,$00
   call DrawNumber3
@@ -2007,6 +2636,10 @@ LB96B:
   LD ($86D7),HL           ; Set penRow/penCol
   LD HL,(LDB7A)           ; get Health
   jp DrawNumber3          ; Show 3-digit decimal number HL
+
+LB97D:
+;TODO
+  ret ;STUB
 
 ; Decrease Health
 LB994:
@@ -2023,9 +2656,9 @@ LB9A0:
 ;
 LB9A2:
   CALL L9FCF              ; Clear shadow screen
-  LD A,$32
+  LD A,$32      ; was: $19
   LD (LDCF3),A            ; Left margin size for text
-  LD A,$0E
+  LD A,14      ; was: $07
   LD (LDCF4),A            ; Line interval for text
   CALL LAB28              ; Show small message popup
   LD HL,$580E
@@ -2034,9 +2667,9 @@ LB9A2:
   CALL LBEDE              ; Load archived string and show message char-by-char
   XOR A
   CALL LB9D6
-  LD HL,(LDBC3)
-  INC HL
-  LD (LDBC3),HL
+  LD HL,(LDBC3)           ; get Player deaths count
+  INC HL                  ;
+  LD (LDBC3),HL           ; set Player deaths count
 LB9C9:
   CALL L9FEA              ; Copy shadow screen to ZX screen
   CALL LA0F1              ; Scan keyboard
@@ -2194,7 +2827,7 @@ LBADE:
   LD (LDBC7),A
   CALL LB9D6
   LD HL,$0000
-  LD (LDBC3),HL
+  LD (LDBC3),HL           ; clear Player deaths count
   LD (LDBC5),HL
   LD HL,LDB9C             ; Inventory table address
   LD B,$22
@@ -2356,13 +2989,14 @@ LBC36:
   CALL LB2D0              ; Delay
   DJNZ LBC36
   RET
-
 ;
 ;  HL = ??
 LBC3C:
+;TODO
   ret ;STUB
 
 LBC6B:
+;TODO
   ret ;STUB
 
 ; Clear shadow screen and copy to ZX screen
@@ -2370,7 +3004,7 @@ LBC7D:
   CALL L9FCF              ; Clear shadow screen
   CALL L9FEA              ; Copy shadow screen to ZX screen
   RET
-
+;
 ; Set zero penRow/penCol
 ClearPenRowCol:
 LBC84:
@@ -2380,8 +3014,250 @@ LBC84:
 ;
 ; Found action point at room description offset $0F..$10
 LBC8B:
-  ret ;STUB
-
+  CALL LAE09              ; Decode current room description to LDBF5
+  LD DE,$0011             ; offset in the room description
+  ADD HL,DE
+  LD A,(HL)
+  LD C,A
+  LD A,(LDB75)            ; Direction/orientation
+  SUB C
+  JP NZ,LAADA
+  CALL LAB28              ; Show small message popup
+  LD A,10     ; was: $05
+  LD (LDCF3),A            ; Left margin size for text
+  LD A,14     ; was: $07
+  LD (LDCF4),A            ; Line interval for text
+  CALL LAE09              ; Decode current room description to LDBF5
+  LD DE,$0013             ; offset in the room description
+  ADD HL,DE
+  LD A,(HL)
+  LD (LDC87),A            ; store RoomDesc[$13] value
+  LD E,A
+  LD D,$00
+  LD HL,LDB90
+  ADD HL,DE
+  LD A,(HL)
+  OR A
+  JP Z,LBCD5
+  CALL LBD69              ; Set penRow/penCol = $580A
+  LD HL,SE12D             ; " It doesnt look like you can do anything else here"
+; Show the message, show screen, wait for key, continue game main loop
+LBCC5:
+  CALL LBEDE              ; Load archived string and show message char-by-char
+  CALL L9FEA              ; Copy shadow screen to ZX screen
+LBCCB:
+  CALL LA0F1              ; Scan keyboard
+  CP $37                  ;   MODE key?
+  JR NZ,LBCCB             ; no => wait some more
+  JP L9E2E                ; Show the screen, continue the game main loop
+;
+LBCD5:
+  LD A,(LDC87)            ; get RoomDesc[$13] value
+  CP $01
+  JP Z,LBCF6
+  CP $02
+  JP Z,LBCFF
+  CP $04
+  JP Z,LBD4E
+  CP $05
+  JP Z,LBD57
+  CP $06
+  JP Z,LBD60
+  CP $07
+  JP Z,LBD70
+; RoomDesc[$13] == $01
+LBCF6:
+  CALL LBD69              ; Set penRow/penCol = $580A
+  LD HL,SE12F             ; -> "This Generator is damaged All of the panels are loose"
+  JP LBCC5                ; Show the message/screen, wait for key, continue game main loop
+; RoomDesc[$13] == $02
+LBCFF:
+  LD HL,LDB90
+  INC HL
+  LD A,(HL)
+  OR A
+  JP NZ,LBD11
+  CALL LBD69              ; Set penRow/penCol = $580A
+  LD HL,SE131             ; -> "This Workstation doesnt seem to have any power...?"
+  JP LBCC5                ; Show the message/screen, wait for key, continue game main loop
+LBD11:
+  CALL LAE09              ; Decode current room description to LDBF5
+  LD DE,$0030             ; offset in the room description
+  ADD HL,DE
+  LD A,(HL)
+  LD (LDC89),A            ; set the current item
+  CALL LBD69              ; Set penRow/penCol = $580A
+  LD HL,SE133             ; -> "The Workstation has now successfully booted up"
+  CALL LBEDE              ; Load archived string and show message char-by-char
+  CALL L9FEA              ; Copy screen 9340/9872 to A28F/A58F
+  CALL LAB28              ; Show small message popup
+LBD2B:
+  CALL LA0F1              ; Scan keyboard
+  CP $01                  ;   Down key?
+  JR NZ,LBD2B             ; no => wait some more
+  LD HL,LDB90
+  INC HL
+  INC HL
+  LD (HL),$01
+  LD A,(LDC89)            ; get the current item number
+  LD H,$00
+  LD L,A
+  LD DE,LDB9C             ; Inventory items
+  ADD HL,DE
+  LD (HL),$01             ; mark that we have the item now
+  CALL LBD69              ; Set penRow/penCol = $580A
+  LD HL,SE135             ; -> "The Workstation Ejected A Data Cartridge 2"
+  JP LBCC5                ; Show the message/screen, wait for key, continue game main loop
+; RoomDesc[$13] == $04
+LBD4E:
+  CALL LBD69              ; Set penRow/penCol = $580A
+  LD HL,SE13F             ; -> "The Life Support System needs Re-Configuring"
+  JP LBCC5                ; Show the message/screen, wait for key, continue game main loop
+; RoomDesc[$13] == $05
+LBD57:
+  CALL LBD69              ; Set penRow/penCol = $580A
+  LD HL,SE141             ; -> "AirLock Control & Re-Pressurisation Station"
+  JP LBCC5                ; Show the message/screen, wait for key, continue game main loop
+; RoomDesc[$13] == $06
+LBD60:
+  CALL LBD69              ; Set penRow/penCol = $580A
+  LD HL,SE143             ; -> "This MainFrame is missing a Power Cell"
+  JP LBCC5                ; Show the message/screen, wait for key, continue game main loop
+; Set penRow/penCol = $580A
+LBD69:
+  LD HL,$580A
+  LD ($86D7),HL           ; Set penRow/penCol
+  RET
+; RoomDesc[$13] == $07
+LBD70:
+  LD DE,$0006
+  LD HL,LDB90
+  ADD HL,DE
+  LD A,(HL)
+  OR A
+  JP NZ,LBD85
+  CALL LBD69              ; Set penRow/penCol = $580A
+  LD HL,SE145             ; -> "This Pod cant naviagate. Guidance System is offline"
+  JP LBCC5                ; Show the message/screen, wait for key, continue game main loop
+LBD85:
+  LD A,$44
+  LD (LDC59),A
+  LD (LDC85),A            ; Use delay and copy screen in LBEDE
+  XOR A
+  LD (LDCF3),A            ; Left margin size for text
+  LD (LDBF4),A
+  LD A,14     ; was: $07
+  LD (LDCF4),A            ; Line interval for text
+  CALL L9FCF              ; Clear shadow screen
+  LD HL,$0000
+  LD ($86D7),HL           ; Set penRow/penCol
+  LD HL,SE11B             ; -> "The onboard guidance system picks up a ...
+  CALL LBEDE              ; Load archived string and show message char-by-char
+  CALL LADA1              ; Wait for MODE key
+  LD A,$06
+  LD (LDCF3),A            ; Left margin size for text
+  CALL L9FCF              ; Clear shadow screen
+  LD HL,$0C0C
+  LD ($86D7),HL           ; Set penRow/penCol
+  LD HL,SE0A1             ; -> "Items Found (/24): Enemies Killed: PlayerDeaths: Awards:
+  CALL LBEDE              ; Load archived string and show message char-by-char
+  CALL LBC34
+  LD DE,$0C8C
+  LD A,(LDBC7)
+  LD L,A
+  LD H,$00
+  CALL LB97D
+  CALL LBC34
+  LD DE,$0D46
+  LD HL,(LDBC5)
+  CALL LB97D
+  CALL LBC34
+  LD DE,$1446
+  LD HL,(LDBC3)           ; get Player deaths count
+  CALL LB97D
+  CALL LBC34
+  LD A,(LDBC7)
+  SUB $14
+  JP C,LBE06
+  LD HL,$520C
+  LD ($86D7),HL           ; Set penRow/penCol
+  LD HL,SE0AD             ; -> "Sherlock Holmes"
+  CALL LBEDE              ; Load archived string and show message char-by-char
+  LD A,(LDBF4)
+  INC A
+  LD (LDBF4),A
+  JR LBE12
+LBE06:
+  LD HL,$520C
+  LD ($86D7),HL           ; Set penRow/penCol
+  LD HL,SE0AB             ; -> "Sir Miss-A-Lot"
+  CALL LBEDE              ; Load archived string and show message char-by-char
+LBE12:
+  LD DE,$0032             ; 50
+  LD HL,(LDBC5)
+  call CpHLDE             ; Compare HL and DE
+  JR C,LBE32
+  LD HL,$600C
+  LD ($86D7),HL           ; Set penRow/penCol
+  LD HL,SE0B1             ; -> "Terminator"
+  CALL LBEDE              ; Load archived string and show message char-by-char
+  LD A,(LDBF4)
+  INC A
+  LD (LDBF4),A
+  JR LBE3E
+LBE32:
+  LD HL,$600C
+  LD ($86D7),HL           ; Set penRow/penCol
+  LD HL,SE0AF             ; -> "Running Scared"
+  CALL LBEDE              ; Load archived string and show message char-by-char
+LBE3E:
+  LD DE,$0000
+  LD HL,(LDBC3)           ; get Player deaths count
+  call CpHLDE             ; Compare HL and DE
+  JR NZ,LBE5E
+  LD HL,$6E0C
+  LD ($86D7),HL           ; Set penRow/penCol
+  LD HL,SE0B5             ; -> "Survivor"
+  CALL LBEDE              ; Load archived string and show message char-by-char
+  LD A,(LDBF4)
+  INC A
+  LD (LDBF4),A
+  JR LBE6A
+LBE5E:
+  LD HL,$6E0C
+  LD ($86D7),HL           ; Set penRow/penCol
+  LD HL,SE0B3             ; "Over & Over Again" (achievement)
+  CALL LBEDE              ; Load archived string and show message char-by-char
+LBE6A:
+  CALL LADA1              ; Wait for MODE key
+  CALL L9FCF              ; Clear shadow screen
+  LD A,(LDBF4)
+  CP $03
+  JR NZ,LBE8A
+  XOR A
+  LD (LDCF3),A            ; Left margin size for text
+  LD HL,$0000
+  LD ($86D7),HL           ; Set penRow/penCol
+  LD HL,SE11D             ; "System Alert triggered: ..."
+  CALL LBEDE              ; Load archived string and show message char-by-char
+  JP LBE9B
+LBE8A:
+  LD A,$0F
+  LD (LDCF3),A            ; Left margin size for text
+  LD HL,$3418
+  LD ($86D7),HL           ; Set penRow/penCol
+  LD HL,SE0A9             ; "Earn 3 Good Awards for|an Extended Ending!"
+  CALL LBEDE              ; Load archived string and show message char-by-char
+LBE9B:
+  CALL LADA1              ; Wait for MODE key
+  CALL L9FCF              ; Clear shadow screen
+  LD HL,$3A46
+  LD ($86D7),HL           ; Set penRow/penCol
+  LD HL,SE11F             ; "The End"
+  CALL LBEDE              ; Load archived string and show message char-by-char
+  CALL LBC34
+  JP LBF6F                ; The End
+;
 ; Draw string on the screen using FontProto
 ;   HL = String address
 LBEDE:

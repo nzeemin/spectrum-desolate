@@ -664,11 +664,21 @@ LDB7A:  DEFW $0064        ; Health; initially $64
 LDB7C:  DEFB $00          ; ??
 LDB7D:  DEFB $00          ; Look/shoot switch: $00 look, $01 shoot
 LDB7E:  DEFB $00
-LDB7F:  DEFB $00,$00
-LDB81:  DEFB $00,$00
+LDB7F:  DEFB $00
+LDB80:  DEFB $00
+LDB81:  DEFB $00
 LDB82:  DEFB $00
-LDB84:  DEFB $02,$03
-  DEFB $00,$00,$00,$00,$00,$00,$00,$00
+LDB83:  DEFB $00
+LDB84:  DEFB $02
+LDB85:  DEFB $03
+LDB86:  DEFB $00
+LDB87:  DEFB $00
+LDB88:  DEFB $00
+LDB89:  DEFB $00
+LDB8A:  DEFB $00
+LDB8B:  DEFB $00
+LDB8C:  DEFB $00
+LDB8D:  DEFB $00
   DEFB $00
 LDB8F:  DEFB $3A           ; Menu Y pos: $3A $46 $52 $5E $6A
 LDB90:  DEFB $00
@@ -681,7 +691,7 @@ LDB9C:
   DEFB $00,$00,$00,$00,$00,$00,$00,$00 ;
   DEFB $00,$00,$00,$00,$00,$00,$00     ;
 LDBC3:  DEFW $0000        ; Player deaths count ??
-LDBC5:  DEFW $0000        ; ??
+LDBC5:  DEFW $0000        ; Counter??
 LDBC7:  DEFB $00          ; Counter?? $00 INC
   DEFB $08                ; ??
   DEFW $4014              ; data??
@@ -691,7 +701,7 @@ LDBC7:  DEFB $00          ; Counter?? $00 INC
   DEFB $44,$41,$54,$41,$27,$20,$4E,$6F
   DEFB $74,$20,$46,$6F,$75,$6E,$64,$21
   DEFB $00
-  DEFB $00                ; ??
+LDBF4:  DEFB $00          ; ??
 
 ; Room in titles, 12 * 8 = 96 bytes
 LDBF5:
