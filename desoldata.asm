@@ -668,17 +668,17 @@ LDB7F:  DEFB $00          ; Alien Y coord ??
 LDB80:  DEFB $00          ; Alien Y tile coord ??
 LDB81:  DEFB $00          ; Alien type: $02
 LDB82:  DEFB $00          ; Alien: $01 = we already have an alien in the room
-LDB83:  DEFB $00
+LDB83:  DEFB $00          ; Alien ??
 LDB84:  DEFB $02          ; Alien ??
 LDB85:  DEFB $03          ; Alien ??
 LDB86:  DEFB $00
 LDB87:  DEFB $00
-LDB88:  DEFB $00
-LDB89:  DEFB $00
-LDB8A:  DEFB $00
-LDB8B:  DEFB $00
+LDB88:  DEFB $00          ; Bullet X coord in tiles
+LDB89:  DEFB $00          ; Bullet Y coord/line on the screen
+LDB8A:  DEFB $00          ; Bullet Y coord in tiles
+LDB8B:  DEFB $00          ; Bullet Direction/orientation
 LDB8C:  DEFB $00
-LDB8D:  DEFB $00
+LDB8D:  DEFB $00          ; $01 = shoot with the weapon
   DEFB $00
 LDB8F:  DEFB $3A          ; Menu Y pos: $3A $46 $52 $5E $6A
 LDB90:                    ; Flags about performed progress
@@ -691,24 +691,24 @@ LDB90:                    ; Flags about performed progress
   DEFB $00                ; +$06: $01 = Guidance System working
   DEFB $00
   DEFB $00,$00,$00,$00
-LDB9C:
-  DEFB $00,$00,$00,$00,$00,$00,$00,$00 ; Inventory items: $00 = not having, $01 = have it
-  DEFB $00,$00,$00,$00,$00,$00,$00,$00 ;
-  DEFB $00,$00,$00,$00,$00,$00,$00,$00 ;
-  DEFB $00,$00,$00,$00,$00,$00,$00,$00 ;
-  DEFB $00,$00,$00,$00,$00,$00,$00     ;
+LDB9C:                    ; Inventory items: $00 = not having, $01 = have it
+  DEFB $00,$00,$00,$00,$00,$00,$00,$00
+  DEFB $00,$00,$00,$00,$00,$00,$00,$00
+  DEFB $00,$00,$00,$00,$00,$00,$00,$00
+  DEFB $00,$00,$00,$00,$00,$00,$00,$00
+  DEFB $00,$00,$00,$00,$00,$00,$00
 LDBC3:  DEFW $0000        ; Player Deaths count
 LDBC5:  DEFW $0000        ; Enemies Killed count
 LDBC7:  DEFB $00          ; Items Found count
-  DEFB $08                ; ??
-  DEFW $4014              ; data??
+;LDBC8:  DEFB $08                ; Smthng about 'DESDATA' DataFile, not used
+;LDBC9:  DEFW $4014              ; Smthng about 'DESDATA' DataFile, not used
   DEFB $05,$44,$45,$53,$44,$41,$54,$41
   DEFB $00,$14,$40,$44,$61,$74,$61,$46
   DEFB $69,$6C,$65,$20,$27,$44,$45,$53
   DEFB $44,$41,$54,$41,$27,$20,$4E,$6F
   DEFB $74,$20,$46,$6F,$75,$6E,$64,$21
   DEFB $00
-LDBF4:  DEFB $00          ; ??
+LDBF4:  DEFB $00
 
 ; Room in titles, 12 * 8 = 96 bytes
 LDBF5:
@@ -742,7 +742,7 @@ LDC84:  DEFB $00          ; Inventory Y
 LDC85:  DEFB $00          ; Delay and copy screen flag used in LBEDE
 LDC86:  DEFB $00
 LDC87:  DEFB $00          ; ??
-LDC88:  DEFB $00          ; ?? counter
+LDC88:  DEFB $00          ; current offset in the room description $00..$30
 LDC89:  DEFB $00          ; Current inventory item / Picked up item??
 LDC8A:  DEFB $00
 LDC8B:  DEFB $FF
@@ -764,7 +764,7 @@ LDCA2:                    ; Table with marks where door locks codes accepted
   DEFB $00,$00,$00,$00,$00,$00,$00,$00
   DEFB $00,$00,$00,$00,$00,$00,$00,$00
 LDCF2:  DEFB $00          ; 
-LDCF3:  DEFB $00          ; Left margin size for text, usually $00
+LDCF3:  DEFB $00          ; Left margin size for text
 LDCF4:  DEFB $0E          ; Line interval for text
 LDCF5:  DEFB $00,$00
 LDCF7:  DEFB $00          ; Weapon: $00 $01
@@ -783,8 +783,8 @@ LDCF9:
   DEFB $20,$20,$20,$20,$20,$20,$20,$20
   DEFB $20,$00
 LDD53:  DEFB $00                ; empty string
-LDD54:  DEFB $00                ; ??
-LDD55:  DEFB $00                ; ??
+LDD54:  DEFB $00                ; ?? $00 INC $03
+LDD55:  DEFB $00                ; ?? $00 $01
 LDD56:  DEFB $00                ; Credits counter within one line 0..11
 LDD57:  DEFB $00                ; Credits line number
 LDD58:                    ; Table of Credits strings

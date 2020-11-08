@@ -11,6 +11,12 @@ bin\pasmo desolcoda.asm desolcode.bin desolate.txt
 @if errorlevel 1 (
   echo %ESCchar%[91mFAILED%ESCchar%[0m
   exit /b
-) ELSE (
-  echo %ESCchar%[92mSUCCESS%ESCchar%[0m
 )
+@echo off
+
+for /f "delims=" %%a in ('findstr /B "ShadowScreenEnd" desolate.txt') do set "progend=%%a"
+echo %progend%
+
+dir /-c desolcode.bin|findstr /R /C:"desolcode"
+
+echo %ESCchar%[92mSUCCESS%ESCchar%[0m

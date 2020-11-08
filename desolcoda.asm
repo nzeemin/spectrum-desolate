@@ -14,6 +14,18 @@ start_1:
   INC HL
   DJNZ start_1
 
+; Cheat code to have all inventory items
+;  LD HL,LDB9C
+;  LD B,$22
+;start_2:
+;  LD (HL),$01
+;  INC HL
+;  DJNZ start_2
+
+; Cheat code to have the weapon
+;  ld a,$01
+;  ld (LDCF7),a
+
 ;  ld a,$01
 ;  ld (LDB9C+0),a
 ;  ld (LDB9C+1),a
@@ -530,6 +542,41 @@ ShowShadowScreen_9:
   ret
 ShowShadowScreen_sp: DW 0
 ShowShadowScreen_src: DW 0
+
+; Clear block on the shadow screen
+;   HL=row/col, DE=rows/cols
+;   columns are 8px wide; row=1..128, row=0..127; col=0..23, cols=1..24
+ClearScreenBlock:
+  push bc
+  ld a,l    ; column
+  ld c,h    ; row
+  ld l,h    ; row
+  ld h,$00
+  ld b,h
+  add hl,hl               ; now HL = row * 2
+  add hl,bc               ; now HL = row * 3
+  add hl,hl
+  add hl,hl
+  add hl,hl               ; now HL = row * 24
+  ld c,a
+  add hl,bc               ; now HL = row * 12 + col
+  ld bc,ShadowScreen
+  add hl,bc               ; now HL = start address
+  ld c,24                 ; line width in columns
+  xor a
+ClearScreenBlock_1        ; loop by rows
+  push hl
+  ld b,e    ; cols
+ClearScreenBlock_2:       ; loop by columns
+  ld (hl),a
+  inc hl
+  djnz ClearScreenBlock_2
+  pop hl
+  add hl,bc               ; next line
+  dec d     ; rows
+  jr nz,ClearScreenBlock_1
+  pop bc
+  ret
 
 ; Get random number 0..7
 GetRandom8:

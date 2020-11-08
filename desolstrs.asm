@@ -1,4 +1,4 @@
-SE029: DEFM "                     ",0
+SE029: DEFM 0  ; Empty string
 SE02B: DEFM "Code, GFX, Story etc",0
 SE02D: DEFM "Patrick Prendergast",0
 SE02F: DEFM "Acknowledgements",0
@@ -38,6 +38,7 @@ SE071: DEFM "ABlakRain",0
 SE073: DEFM "Travis Supalla",0
 SE075: DEFM "Jim Dieckmann",0
 SE077: DEFM "tr1p1ea@yahoo.com.au",0
+; Data Cartridge messages
 SE079: DEFM "Im hurt bad . . . I dont|think im gonna make it.|I changed the Level 1|Access Code to: 4057|Maybe that will hold|them off for a while . . .",0
 SE07B: DEFM "For security reasons I|had to change the|Level 2 Access Code.|Maybe now the crew|will stop stealing stuff!|It is:",0
 SE07D: DEFM "The system is going|haywire. The Level 3|Access Code was over-|written. I only just|recovered it. Turns out|It is:",0
@@ -54,6 +55,7 @@ SE091: DEFM "Capt Millin: We are|transporting a cargo|of genetically|modified cl
 SE093: DEFM "Capt Millin: I have|just recieved word|that the facility on|earth was destroyed.|We now carry the only|clone prototypes.",0
 SE095: DEFM "Willis: We are in BIG|trouble. Only 1 clone|survived the meteorite|shower. And the system|says Re-animation will|take over 6 hours!!!",0
 SE097: DEFM "This is ludicrous!|65 credits for a proton|bar? How are we|meant to snack while|we work? The agency|is getting on my nerves.",0
+;
 SE09B: DEFM $1B,"No Data Cartridge| Selected",0
 SE09D: DEFM "MaxCoderz Presents",0
 SE09F: DEFM "a tr1p1ea game",0
@@ -69,7 +71,7 @@ SE0B1: DEFM "Terminator",0
 SE0B3: DEFM "Over & Over Again",0
 SE0B5: DEFM "Survivor",0
 SE0B7: DEFM $18,"Ion Phaser",0
-SE0B9: DEFM "$",0  ; Arrow down
+;SE0B9: DEFM "$",0  ; Arrow down; not used anymore
 SE0BB: DEFM " - INVENTORY - ",0
 SE0BD: DEFM "The Desolate has claimed|your life too . . .",0
 SE0BF: DEFM "OMG! This Person Is DEAD!",0
@@ -91,6 +93,7 @@ SE0DD: DEFM "Door Locked",0
 SE0DF: DEFM " INVALID CODE",0
 SE0E1: DEFM $15,"Accepted!      ",0
 SE0E3: DEFM $1F,$1D,"You Need A|Data Cartridge Reader",0
+; Inventory items
 SE0E5: DEFM $08,"Data Cartridge Reader",0
 SE0E7: DEFM $1B,"Data Cartridge 1",0
 SE0E9: DEFM $19,"Data Cartridge 2",0
@@ -115,6 +118,7 @@ SE10D: DEFM $14,"Box of Power Cells",0
 SE10F: DEFM $1F,$14,"Pile of Parts",0
 SE111: DEFM $1F,$1A,"Duck Idol ;)",0
 SE113: DEFM $1F,$09,"Rubik's Cube",0
+;
 SE115: DEFM "In the Distant Future . . .",0
 SE117: DEFM "'The Desolate' Space Cruiser|leaves orbit. Its mission is|secret, its cargo classified.|6014 Cycles into the journey|the ship encounters a savage|meteorite shower.||Contact with Desolate is lost.",0
 SE119: DEFM "The ship sustains heavy|damage. Onboard a cryo-|genic incubation cell|finishes re-animation. Its|occupant steps out of the|chamber not knowing who he|is, or what he is going to do.||But at least he is alive.",0
@@ -130,7 +134,7 @@ SE12B: DEFM "You dont have any time|",$0C,"to play with this now",0
 SE12D: DEFM $15,"It doesnt look like you|",$06,"can do anything else here",0
 SE12F: DEFM "This Generator is damaged|All of the panels are loose",0
 SE131: DEFM $0F,"This Workstation doesnt|seem to have any power...?",0
-SE133: DEFM $0C,"The Workstation has now|",$09,"successfully booted up    ",0
+SE133: DEFM $0C,"The Workstation has now|",$09,"successfully booted up",$0C,"$",0
 SE135: DEFM " The Workstation Ejected A|",$1F,$11,"Data Cartridge 2",0
 SE137: DEFM " You use the Power Drill|to Repair the Generator",0
 SE139: DEFM $12,"Life-Support System|has been fully restored",0
