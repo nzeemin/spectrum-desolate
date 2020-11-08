@@ -14,8 +14,7 @@ bin\pasmo desolcoda.asm desolcode.bin desolate.txt
 )
 @echo off
 
-for /f "delims=" %%a in ('findstr /B "ShadowScreenEnd" desolate.txt') do set "progend=%%a"
-echo %progend%
+findstr /B "DesolateCode" desolate.txt
 
 dir /-c desolcode.bin|findstr /R /C:"desolcode"
 

@@ -3,16 +3,16 @@
   ORG $5E00
 
 start:
-;  call LBA07  ; Show titles and go to Menu
+  call LBA07  ; Show titles and go to Menu
 ;  jp L9DBE
 
 ; Cheat code to get all door access codes
-  LD HL,LDCA2
-  LD B,$48
-start_1:
-  LD (HL),$01
-  INC HL
-  DJNZ start_1
+;  LD HL,LDCA2
+;  LD B,$48
+;start_1:
+;  LD (HL),$01
+;  INC HL
+;  DJNZ start_1
 
 ; Cheat code to have all inventory items
 ;  LD HL,LDB9C
@@ -35,7 +35,7 @@ start_1:
 ;  call LBF6F  ; The End
 ;  call LBBEC  ; Info menu item, show Controls
 ;  call LBADE  ; New game
-  call LBB7E  ; Game start
+;  call LBB7E  ; Game start
 ;  call LB9A2  ; Player is dead
 ;  call LBD85  ; Final
 
@@ -89,11 +89,28 @@ start_1:
 ;  ld hl,SE119
 ;  call DrawString
 
-  call ShowShadowScreen
+;  call ShowShadowScreen
 
-  call WaitAnyKey
+;  call WaitAnyKey
 ;  call ClearScreen
   jp start
+
+
+;----------------------------------------------------------------------------
+
+  INCLUDE "desolfont.asm"
+
+  INCLUDE "desolstrs.asm"
+
+  INCLUDE "desoldata.asm"
+
+;----------------------------------------------------------------------------
+
+ShadowScreen:
+  DEFS 3312,$00
+
+;----------------------------------------------------------------------------
+DesolateCodeBeg:
 
 
 ; Wait for any key
@@ -587,17 +604,6 @@ GetRandom8:
 ;----------------------------------------------------------------------------
 
   INCLUDE "desolcodb.asm"
-
-  INCLUDE "desolfont.asm"
-
-  INCLUDE "desolstrs.asm"
-
-  INCLUDE "desoldata.asm"
-
-;----------------------------------------------------------------------------
-ShadowScreen:
-  DEFS 3312,$00
-ShadowScreenEnd:
 
 ;----------------------------------------------------------------------------
 
