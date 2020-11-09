@@ -52,9 +52,9 @@ namespace SpriteRotate
             //DumpArchivedStrings();
             //PrepareArchivedStrings();
             //PrepareLineAddresses();
-            //PrepareFontProto();
-            //PrepareTilesetMasked();
-            //PrepareTileset3();
+            PrepareFontProto();
+            PrepareTilesetMasked();
+            PrepareTileset3();
             //PrepareCreditsMargins();
         }
 
@@ -83,7 +83,7 @@ namespace SpriteRotate
 
         static void PrepareFontProto()
         {
-            using (var writer = new StreamWriter("fontproto.txt"))
+            using (var writer = new StreamWriter("desolfont.asm"))
             {
                 Bitmap bmp = new Bitmap(@"..\fontproto.png");
 
@@ -139,7 +139,7 @@ namespace SpriteRotate
                     }
                 }
 
-                Console.WriteLine("fontproto.txt saved");
+                Console.WriteLine("desolfont.asm saved");
             }
         }
 
@@ -159,7 +159,7 @@ namespace SpriteRotate
             {
                 writer.WriteLine("; Tileset 2, 127 tiles 16x8 with mask");
                 writer.WriteLine("Tileset2:");
-                PrepareTilesetMaskedImpl(bmp, 212, 127, writer);
+                PrepareTilesetMaskedImpl(bmp, 212, 126, writer);
                 Console.WriteLine("desoltil2.asm saved");
             }
         }

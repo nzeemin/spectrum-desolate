@@ -73,30 +73,37 @@ L9E5F:
   add hl,de               ; now HL = offset on the shadow screen
   ld de,ShadowScreen
   add hl,de               ; HL = address in the shadow screen
-L9E8D:                  ; loop by B
+L9E8D:                    ; loop by B - by rows
+  push bc
+  ld b,(ix+$01)
   ld d,(ix+$00)
   ld e,$00
   ld a,c
-  or a
-  jr z,L9E9D
+  or a                    ; shift = 0?
+  jr z,L9E9D              ; yes => skip all shift ops
 L9E96:
-  srl d
+  srl b
+  rr d
   rr e
   dec a
   jr nz,L9E96
 L9E9D:
-  ld a,(hl)
+  ld a,(hl)               ; get 1st byte from the screen
   xor d
-  ld (hl),a
+  ld (hl),a               ; put byte on the screen
   inc hl
-  ld a,(hl)
+  ld a,(hl)               ; get 2nd byte from the screen
   xor e
-  ld (hl),a
+  ld (hl),a               ; put byte on the screen
+  ld a,(hl)               ; get 1st byte from the screen
+  xor b
+  ld (hl),a               ; put byte on the screen
   ld de,24-1
   add hl,de               ; to the next line
   inc ix
   inc ix
-  djnz L9E8D
+  pop bc
+  djnz L9E8D              ; continue loop by rows
   ret
 
 ; Put tile on the screen (aligned to 8px column), 16x8 -> 16x16 on shadow screen
@@ -1170,12 +1177,13 @@ LAE3D:
   LD A,$06
   LD (LDC57),A
 LAE80:
-  LD HL,$0020
-  LD DE,Tileset2
-  ADD HL,DE
+;  LD HL,$0020
+;  LD DE,Tileset2
+;  ADD HL,DE
+  ld hl,Tileset3+15*32   ; Gray square to use as selection box
   PUSH HL
   POP IX
-  LD B,$08
+  LD B,16   ; was: $08
   LD A,(LDC84)            ; get Y pos
   LD L,A
   LD A,(LDC83)            ; get X pos
@@ -1349,12 +1357,13 @@ LAFB7:
   JP LAE80
 ;
 LAFD2:
-  LD HL,$0020
-  LD DE,Tileset2
-  ADD HL,DE
+;  LD HL,$0020
+;  LD DE,Tileset2
+;  ADD HL,DE
+  ld hl,Tileset3+15*32   ; Gray square to use as selection box
   PUSH HL
   POP IX
-  LD B,$08
+  LD B,16     ; was: $08
   LD A,(LDC84)            ; get Y pos
   LD L,A
   LD A,(LDC83)            ; set X pos
@@ -1552,7 +1561,8 @@ LB12A:
   ADD HL,HL
   ADD HL,HL
   ADD HL,HL               ; HL = A * 16
-  LD DE,Tileset3+32       ; Inventory items, 12 tiles
+  add hl,hl
+  LD DE,Tileset3+2*32       ; Inventory items, 12 tiles
   ADD HL,DE
   PUSH HL
   POP IX
@@ -1576,7 +1586,7 @@ LB15D:
   LD A,(LDC84)            ; get Y pos for Inventory
   LD L,A                  ; L = row
   LD A,(LDC83)            ; A = X pos for Inventory
-  LD B,$08
+  LD B,16   ; was: $08
   CALL L9E5F              ; Draw tile by XOR operation
   LD A,(LDC83)            ; get X pos
   ADD A,16                ; increase X; was: $08
@@ -1627,6 +1637,15 @@ LB177_1:
   JP NZ,LB177_0
   RET
 ;
+; Clear the bottom area in the Inventory popup
+ClearInventoryMesage:
+  push hl
+  ld hl,$5C01             ; at row 92 col 1
+  ld de,$1A16             ; 24 rows, 22 cols
+  call ClearScreenBlock
+  pop hl
+  ret
+;
 ; Inventory
 LB1AA:
   XOR A
@@ -1637,12 +1656,7 @@ LB1AA:
   LD (LDC84),A            ; set Y pos
   CALL LB2AF
 LB1BB:                    ; Inventory loop starts here
-;TODO: Extract to routine ClearInventoryMesage
-  push hl
-  ld hl,$5C01             ; at row 92 col 1
-  ld de,$1A16             ; 24 rows, 22 cols
-  call ClearScreenBlock
-  pop hl
+  call ClearInventoryMesage
   call DrawString         ; draw Inventory item description; was: CALL LBEDE;
   CALL LB295              ; draw Inventory selection square
 ; Inventory item selection
@@ -1745,7 +1759,7 @@ LB295:
 ;  PUSH HL
 ;  POP IX
   ld ix,Tileset3+15*32
-  LD B,16                 ; was: $08
+  LD B,16     ; was: $08
   LD A,(LDC84)            ; get Y pos
   LD L,A
   LD A,(LDC83)            ; get X pos
@@ -2663,14 +2677,14 @@ LB902:
   CALL L9E5F              ; Draw tile by XOR operation
   RET                     ;
 LB913:
-  LD IX,Tileset3+1        ; Small triange pointing right
-  LD B,12                 ; Tile height
-  LD L,$00                ; Y pos
+  LD IX,Tileset3+20       ; Small triange pointing right
+  LD B,6                  ; Tile height
+  LD L,$04                ; Y pos
   RET                     ;
 LB91C:
-  LD IX,Tileset3+32+1     ; Small triange pointing left
-  LD B,12                 ; Tile height
-  LD L,$00                ; Y pos
+  LD IX,Tileset3+32+20    ; Small triange pointing left
+  LD B,6                  ; Tile height
+  LD L,$04                ; Y pos
   RET                     ;
 ;
 LB925:
@@ -2711,13 +2725,14 @@ LB960:
 ; Display Health
 LB96B:
 ;DEBUG: Show room number at the bottom-left
+IF DEFINED CHEAT_SHOW_ROOM_NUMBER
   LD HL,$7610
   ld (L86D7),hl           ; Set penRow/penCol
   ld a,(LDB79)            ; Get the room number
   ld l,a
   ld h,$00
   call DrawNumber3
-;
+ENDIF
   LD HL,$012C
   LD (L86D7),HL           ; Set penRow/penCol
   LD HL,(LDB7A)           ; get Health
@@ -2869,7 +2884,7 @@ LBA88:
   LD A,(LDB8F)            ; get Menu Y pos
   LD L,A                  ; L = Y coord
   LD A,C                  ; A = X coord
-  LD B,16                 ; 8 = tile height
+  LD B,10                 ; B = tile height
   CALL L9E5F              ; Draw tile by XOR operation
   RET
 ;
@@ -3498,7 +3513,7 @@ LBF6F_4:
   LD (L86D7),A            ; Set penCol
   LD A,(LDD57)
   LD HL,LDD58             ; Table of Credits strings
-  CALL LADFF              ; Get address from table by index A
+  CALL LADFF              ; Get address from table HL by index A
   CALL DrawString         ; Draw string on shadow screen without any delays
   LD A,(LDD57)
   INC A                   ; increase the Credits line counter
@@ -3520,6 +3535,4 @@ LBFD5:
 ;  LDIR
 ;  RET
 
-
-DesolateCodeEnd:
 ;----------------------------------------------------------------------------

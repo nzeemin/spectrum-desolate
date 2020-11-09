@@ -1,30 +1,42 @@
 
 
+;CHEAT_SHOW_ROOM_NUMBER  EQU 1
+;CHEAT_ALL_ACCESS        EQU 1
+;CHEAT_ALL_INVENTORY     EQU 1
+;CHEAT_HAVE_WEAPON       EQU 1
+
+
+;TODO:  ORG $5FB4   ; = 24500
   ORG $5E00
 
 start:
   call LBA07  ; Show titles and go to Menu
-;  jp L9DBE
 
 ; Cheat code to get all door access codes
-;  LD HL,LDCA2
-;  LD B,$48
-;start_1:
-;  LD (HL),$01
-;  INC HL
-;  DJNZ start_1
+IF DEFINED CHEAT_ALL_ACCESS
+  LD HL,LDCA2
+  LD B,$48
+start_1:
+  LD (HL),$01
+  INC HL
+  DJNZ start_1
+ENDIF
 
 ; Cheat code to have all inventory items
-;  LD HL,LDB9C
-;  LD B,$22
-;start_2:
-;  LD (HL),$01
-;  INC HL
-;  DJNZ start_2
+IF DEFINED CHEAT_ALL_INVENTORY
+  LD HL,LDB9C
+  LD B,$22
+start_2:
+  LD (HL),$01
+  INC HL
+  DJNZ start_2
+ENDIF
 
 ; Cheat code to have the weapon
-;  ld a,$01
-;  ld (LDCF7),a
+IF DEFINED CHEAT_HAVE_WEAPON
+  ld a,$01
+  ld (LDCF7),a
+ENDIF
 
 ;  ld a,$01
 ;  ld (LDB9C+0),a
@@ -106,6 +118,8 @@ start:
 
 ;----------------------------------------------------------------------------
 
+; Shadow screen, 192 x 138 pixels
+;   12*2*(64*2+10) = 3312 bytes
 ShadowScreen:
   DEFS 3312,$00
 
@@ -606,4 +620,5 @@ GetRandom8:
   INCLUDE "desolcodb.asm"
 
 ;----------------------------------------------------------------------------
-
+DesolateCodeEnd:
+END

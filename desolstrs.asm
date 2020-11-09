@@ -1,4 +1,4 @@
-SE029: DEFM 0  ; Empty string
+; Credits
 SE02B: DEFM "Code, GFX, Story etc",0
 SE02D: DEFM "Patrick Prendergast",0
 SE02F: DEFM "Acknowledgements",0
@@ -40,13 +40,13 @@ SE075: DEFM "Jim Dieckmann",0
 SE077: DEFM "tr1p1ea@yahoo.com.au",0
 ; Data Cartridge messages
 SE079: DEFM "Im hurt bad . . . I dont|think im gonna make it.|I changed the Level 1|Access Code to: 4057|Maybe that will hold|them off for a while . . .",0
-SE07B: DEFM "For security reasons I|had to change the|Level 2 Access Code.|Maybe now the crew|will stop stealing stuff!|It is:",0
-SE07D: DEFM "The system is going|haywire. The Level 3|Access Code was over-|written. I only just|recovered it. Turns out|It is:",0
+SE07B: DEFM "For security reasons I|had to change the|Level 2 Access Code.|Maybe now the crew|will stop",$02,"stealing",$02,"stuff!|It is:",0
+SE07D: DEFM "The system is going|haywire. The Level 3|Access Code was over-|written. I only just|recovered it.Turns out|it is:",0
 SE07F: DEFM "Crew I am honoured to|have served as your|captain. The Level 4|Access Code will get|to the evacuation deck|It is:",0
-SE081: DEFM "Willis and I are stuck.|Needless to say we are|both done for. We might|have had a chance, but|some idiot changed the|Level 1 Access Code!",0
-SE083: DEFM "I dont see why I should|be the one who has to|fix the generator.|There is no way im|going with those things|all over the place . . .",0
+SE081: DEFM "Willis and I are stuck.|Needless to say we are|both done for.",$02,"We",$02,"might|have had a chance, but|some idiot changed the|Level 1 Access Code!",0
+SE083: DEFM "I dont see why I",$02,"should|be the one who has to|fix the generator.|There is no way im|going with those things|all over the place . . .",0
 SE085: DEFM "DrMorgan: Meteorite|shower claimed a lot|of the crew, however|some feature strange|abrations. Almost like|bite marks . . ?",0
-SE087: DEFM "DrMorgan: I found a|strange creature. At|first i thought it was|deceased. But it sprang|up and attacked my|associate! . . .",0
+SE087: DEFM "DrMorgan: I found a|strange creature. At|first I thought it was|deceased.",$02,"But it sprang|up and attacked my|associate! . . .",0
 SE089: DEFM "DrMorgan: To make|matters worse the|creatures are|evolving rapidly. My|associate claims he|saw one over 7 feet!",0
 SE08B: DEFM "It truly baffles me|considering our cargo|why they insist on|equipping the ship with|ONLY Ion-Phasers.|They are useless!!!",0
 SE08D: DEFM "Capt Millin: We are|losing crew fast. I sent|Willis to re-animate|the clones. Right now|they are the only|chance we have . . .",0
@@ -54,9 +54,9 @@ SE08F: DEFM "Capt Millin: I am very|anxious to see the|clones in action. I|hear 
 SE091: DEFM "Capt Millin: We are|transporting a cargo|of genetically|modified clones to a|IH-2 Military Facility|for field testing . . .",0
 SE093: DEFM "Capt Millin: I have|just recieved word|that the facility on|earth was destroyed.|We now carry the only|clone prototypes.",0
 SE095: DEFM "Willis: We are in BIG|trouble. Only 1 clone|survived the meteorite|shower. And the system|says Re-animation will|take over 6 hours!!!",0
-SE097: DEFM "This is ludicrous!|65 credits for a proton|bar? How are we|meant to snack while|we work? The agency|is getting on my nerves.",0
+SE097: DEFM "This is ludicrous!|65 credits for",$02,"a proton|bar? How are we|meant to snack while|we work? The agency|is",$02,"getting on",$02,"my",$02,"nerves.",0
 ;
-SE09B: DEFM $1B,"No Data Cartridge| Selected",0
+SE09B: DEFM $10,"No Data Cartridge|",$1F,$04,"Selected",0
 SE09D: DEFM "MaxCoderz Presents",0
 SE09F: DEFM "a tr1p1ea game",0
 SE0A1: DEFM "Items Found (/24):|",$1F,"Enemies Killed:|",$1F,$05,"PlayerDeaths:||Awards:",0
@@ -91,7 +91,7 @@ SE0D9: DEFM "You cant enter until the|AirLock is re-pressurised",0
 SE0DB: DEFM $0C,"---- N o",$06,"I t e m ----",0
 SE0DD: DEFM "Door Locked",0
 SE0DF: DEFM " INVALID CODE",0
-SE0E1: DEFM $15,"Accepted!      ",0
+SE0E1: DEFM $15,"Accepted!",0
 SE0E3: DEFM $1F,$1D,"You Need A|Data Cartridge Reader",0
 ; Inventory items
 SE0E5: DEFM $08,"Data Cartridge Reader",0
@@ -115,8 +115,8 @@ SE107: DEFM $1F,$0E,"Power Drill",0
 SE109: DEFM $0A,"Life Support Data Disk",0
 SE10B: DEFM $1F,$14,"Air-Lock Tool",0
 SE10D: DEFM $14,"Box of Power Cells",0
-SE10F: DEFM $1F,$14,"Pile of Parts",0
-SE111: DEFM $1F,$1A,"Duck Idol ;)",0
+SE10F: DEFM $1F,$10,"Pile of Parts",0
+SE111: DEFM $1F,$10,"Duck Idol ;)",0
 SE113: DEFM $1F,$09,"Rubik's Cube",0
 ;
 SE115: DEFM "In the Distant Future . . .",0
