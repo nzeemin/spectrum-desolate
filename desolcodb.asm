@@ -936,10 +936,8 @@ LAC97:
 LACB8:
   LD HL,$66B0
   LD (L86D7),HL           ; Set penRow/penCol
-;  LD HL,SE0B9             ; String with arrow down sign
-;  CALL LBEDE              ; Show message char-by-char
-  ld a,$24                ; '$' - arrow down sign
-  jp DrawChar
+  LD HL,SE0B9             ; String with arrow down sign
+  jp LBEDE                ; Show message char-by-char
 ;  RET
 ;
 ; Small message popup "OMG! This Person Is DEAD! What Happened Here!?!"
@@ -1204,8 +1202,9 @@ LAE9B:
   CP $37                  ; Escape key
   JP NZ,LAE99
   JP L9E2E                ; Exit Door Lock - Show the screen, continue the game main loop
-; Select
+; Select key pressed
 LAEBA:
+  call WaitKeyUp          ; Wait until no key pressed to prevent double-reads of the same key
   LD A,(LDC82)            ; get current selection
   CP $25
   JP Z,LAF14
@@ -1927,7 +1926,7 @@ LB3AF:
   JP LB33F
 LB3C8:                    ; We don't have data cartridge reader
   CALL LB2DE              ; Print string LDCF9
-  LD HL,$2E0C
+  LD HL,$5C18
   LD (L86D7),HL           ; Set penRow/penCol
   LD HL,SE0E3             ; "You Need A Data Cartridge Reader"
   CALL LB513              ; Show message
@@ -2991,10 +2990,8 @@ LBB17:
   CALL LBEDE              ; Show message char-by-char
   LD HL,$72B6
   LD (L86D7),HL           ; Set penRow/penCol
-;  LD HL,SE0B9             ; String with arrow down sign
-;  CALL LBEDE              ; Show message char-by-char
-  ld a,$24                ; '$' - arrow down sign
-  call DrawChar
+  LD HL,SE0B9             ; String with arrow down sign
+  CALL LBEDE              ; Show message char-by-char
   CALL WaitAnyKey         ; Wait for any (was: Wait for Down key)
   CALL ClearShadowScreen
   CALL LBC84              ; Set zero penRow/penCol
@@ -3148,9 +3145,9 @@ LBC6B:
 LBC6D:
   PUSH BC
   PUSH HL
-;TODO: Get random number 0..10
 ;  LD B,$0B
-;  CALL $4086  
+;  CALL $4086
+  call GetRandom11         ; Generate random number 0..10
   ADD A,$1A
   POP HL
   LD (HL),A

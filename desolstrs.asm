@@ -44,7 +44,7 @@ SE07B: DEFM "For security reasons I|had to change the|Level 2 Access Code.|Maybe
 SE07D: DEFM "The system is going|haywire. The Level 3|Access Code was over-|written. I only just|recovered it.Turns out|it is:",0
 SE07F: DEFM "Crew I am honoured to|have served as your|captain. The Level 4|Access Code will get|to the evacuation deck|It is:",0
 SE081: DEFM "Willis and I are stuck.|Needless to say we are|both done for.",$02,"We",$02,"might|have had a chance, but|some idiot changed the|Level 1 Access Code!",0
-SE083: DEFM "I dont see why I",$02,"should|be the one who has to|fix the generator.|There is no way im|going with those things|all over the place . . .",0
+SE083: DEFM "I",$02,"dont see",$02,"why I",$02,"should|be the one who has to|fix the generator.|There is no way im|going with those things|all over the place . . .",0
 SE085: DEFM "DrMorgan: Meteorite|shower claimed a lot|of the crew, however|some feature strange|abrations. Almost like|bite marks . . ?",0
 SE087: DEFM "DrMorgan: I found a|strange creature. At|first I thought it was|deceased.",$02,"But it sprang|up and attacked my|associate! . . .",0
 SE089: DEFM "DrMorgan: To make|matters worse the|creatures are|evolving rapidly. My|associate claims he|saw one over 7 feet!",0
@@ -71,7 +71,7 @@ SE0B1: DEFM "Terminator",0
 SE0B3: DEFM "Over & Over Again",0
 SE0B5: DEFM "Survivor",0
 SE0B7: DEFM $18,"Ion Phaser",0
-;SE0B9: DEFM "$",0  ; Arrow down; not used anymore
+SE0B9: DEFM "$",0  ; Arrow down
 SE0BB: DEFM " - INVENTORY - ",0
 SE0BD: DEFM "The Desolate has claimed|your life too . . .",0
 SE0BF: DEFM "OMG! This Person Is DEAD!",0
@@ -92,7 +92,7 @@ SE0DB: DEFM $0C,"---- N o",$06,"I t e m ----",0
 SE0DD: DEFM $05,"Door Locked",0
 SE0DF: DEFM "INVALID",$02,"CODE",0
 SE0E1: DEFM $0E,"Accepted!",0
-SE0E3: DEFM $1F,$1D,"You Need A|Data Cartridge Reader",0
+SE0E3: DEFM $1F,"You Need A|Data Cartridge Reader",0
 ; Inventory items
 SE0E5: DEFM $08,"Data Cartridge Reader",0
 SE0E7: DEFM $1B,"Data Cartridge 1",0

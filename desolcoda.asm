@@ -113,6 +113,13 @@ WaitAnyKey_1:
   jr z,WaitAnyKey_1	; Wait for press
   ret
 
+; Wait until no key pressed - to put after ReadKeyboard calls to prevent double-reads of the same key
+WaitKeyUp:
+  call ReadKeyboard
+  or a
+  jr nz,WaitKeyUp	; Wait for unpress
+  ret
+
 ; Source: http://www.breakintoprogram.co.uk/computers/zx-spectrum/keyboard
 ;TODO: Set Z=0 for key, Z=1 for no key
 ReadKeyboard:          
@@ -585,11 +592,38 @@ ClearScreenBlock_2:       ; loop by columns
   pop bc
   ret
 
+; 8-bit random number generator using Refresh Register (R)
+; See http://www.cpcwiki.eu/index.php/Programming:Random_Number_Generator
+GetRandomByte:
+  ld hl,(GetRandomByte_seed)
+  ld a,r
+  ld d,a
+  ld e,a
+  add hl,de
+  xor l
+  add a,a
+  xor h
+  ld l,a
+  ld (GetRandomByte_seed),hl
+  ret
+GetRandomByte_seed: DEFW 12345
+;
 ; Get random number 0..7
 GetRandom8:
-  ld a,r
+  call GetRandomByte
   and $07
   ret
+;
+; Get random number 0..10 for door access codes
+; value 10 is for '-' char and we made its probability lower by 1/3
+GetRandom11:
+  call GetRandomByte
+  and $1F                 ; 0..31
+GetRandom11_1:
+  cp 11                   ; less than 11?
+  ret c                   ; yes => return 0..10
+  sub 11                  ; 0..20, then 0..9
+  jr GetRandom11_1
 
 ;----------------------------------------------------------------------------
 
