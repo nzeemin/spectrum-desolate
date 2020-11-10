@@ -59,7 +59,7 @@ SE097: DEFM "This is ludicrous!|65 credits for",$02,"a proton|bar? How are we|me
 SE09B: DEFM $10,"No Data Cartridge|",$1F,$04,"Selected",0
 SE09D: DEFM "MaxCoderz Presents",0
 SE09F: DEFM "a tr1p1ea game",0
-SE0A1: DEFM "Items Found (/24):|",$1F,"Enemies Killed:|",$1F,$05,"PlayerDeaths:||Awards:",0
+SE0A1: DEFM "Items Found (/24):|",$1F,$02,"Enemies Killed:|",$1F,$03,"Player Deaths:||Awards:",0
 SE0A3: DEFM "OverWrite Current Game?|Enter - Yes :: G - No",0
 SE0A5: DEFM "- Controls -",0
 SE0A7: DEFM "QAOP 1234 6789: Arrows|Space ZBMN05: Look/shoot|U I: Inventory|S D: Look/shoot mode|W E: Close all pop-ups|G: Quit to Menu",0
@@ -89,9 +89,9 @@ SE0D5: DEFM "It is not wise to proceed|",$19,"without a weapon.",0
 SE0D7: DEFM "You cant enter that sector|",$09,"Life-Support is offline.",0
 SE0D9: DEFM "You cant enter until the|AirLock is re-pressurised",0
 SE0DB: DEFM $0C,"---- N o",$06,"I t e m ----",0
-SE0DD: DEFM "Door Locked",0
-SE0DF: DEFM " INVALID CODE",0
-SE0E1: DEFM $15,"Accepted!",0
+SE0DD: DEFM $05,"Door Locked",0
+SE0DF: DEFM "INVALID",$02,"CODE",0
+SE0E1: DEFM $0E,"Accepted!",0
 SE0E3: DEFM $1F,$1D,"You Need A|Data Cartridge Reader",0
 ; Inventory items
 SE0E5: DEFM $08,"Data Cartridge Reader",0
@@ -122,15 +122,15 @@ SE113: DEFM $1F,$09,"Rubik's Cube",0
 SE115: DEFM "In the Distant Future . . .",0
 SE117: DEFM "'The Desolate' Space Cruiser|leaves orbit. Its mission is|secret, its cargo classified.|6014 Cycles into the journey|the ship encounters a savage|meteorite shower.||Contact with Desolate is lost.",0
 SE119: DEFM "The ship sustains heavy|damage. Onboard a cryo-|genic incubation cell|finishes re-animation. Its|occupant steps out of the|chamber not knowing who he|is, or what he is going to do.||But at least he is alive.",0
-SE11B: DEFM "The onboard guidance|system picks up a mining|facility close by. The course|is set and you sit back, finally|free of 'The Desolate' & its|murderous hord of Aliens.|You were a clone, an|experiment. Now, 'you' are|the sole survivor.",0
-SE11D: DEFM "System Alert triggered: |'Foreign Objects Detected|OnBoard'. The Aliens have|attached to the hull!|'Main Drive System Offline'|The ship was on a crash|course for the Mining Facility||It wasnt over yet",$06,".",$06,".",$06,".",0
+SE11B: DEFM "The onboard guidance|system picks up a mining|facility close by. The course|is set",$02,"and you sit back,",$02,"finally|free of 'The Desolate' & its|murderous hord of Aliens.|You were a clone, an|experiment. Now, 'you' are|the sole survivor.",0
+SE11D: DEFM "System Alert triggered: |'Foreign Objects Detected|OnBoard'. The Aliens have|attached to the hull!|'Main Drive System Offline'|The ship was on a crash|course for",$02,"the Mining Facility||It wasnt over yet",$06,".",$06,".",$06,".",0
 SE11F: DEFM "The End",0
 SE121: DEFM $1B,"Level 1|",$09,"Access Code|",$15,"Required",0
 SE123: DEFM $1B,"Level 2|",$09,"Access Code|",$15,"Required",0
 SE125: DEFM $1B,"Level 3|",$09,"Access Code|",$15,"Required",0
 SE127: DEFM $1B,"Level 4|",$09,"Access Code|",$15,"Required",0
 SE129: DEFM "You dont seem to be able|",$0F,"to use this item here",0
-SE12B: DEFM "You dont have any time|",$0C,"to play with this now",0
+SE12B: DEFM "You dont have any time|",$08,"to play with this now",0
 SE12D: DEFM $15,"It doesnt look like you|",$06,"can do anything else here",0
 SE12F: DEFM "This Generator is damaged|All of the panels are loose",0
 SE131: DEFM $0F,"This Workstation doesnt|seem to have any power...?",0

@@ -1161,7 +1161,7 @@ LAE3D:
   LD (LDCF3),A            ; Left margin size for text
   ld a,12     ; was: $06
   LD (LDCF4),A            ; Line interval for text
-  CALL LB09B
+  CALL LB09B              ; Preparing to draw string with the prompt
   LD HL,SE0DD             ; ": Door Locked :"
   CALL LBEDE              ; Show message char-by-char
   LD HL,$440A
@@ -1180,33 +1180,33 @@ LAE80:
 ;  LD HL,$0020
 ;  LD DE,Tileset2
 ;  ADD HL,DE
-  ld hl,Tileset3+15*32   ; Gray square to use as selection box
+  ld hl,Tileset3+15*32    ; Selection box tile
   PUSH HL
-  POP IX
-  LD B,16   ; was: $08
+  POP IX                  ; IX = tile address
+  LD B,16   ; was: $08    ; B = height
   LD A,(LDC84)            ; get Y pos
   LD L,A
   LD A,(LDC83)            ; get X pos
-  CALL L9E5F
+  CALL L9E5F              ; Draw tile by XOR operation
   CALL ShowShadowScreen   ; Copy shadow screen to ZX screen
 LAE99:
   LD B,$0C                ; x12
 LAE9B:
-  CALL LB2D0              ; Delay
+  CALL LB2D0              ; Delay by LDC59
   DJNZ LAE9B
   CALL LA0F1              ; Scan keyboard
   CP $36                  ; Select key
-  JP Z,LAEBA
-  CP $02
-  JP Z,LAF70              ; Move left
-  CP $03
-  JP Z,LAF86              ; Move right
+  jr Z,LAEBA
+  CP $02                  ; left key?
+  JP Z,LAF70              ;   Move left
+  CP $03                  ; right key?
+  JP Z,LAF86              ;   Move right
   CP $37                  ; Escape key
   JP NZ,LAE99
-  JP L9E2E                ; Show the screen, continue the game main loop
+  JP L9E2E                ; Exit Door Lock - Show the screen, continue the game main loop
 ; Select
 LAEBA:
-  LD A,(LDC82)            ; get Inventory current
+  LD A,(LDC82)            ; get current selection
   CP $25
   JP Z,LAF14
   LD A,(LDC57)
@@ -1228,7 +1228,7 @@ LAED4:
   LD DE,$0003
   LD HL,LDC8D
   ADD HL,DE
-  LD A,(LDC82)            ; get Inventory current
+  LD A,(LDC82)            ; get current selection
   LD (HL),A
   LD HL,LDC8D
   LD A,4    ; was: $02
@@ -1236,13 +1236,13 @@ LAED4:
   LD B,$00
 LAEEF:
   PUSH HL
-  LD L,(HL)
+  LD L,(HL)               ; get tile number
   LD H,$00
   ADD HL,HL
   ADD HL,HL
   ADD HL,HL
   ADD HL,HL
-  add hl,hl
+  add hl,hl               ; now HL = L * 32
   LD DE,Tileset2
   ADD HL,DE
   PUSH BC
@@ -1268,7 +1268,7 @@ LAF14:
   CP $01
   JP Z,LAF2C
 LAF1D:
-  CALL LB09B
+  CALL LB09B              ; Preparing to draw string with the result
   LD HL,SE0DF             ; " INVALID CODE"
   CALL LBEDE              ; Show message char-by-char
   CALL ShowShadowScreen   ; Copy shadow screen to ZX screen
@@ -1286,7 +1286,7 @@ LAF34:
   INC DE
   INC HL
   DJNZ LAF34
-  CALL LB09B
+  CALL LB09B              ; Preparing to draw string with the result
   LD HL,SE0E1             ; " Accepted! "
   CALL LBEDE              ; Show message char-by-char
   CALL ShowShadowScreen   ; Copy shadow screen to ZX screen
@@ -1311,7 +1311,7 @@ LAF65:
   DEC A
   LD (LDC82),A
   RET
-; Move left
+; Door Lock Move left
 LAF70:
   LD A,(LDC83)            ; get X pos
   CP $80                  ; was: $40
@@ -1321,7 +1321,7 @@ LAF70:
   ADD A,-16               ; was: $F8
   LD (LDC83),A            ; set X pos
   JP LAE80
-; Move right
+; Door Lock Move right
 LAF86:
   LD A,(LDC83)            ; get X pos
   CP $A0                  ; was: $50
@@ -1366,8 +1366,8 @@ LAFD2:
   LD B,16     ; was: $08
   LD A,(LDC84)            ; get Y pos
   LD L,A
-  LD A,(LDC83)            ; set X pos
-  CALL L9E5F
+  LD A,(LDC83)            ; get X pos
+  CALL L9E5F              ; Draw tile by XOR operation
   CALL ShowShadowScreen   ; Copy shadow screen to ZX screen
   RET
 ;
@@ -1404,7 +1404,7 @@ LB00E:
   XOR A
   LD (LDB82),A            ; mark we don't have an alien in the room
   LD A,$40
-  LD (LDC59),A
+  LD (LDC59),A            ; set delay factor
   LD A,(LDC8A)
   CP $01
   JP Z,LB03E
@@ -1473,8 +1473,12 @@ LB08F:
   LD (LDB76),A            ; set X coord
   JP LA8CD
 ;
+; Door Lock: Preparing to draw string with prompt/result
 LB09B:
-  LD HL,$3410
+  ld hl,$3401             ; line 52 col 1
+  ld de,$0C0C             ; 12 rows, 12 cols
+  call ClearScreenBlock
+  LD HL,$340C
   LD (L86D7),HL           ; set penRow/penCol
   RET
 ;
@@ -1524,7 +1528,7 @@ LB0F3:
   POP BC
   LD A,C
   OR A                    ; last item?
-  JP Z,LB119              ; yes, exit the loop
+  jr Z,LB119              ; yes, exit the loop
   DEC C
   LD HL,LDC5B             ; Inventory list
   LD A,(LDC5A)
@@ -1538,7 +1542,7 @@ LB0F3:
   LD (LDC5A),A
   JP LB0F3                ; continue the loop
 LB119:
-  JP LB1AA
+  JP LB1AA                ; go to Inventory screen loop
 ;
 LB11C:
   LD A,16                 ; was: $08
@@ -1659,6 +1663,9 @@ LB1BB:                    ; Inventory loop starts here
   call ClearInventoryMesage
   call DrawString         ; draw Inventory item description; was: CALL LBEDE;
   CALL LB295              ; draw Inventory selection square
+  ld a,$44
+  ld (LDC59),a            ; set delay factor
+  call LB2D0              ; delay, to make Inventory selection more usable
 ; Inventory item selection
 LB1C1:
   CALL LA0F1              ; Scan keyboard
@@ -1691,38 +1698,38 @@ LB1F0:
   RET
 LB1FE:                    ; Left key pressed
   LD A,(LDC83)            ; get X pos
-  CP 16                   ; was: $08
+  CP 16       ; was: $08
   JP Z,LB25F
   CALL LB1E2
   LD A,(LDC83)            ; get X pos
-  ADD A,-16               ; was: $F8
+  ADD A,-16   ; was: $F8
   LD (LDC83),A            ; set X pos
   JP LB1BB                ; continue Inventory loop
 LB214:                    ; Right key pressed
   LD A,(LDC83)            ; get X pos
-  CP $A0                  ; was: $50
+  CP $A0      ; was: $50
   JP Z,LB22A
   CALL LB1F0
   LD A,(LDC83)            ; get X pos
-  ADD A,16                ; was: $08
+  ADD A,16    ; was: $08
   LD (LDC83),A            ; set X pos
   JP LB1BB                ; continue Inventory loop
 LB22A:
   LD A,(LDC84)            ; get Y pos
-  CP $4C                  ; was: $26
+  CP $4C      ; was: $26
   JP Z,LB245
   CALL LB1F0
   LD A,(LDC84)            ; get Y pos
-  ADD A,20                ; was: $0A
+  ADD A,20    ; was: $0A
   LD (LDC84),A            ; set Y pos
-  LD A,16                 ; was: $08
+  LD A,16     ; was: $08
   LD (LDC83),A            ; set X pos
   JP LB1BB                ; continue Inventory loop
 LB245:
   CALL LB295
-  LD A,16                 ; was: $08
+  LD A,16     ; was: $08
   LD (LDC83),A            ; set X pos
-  LD A,$24                ; was: $12
+  LD A,$24    ; was: $12
   LD (LDC84),A            ; set Y pos
   XOR A
   LD (LDC82),A            ; clear Inventory current
@@ -1731,20 +1738,20 @@ LB245:
   JP LB1BB                ; continue Inventory loop
 LB25F:
   LD A,(LDC84)            ; get Y pos
-  CP $24                  ; was: $12
+  CP $24      ; was: $12
   JP Z,LB27A
   CALL LB1E2
   LD A,(LDC84)            ; get Y pos
-  ADD A,-20               ; was: $F6
+  ADD A,-20   ; was: $F6
   LD (LDC84),A            ; set Y pos
-  LD A,$A0                ; was: $50
+  LD A,$A0    ; was: $50
   LD (LDC83),A            ; set X pos
   JP LB1BB                ; continue Inventory loop
 LB27A:
   CALL LB295
-  LD A,$A0                ; was: $50
+  LD A,$A0    ; was: $50
   LD (LDC83),A            ; set X pos
-  LD A,$4C                ; was: $26
+  LD A,$4C    ; was: $26
   LD (LDC84),A            ; get Y pos
   LD A,$1D
   LD (LDC82),A            ; set Inventory current
@@ -1829,6 +1836,7 @@ LB301:
 ;
 ; Inventory Look/shoot key pressed
 LB307:
+  call ClearInventoryMesage
   LD HL,LDC5B             ; Inventory list
   LD A,(LDC82)            ; get Inventory current
   LD D,$00
@@ -2078,7 +2086,7 @@ LB4EC:
 ; Rubik's Cube selected in the Inventory
 LB501:
   CALL LB2DE
-  LD HL,$5C18
+  LD HL,$5E14
   LD (L86D7),HL
   LD HL,SE12B             ; "You dont have any time to play with this now"
   CALL LB513              ; Show message
@@ -2094,7 +2102,7 @@ LB513:
 ;
 LB51F:
   CALL LB2DE
-  LD HL,$5C12
+  LD HL,$5E12
   LD (L86D7),HL	
   RET
 ;
@@ -2740,7 +2748,7 @@ ENDIF
 ;
 ; Draw 5-digit number HL at row/col DE, and show the screen
 LB97D:
-  LD (L86D7),DE
+  LD (L86D7),DE           ; set penRow/penCol
   call DrawNumber5
   call ShowShadowScreen   ; Copy shadow screen to ZX screen
   ret
@@ -3293,20 +3301,22 @@ LBD70:
   JP LBCC5                ; Show the message/screen, wait for key, continue game main loop
 LBD85:
   LD A,$44
-  LD (LDC59),A
+  LD (LDC59),A            ; set delay factor
   LD (LDC85),A            ; Use delay and copy screen in LBEDE
   XOR A
   LD (LDCF3),A            ; Left margin size for text
   LD (LDBF4),A
   LD A,14     ; was: $07
   LD (LDCF4),A            ; Line interval for text
+; Showing end-of-story screen
   CALL ClearShadowScreen
   call ClearPenRowCol
 ;  LD HL,$0000
 ;  LD (L86D7),HL           ; Set penRow/penCol
   LD HL,SE11B             ; "The onboard guidance system picks up a ...
   CALL LBEDE              ; Show message char-by-char
-  CALL LADA1              ; Wait for MODE key
+  call WaitAnyKey         ; was: Wait for MODE key
+; Showing statistics screen
   LD A,$06
   LD (LDCF3),A            ; Left margin size for text
   CALL ClearShadowScreen
@@ -3319,15 +3329,15 @@ LBD85:
   LD A,(LDBC7)            ; get Items Found count
   LD L,A
   LD H,$00
-  CALL LB97D              ; Draw 5-digit number HL and show the screen at row/col DE
+  CALL LB97D              ; Draw 5-digit number HL at row/col DE, and show the screen
   CALL LBC34              ; Delay x20
   LD DE,$1A8C
   LD HL,(LDBC5)           ; get Enemies Killed count
-  CALL LB97D              ; Draw 5-digit number HL and show the screen at row/col DE
+  CALL LB97D              ; Draw 5-digit number HL at row/col DE, and show the screen
   CALL LBC34              ; Delay x20
   LD DE,$288C
   LD HL,(LDBC3)           ; get Player Deaths count
-  CALL LB97D              ; Draw 5-digit number HL and show the screen at row/col DE
+  CALL LB97D              ; Draw 5-digit number HL at row/col DE, and show the screen
   CALL LBC34              ; Delay x20
   LD A,(LDBC7)            ; get Items Found count
   SUB $14                 ; 20 or more?
@@ -3382,11 +3392,12 @@ LBE5E:
   LD HL,SE0B3             ; "Over & Over Again" (achievement)
   CALL LBEDE              ; Show message char-by-char
 LBE6A:
-  CALL LADA1              ; Wait for MODE key
+  call WaitAnyKey         ; was: Wait for MODE key
   CALL ClearShadowScreen
   LD A,(LDBF4)
   CP $03
   JR NZ,LBE8A
+; Extended ending
   XOR A
   LD (LDCF3),A            ; Left margin size for text
   call ClearPenRowCol
@@ -3396,14 +3407,14 @@ LBE6A:
   CALL LBEDE              ; Show message char-by-char
   JP LBE9B
 LBE8A:
-  LD A,$0F
+  LD A,30   ; was: $0F
   LD (LDCF3),A            ; Left margin size for text
-  LD HL,$3418
+  LD HL,$3414
   LD (L86D7),HL           ; Set penRow/penCol
   LD HL,SE0A9             ; "Earn 3 Good Awards for an Extended Ending!"
   CALL LBEDE              ; Show message char-by-char
 LBE9B:
-  CALL LADA1              ; Wait for MODE key
+  call WaitAnyKey         ; was: Wait for MODE key
   CALL ClearShadowScreen
   LD HL,$3A46
   LD (L86D7),HL           ; Set penRow/penCol
@@ -3422,7 +3433,7 @@ LBEDE:
   inc hl
   or a
   ret z
-  cp $7C	                ; '|'
+  cp $7C	                ; '|' - line end
   jr z,LBF1B
   push hl
   call DrawChar
@@ -3434,7 +3445,7 @@ LBEDE:
 LBEF9_1:
   pop hl
   jr LBEDE
-LBF1B:
+LBF1B:                    ; Line end
   PUSH BC
   LD A,(L86D8)            ; Get penRow
   LD C,A

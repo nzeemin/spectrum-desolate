@@ -38,18 +38,13 @@ IF DEFINED CHEAT_HAVE_WEAPON
   ld (LDCF7),a
 ENDIF
 
-;  ld a,$01
-;  ld (LDB9C+0),a
-;  ld (LDB9C+1),a
-;  ld (LDB9C+3),a
 ;  call LB0A2  ; Inventory
-
-;  call LBF6F  ; The End
 ;  call LBBEC  ; Info menu item, show Controls
 ;  call LBADE  ; New game
 ;  call LBB7E  ; Game start
 ;  call LB9A2  ; Player is dead
 ;  call LBD85  ; Final
+;  call LBF6F  ; The End
 
 ;  ld de,Tileset1+$10*32
 ;  ld a,0
@@ -82,31 +77,11 @@ ENDIF
 ;  call DrawNumber5
 ;  call WaitAnyKey
 
-;  ld hl,$3A14
-;  ld (L86D7),hl
-;  ld hl,SE115
-;  call DrawString
-;  call WaitAnyKey
-;  call ClearScreen
-;  call ClearPenRowCol
-;  ld hl,SE117
-;  call DrawString
-;  ld hl,$72B6
-;  ld (L86D7),hl
-;  ld a,$60
-;  call DrawChar
-;  call WaitAnyKey
-;  call ClearScreen
-;  call ClearPenRowCol
-;  ld hl,SE119
-;  call DrawString
-
 ;  call ShowShadowScreen
 
 ;  call WaitAnyKey
 ;  call ClearScreen
   jp start
-
 
 ;----------------------------------------------------------------------------
 
@@ -595,6 +570,7 @@ ClearScreenBlock:
   add hl,bc               ; now HL = start address
   ld c,24                 ; line width in columns
   xor a
+;  ld a,$55   ;DEBUG
 ClearScreenBlock_1        ; loop by rows
   push hl
   ld b,e    ; cols
