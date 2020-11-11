@@ -52,9 +52,9 @@ namespace SpriteRotate
             //DumpArchivedStrings();
             //PrepareArchivedStrings();
             //PrepareLineAddresses();
-            PrepareFontProto();
-            PrepareTilesetMasked();
-            PrepareTileset3();
+            //PrepareFontProto();
+            //PrepareTilesetMasked();
+            //PrepareTileset3();
             //PrepareCreditsMargins();
         }
 
@@ -716,7 +716,7 @@ namespace SpriteRotate
             const int colwid = 120;
             const int rowhei = 80;
 
-            var bmp = new Bitmap(colwid * 8 + 40, rowhei * 14 + 40, PixelFormat.Format32bppArgb);
+            var bmp = new Bitmap(colwid * 7 + 40, rowhei * 14 + 40, PixelFormat.Format32bppArgb);
 
             byte[] savdmp = File.ReadAllBytes("memdmp.bin");
             Array.Copy(savdmp, 0, memdmp, 0, 65536);
@@ -728,6 +728,21 @@ namespace SpriteRotate
             g.PixelOffsetMode = PixelOffsetMode.HighQuality;
             g.TextRenderingHint = TextRenderingHint.AntiAliasGridFit;
             var font = new Font("Tahoma", 8);
+
+            // Title screen
+            DrawRoom(bmp, 20, 20, DecodeRoom(0xF4B5, 96), 0xEB39);
+
+            g.DrawString("Access Levels", font, Brushes.Navy, 20, 100);
+            for (int i = 0; i < 5; i++)
+            {
+                var accesscolor = GetRoomPassageColorByAccessLevel(i);
+                var pen = new Pen(accesscolor, 18);
+                int x = 30;
+                int y = 140 + i * 30;
+                g.DrawLine(pen, x + 10, y, x + 70, y);
+                var label = i == 0 ? "Free Pass" : $"Level {i}";
+                g.DrawString(label, font, Brushes.Navy, x, y - 22);
+            }
 
             int[] coords = new[]
             {
@@ -808,7 +823,7 @@ namespace SpriteRotate
                 int yr = coords[r * 2 + 1] * rowhei + 20;
 
                 DrawRoom(bmp, xr, yr, room, 0xE147, rdesc);
-                g.DrawString($"{r}", font, Brushes.Navy, xr, yr - 8);
+                g.DrawString($"{r}", font, Brushes.Navy, xr, yr - 12);
 
                 int roomdown = rdesc[35];
                 if (roomdown < 72)
@@ -821,7 +836,7 @@ namespace SpriteRotate
                     g.DrawString($"{roomleft}", font, Brushes.Navy, xr - 8, yr + 5 * 8);
                 int roomright = rdesc[38];
                 if (roomright < 72)
-                    g.DrawString($"{roomright}", font, Brushes.Navy, xr + 11 * 8 + 2, yr + 2 * 8);
+                    g.DrawString($"{roomright}", font, Brushes.Navy, xr + 11 * 8 + 2, yr + 1 * 8);
             }
 
             var roomsfilename = "roomsmap.png";

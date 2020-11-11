@@ -1,6 +1,11 @@
 # spectrum-desolate
 Porting **Desolate** game from TI-83 Plus calculator to ZX Spectrum.
 
+Status: work in progress.
+
+![](screenshot/port-room1.png)
+
+
 ## The original game
 
 Written by Patrick Prendergast (tr1p1ea) for TI-83/TI-84 calculators.
@@ -21,21 +26,11 @@ To run the game on Wabbitemu emulator:
  7. Select Main > Desolate
 
 
-## The port to ZX Spectrum
+## Tools for the bin folder
 
-Status: work in progress.
-
-![](screenshot/port-room1.png)
-
-
-## Tools
-
- - `bas2tap.exe` and `tap2tzx.exe`
+ - `bas2tap.exe` and `tap2tzx.exe` utilities
    https://sourceforge.net/projects/zxspectrumutils/files/
 
- - `pasmo.exe`
+ - `pasmo.exe` cross-assembler
    http://pasmo.speccy.org/
-
- - `sjasmplus.exe`
-   https://github.com/z00m128/sjasmplus/releases
 

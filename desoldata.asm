@@ -670,7 +670,7 @@ LDB81:  DEFB $00          ; Alien type: $02
 LDB82:  DEFB $00          ; Alien: $01 = we already have an alien in the room
 LDB83:  DEFB $00          ; Alien ??
 LDB84:  DEFB $02          ; Alien ??
-LDB85:  DEFB $03          ; Alien ??
+LDB85:  DEFB $03          ; Alien health: $03, then DEC to $00
 LDB86:  DEFB $00
 LDB87:  DEFB $00
 LDB88:  DEFB $00          ; Bullet X coord in tiles
@@ -678,7 +678,7 @@ LDB89:  DEFB $00          ; Bullet Y coord/line on the screen
 LDB8A:  DEFB $00          ; Bullet Y coord in tiles
 LDB8B:  DEFB $00          ; Bullet Direction/orientation
 LDB8C:  DEFB $00
-LDB8D:  DEFB $00          ; $01 = shoot with the weapon
+LDB8D:  DEFB $00          ; $01 = shooting in process, bullet in the air
   DEFB $00
 LDB8F:  DEFB $3A          ; Menu Y pos: $3A $46 $52 $5E $6A
 LDB90:                    ; Flags about performed progress
@@ -745,14 +745,14 @@ LDC87:  DEFB $00          ; ??
 LDC88:  DEFB $00          ; current offset in the room description $00..$30
 LDC89:  DEFB $00          ; Current inventory item / Picked up item??
 LDC8A:  DEFB $00
-LDC8B:  DEFB $FF
+LDC8B:  DEFB $FF          ; Access code slot number - see LDCA2 table
 LDC8C:  DEFB $00          ; Access code level ??
-LDC8D:  DEFB $00,$00,$00,$00,$00
-LDC92:  DEFB $1E,$1A,$1F,$21
-LDC96:  DEFB $1E,$1A,$1F,$21
-LDC9A:  DEFB $1E,$1A,$1F,$21
-LDC9E:  DEFB $1E,$1A,$1F,$21
-LDCA2:                    ; Table with marks where door locks codes accepted
+LDC8D:  DEFB $00,$00,$00,$00,$00    ; Buffer for entering access code
+LDC92:  DEFB $1E,$1A,$1F,$21    ; level 1 access code buffer
+LDC96:  DEFB $1E,$1A,$1F,$21    ; level 2 access code buffer
+LDC9A:  DEFB $1E,$1A,$1F,$21    ; level 3 access code buffer
+LDC9E:  DEFB $1E,$1A,$1F,$21    ; level 4 access code buffer
+LDCA2:    ; Table with Access code slots - marks where door locks codes accepted
   DEFB $00,$00,$00,$00,$00,$00,$00,$00
   DEFB $00,$00,$00,$00,$00,$00,$00,$00
   DEFB $00,$00,$00,$00,$00,$00,$00,$00
@@ -812,6 +812,7 @@ LDDF2:                    ; Table of left margins for Credits strings
   DEFB $00,$00,$00,$00,$00,$00,$00,$00,$00,$00,$08,$00,$00,$00,$00,$00
   DEFB $00,$00,$00,$00,$00,$00,$00,$00,$00,$00,$00,$00,$00,$00,$00,$00
   DEFB $00,$00,$00,$00,$00
+;
 LDE47:
   DEFB $00,$01,$02,$03,$00,$01,$04,$05    ; $00 down
   DEFB $00,$01,$02,$03,$00,$01,$06,$07
@@ -826,7 +827,7 @@ LDE87:
   DEFB $08,$01,$09,$14    ; $01 up
   DEFB $0C,$0D,$15,$16    ; $02 left
   DEFB $0C,$0D,$15,$16    ; $03 right
-
+;
 ; List of encoded room addresses, for 72 rooms
 LDE97:
   DEFW LBFF8
@@ -1023,18 +1024,18 @@ LDFF3:          ; Table of strings: Data cartridge messages
   DEFW SE093
   DEFW SE095
   DEFW SE097
-LE015:          ; Table ?? access code
+LE015:          ; Table of access code buffers
   DEFW LDC92
   DEFW LDC92
-  DEFW LDC96
-  DEFW LDC9A
-  DEFW LDC9E
+  DEFW LDC96    ; level 2 access code buffer
+  DEFW LDC9A    ; level 3 access code buffer
+  DEFW LDC9E    ; level 4 access code buffer
 LE01F:          ; Table of strings: access code messages
-  DEFW SE121
-  DEFW SE121
-  DEFW SE123
-  DEFW SE125
-  DEFW SE127
+  DEFW SAccessLevel1
+  DEFW SAccessLevel1
+  DEFW SAccessLevel2
+  DEFW SAccessLevel3
+  DEFW SAccessLevel4
 LE029:          ; Archived strings offsets (DELETED BLOCK, not needed anymore)
 
   INCLUDE "desoltil1.asm"

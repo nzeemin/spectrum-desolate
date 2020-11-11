@@ -391,18 +391,18 @@ LA8CD:
   LD A,(LDD55)
   OR A
   JR Z,LA8DF
-  LD HL,LDE87
+  LD HL,LDE87             ; Table
   LD A,(LDB75)            ; Direction/orientation
   ADD A,A
-  ADD A,A                 ; now A = A * 4
+  ADD A,A                 ; now A = Direction * 4
   JR LA8E9
 LA8DF:
-  LD HL,LDE47
+  LD HL,LDE47             ; Table
   LD A,(LDB75)            ; Direction/orientation
   ADD A,A
   ADD A,A
   ADD A,A
-  ADD A,A                 ; now A = A * 16
+  ADD A,A                 ; now A = Direction * 16
 LA8E9:
   LD E,A
   LD D,$00
@@ -797,12 +797,12 @@ LAB85:
   LD A,(HL)
   LD (LDC86),A            ; new room number??
   LD DE,$0004
-  ADD HL,DE               ; HL = $1C+$07+$04=$27 - offset for Access code level
+  ADD HL,DE               ; HL = $1C+$07+$04=$27 - offset for Access code slot
   LD A,(HL)
-  LD (LDC8B),A
+  LD (LDC8B),A            ; set Access code slot number
   LD A,(LDC8C)            ; Get Access code level
-  OR A
-  JP Z,LB00E
+  OR A                    ; Level 0?
+  JP Z,LB00E              ; yes => Going to the next room
   JP LAE23
 ;
 ; Found action point at room description offset $03..$04
@@ -1137,16 +1137,16 @@ LAE19:
 LAE23:
   LD A,$28
   LD (LDC59),A            ; set delay factor
-  LD A,(LDC8B)
+  LD A,(LDC8B)            ; get Access code slot number
   LD D,$00
   LD E,A
-  LD HL,LDCA2             ; Table with accepted rooms??
+  LD HL,LDCA2             ; Table with Access code slots
   ADD HL,DE
   LD A,(HL)
-  CP $01                  ; accepted?
-  JP Z,LB00E              ; yes => jump
+  CP $01                  ; code was entered already?
+  JP Z,LB00E              ; yes => Going to the next room
   LD B,$04
-  LD HL,LDC8D
+  LD HL,LDC8D             ; Buffer for entering access code
 LAE3D:
   LD (HL),$00
   INC HL
@@ -1165,7 +1165,7 @@ LAE3D:
   LD HL,$440A
   LD (L86D7),HL           ; Set penRow/penCol
   CALL LAFFE              ; Get "Access code level N required" string by access level in DC8C
-  CALL LBEDE              ; Show message char-by-char
+  CALL LBEDE              ; Show message HL char-by-char
   LD A,$25
   LD (LDC82),A            ; set Inventory current
   LD A,$A0                ; was: $50
@@ -1187,6 +1187,7 @@ LAE80:
   LD A,(LDC83)            ; get X pos
   CALL L9E5F              ; Draw tile by XOR operation
   CALL ShowShadowScreen   ; Copy shadow screen to ZX screen
+; Delay and wait for key in Door Lock
 LAE99:
   LD B,$0C                ; x12
 LAE9B:
@@ -1199,8 +1200,8 @@ LAE9B:
   JP Z,LAF70              ;   Move left
   CP $03                  ; right key?
   JP Z,LAF86              ;   Move right
-  CP $37                  ; Escape key
-  JP NZ,LAE99
+  CP $37                  ; Escape key?
+  JP NZ,LAE99             ;   no => continue the key waiting loop
   JP L9E2E                ; Exit Door Lock - Show the screen, continue the game main loop
 ; Select key pressed
 LAEBA:
@@ -1211,10 +1212,10 @@ LAEBA:
   LD A,(LDC57)
   DEC A
   CP $01
-  JP Z,LAE99
+  JP Z,LAE99              ; Return to Delay and wait for key in Door Lock
   LD (LDC57),A
   LD B,$03
-  LD HL,LDC8D
+  LD HL,LDC8D             ; Buffer for entering access code
   INC HL
 LAED4:
   PUSH HL
@@ -1225,11 +1226,11 @@ LAED4:
   INC HL
   DJNZ LAED4
   LD DE,$0003
-  LD HL,LDC8D
+  LD HL,LDC8D             ; Buffer for entering access code
   ADD HL,DE
   LD A,(LDC82)            ; get current selection
   LD (HL),A
-  LD HL,LDC8D
+  LD HL,LDC8D             ; Buffer for entering access code
   LD A,4    ; was: $02
   LD C,A
   LD B,$00
@@ -1259,23 +1260,25 @@ LAEEF:
   CP 12     ;was: $06
   JP NZ,LAEEF
   CALL ShowShadowScreen   ; Copy shadow screen to ZX screen
-  JP LAE99
+  JP LAE99                ; Return to Delay and wait for key in Door Lock
 ;
 LAF14:
   LD A,(LDC57)
   DEC A
   CP $01
   JP Z,LAF2C
+; Invalid Code
 LAF1D:
   CALL LB09B              ; Preparing to draw string with the result
-  LD HL,SE0DF             ; " INVALID CODE"
+  LD HL,SE0DF             ; "INVALID CODE"
   CALL LBEDE              ; Show message char-by-char
   CALL ShowShadowScreen   ; Copy shadow screen to ZX screen
-  JP LAE99
+  JP LAE99                ; Return to Delay and wait for key in Door Lock
+; Code Accepted!
 LAF2C:
   LD B,$04
-  LD DE,LDC8D
-  CALL LAFEC
+  LD DE,LDC8D             ; Buffer for entering access code
+  CALL LAFEC              ; LDC8C access code level -> HL = address from LE015 table
 LAF34:
   LD A,(DE)
   LD C,A
@@ -1289,13 +1292,13 @@ LAF34:
   LD HL,SE0E1             ; " Accepted! "
   CALL LBEDE              ; Show message char-by-char
   CALL ShowShadowScreen   ; Copy shadow screen to ZX screen
-  LD A,(LDC8B)
+  LD A,(LDC8B)            ; get Access code slot number
   LD D,$00
   LD E,A
-  LD HL,LDCA2
+  LD HL,LDCA2             ; Table with Access code slots
   ADD HL,DE
   LD (HL),$01             ; Mark code here was accepted
-  JP LB00E
+  JP LB00E                ; Going to the next room
 ;
 LAF5A:
   CALL LAFD2
@@ -1323,35 +1326,35 @@ LAF70:
 ; Door Lock Move right
 LAF86:
   LD A,(LDC83)            ; get X pos
-  CP $A0                  ; was: $50
+  CP $A0      ; was: $50
   JP Z,LAFB7              ; => Move next row
   CALL LAF5A
   LD A,(LDC83)            ; get X pos
-  ADD A,16                ; was: $08
+  ADD A,16    ; was: $08
   LD (LDC83),A            ; set X pos
   JP LAE80
 ; Move prev row
 LAF9C:
   LD A,(LDC84)            ; get Y pos
-  CP $30                  ; was: $18
-  JP Z,LAE99
+  CP $30      ; was: $18
+  JP Z,LAE99              ; Return to Delay and wait for key in Door Lock
   CALL LAF65
-  LD A,$A0                ; was: $50
+  LD A,$A0    ; was: $50
   LD (LDC83),A            ; set X pos
   LD A,(LDC84)            ; get Y pos
-  ADD A,-16               ; was: $F8
+  ADD A,-16   ; was: $F8
   LD (LDC84),A            ; set Y pos
   JP LAE80
 ; Move next row
 LAFB7:
   LD A,(LDC84)            ; get Y pos
-  CP $60                  ; was: $30
-  JP Z,LAE99
+  CP $60      ; was: $30
+  JP Z,LAE99              ; Return to Delay and wait for key in Door Lock
   CALL LAF5A
-  LD A,$80                ; was: $40
+  LD A,$80    ; was: $40
   LD (LDC83),A            ; set X pos
   LD A,(LDC84)            ; get Y pos
-  ADD A,16                ; was: $08
+  ADD A,16    ; was: $08
   LD (LDC84),A            ; set Y pos
   JP LAE80
 ;
@@ -1370,13 +1373,14 @@ LAFD2:
   CALL ShowShadowScreen   ; Copy shadow screen to ZX screen
   RET
 ;
+; LDC8C access code level -> address from LE015 table
 LAFEC:
   PUSH DE
   LD A,(LDC8C)            ; Get Access code level
   ADD A,A
   LD E,A
-  LD D,$00
-  LD HL,LE015
+  LD D,$00                ; now DE = Level * 2
+  LD HL,LE015             ; Table of addresses
   ADD HL,DE
   LD A,(HL)
   INC HL
@@ -1385,11 +1389,12 @@ LAFEC:
   POP DE
   RET
 ;
-LAFFE
+; LDC8C access code level -> message address from LE01F table
+LAFFE:
   LD A,(LDC8C)            ; Get Access code level
   ADD A,A
   LD E,A
-  LD D,$00
+  LD D,$00                ; now DE = Level * 2
   LD HL,LE01F             ; Access code messages table
   ADD HL,DE
   LD A,(HL)
@@ -1900,16 +1905,16 @@ LB38B:
   LD (LDC85),A            ; Skip delay and copy screen in LBEDE
   JP L9DDD                ; return to the main game loop
 LB39A:
-  LD HL,LDC96             ; Get code address
-  CALL LBC3C              ; Draw code ??
+  LD HL,LDC96             ; Get code address - level 2 access code buffer
+  CALL LBC3C              ; Draw the code
   RET
 LB3A1:
-  LD HL,LDC9A
-  CALL LBC3C              ; Draw code ??
+  LD HL,LDC9A             ; Get code address - level 3 access code buffer
+  CALL LBC3C              ; Draw the code
   RET
 LB3A8:
-  LD HL,LDC9E
-  CALL LBC3C              ; Draw code ??
+  LD HL,LDC9E             ; Get code address - level 4 access code buffer
+  CALL LBC3C              ; Draw the code
   RET
 ;
 ; Data cartridge selected in the Inventory
@@ -2164,7 +2169,7 @@ LB551:
   LD A,(HL)
   LD (LDB7E),A            ; set Alien X coord
   LD A,$03
-  LD (LDB85),A
+  LD (LDB85),A            ; set alien health = 3
   LD A,$01
   LD (LDB84),A
 LB57B:
@@ -2225,7 +2230,7 @@ LB5E9:
   CP $01
   JP NZ,LB622
   LD A,(LDB7E)            ; get Alien X coord
-  DEC A                   ; decrease Y
+  DEC A                   ; left one tile
   LD (LDB7E),A            ; set Alien X coord
   JP LB622
 LB607:
@@ -2238,11 +2243,12 @@ LB607:
   CP $01
   JP NZ,LB622
   LD A,(LDB7E)            ; get Alien X coord
-  INC A                   ; increase Y
+  INC A                   ; right one tile
   LD (LDB7E),A            ; set Alien X coord
 ;
 LB622:
   LD A,(LDB7E)            ; get Alien X coord
+  add a,a                 ; tile X cord -> 8px column number
   LD H,A                  ; column
   LD A,(LDB7F)            ; get Alien Y coord
   LD L,A                  ; row
@@ -2262,7 +2268,7 @@ LB622:
 LB64B:
   CALL LB8CA
   OR A
-  CALL Z,LB71F
+  CALL Z,LB71F            ; => Killed the alien
   RET
 ;
 LB653:
@@ -2276,12 +2282,14 @@ LB653:
   LD A,(LDB81)            ; get Alien type
   CP $02
   RET NZ
+; Draw alien type 2
   LD A,(LDB7E)            ; get Alien X coord
+  add a,a                 ; tile X cord -> 8px column number
   LD H,A
   LD A,(LDB7F)            ; get Alien Y coord
   ADD A,-16   ; $F8
   LD L,A
-  LD A,$00
+  LD A,$00                ; clear draw flags
   CALL LB69D              ; Get alien tile address
   CALL L9EDE              ; Draw tile DE at column H row L
   RET
@@ -2406,7 +2414,7 @@ LB71F:
   LD (LDB84),A
   CALL LB8DC              ; Clear all Bullet variables
   LD HL,(LDBC5)           ; get Enemies Killed count
-  INC HL
+  INC HL                  ; one more killed
   LD (LDBC5),HL           ; set Enemies Killed count
   RET
 ;
@@ -2421,7 +2429,7 @@ LB72E:
 ;
 LB737:
   XOR A
-  LD (LDB8D),A
+  LD (LDB8D),A            ; clear shooting process mark
   CALL LB994              ; Decrease Health
   LD A,(LDB81)            ; get Alien type
   CP $02
@@ -2443,7 +2451,7 @@ LB758:
   CP $01
   JP Z,LB768
   LD A,$01
-  LD (LDB8D),A            ; mark we did shoot with the weapon
+  LD (LDB8D),A            ; set shooting process flag
   LD (LDD55),A
 LB768:
   JP L9E2E                ; Show the screen, continue the game main loop
@@ -2451,14 +2459,14 @@ LB768:
 ; Process shoot within the game main loop
 ;
 LB76B:
-  LD A,(LDB8D)            ; shooting process flag
-  OR A                    ; did we shoot?
+  LD A,(LDB8D)            ; get shooting process flag
+  OR A                    ; in the process?
   JP Z,LB84A              ; no => jump
   LD A,(LDB8C)
   CP $01
   JP Z,LB797
   LD A,$01
-  LD (LDB8D),A
+  LD (LDB8D),A            ; set shooting process flag
   LD A,(LDB75)            ; get player Direction/orientation
   LD (LDB8B),A            ; set bullet Direction/orientation
   LD A,(LDB76)            ; get player X coord in tiles
@@ -2517,9 +2525,9 @@ LB7F3:
   JP LB805
 ; 
 LB805:
-  LD A,(LDB8D)
-  OR A
-  JP Z,LB84A
+  LD A,(LDB8D)            ; get shooting process flag
+  OR A                    ; in the process?
+  JP Z,LB84A              ; no => jump
   LD A,(LDB88)            ; get bullet X coord in tiles
   add a,a                 ; tile coord -> column number
   LD H,A
@@ -2541,14 +2549,14 @@ LB82B:
   OR A
   JP NZ,LB82A
   XOR A
-  LD (LDB8D),A
+  LD (LDB8D),A            ; clear shooting process flag
   LD (LDB88),A            ; clear Bullet X coord in tiles
   LD (LDB89),A            ; clear Bullet Y coord/line on the screen
-  LD A,(LDB85)
+  LD A,(LDB85)            ; get alien health
   DEC A
-  LD (LDB85),A
+  LD (LDB85),A            ; set alien health
   OR A
-  CALL Z,LB71F
+  CALL Z,LB71F            ; => Killed the alien
   JP LB82A
 LB84A:
   XOR A
@@ -2656,7 +2664,7 @@ LB8D6:
 ; Clear all Bullet variables
 LB8DC:
   XOR A
-  LD (LDB8D),A            ; clear shoot process mark
+  LD (LDB8D),A            ; clear shooting process mark
   LD (LDB88),A            ; clear Bullet X coord in tiles
   LD (LDB89),A            ; clear Bullet Y coord/line on the screen
   LD (LDB8A),A            ; clear Bullet Y coord in tiles
@@ -2958,17 +2966,17 @@ LBB09:
   LD (HL),$00             ; Clear 9 variables about the progress
   INC HL
   DJNZ LBB09
-  LD HL,LDCA2
+  LD HL,LDCA2             ; Table with Access code slots
   LD B,$48                ; 72 bytes
 LBB17:
-  LD (HL),$00             ; clear
+  LD (HL),$00             ; clear the slot
   INC HL
   DJNZ LBB17
-  LD HL,LDC96
+  LD HL,LDC96             ; level 2 access code buffer
   CALL LBC6B              ; Generate random code
-  LD HL,LDC9A
+  LD HL,LDC9A             ; level 3 access code buffer
   CALL LBC6B              ; Generate random code
-  LD HL,LDC9E
+  LD HL,LDC9E             ; level 4 access code buffer
   CALL LBC6B              ; Generate random code
   CALL LBC7D              ; Clear shadow screen and copy to ZX screen
   LD A,$44
@@ -3101,8 +3109,8 @@ LBC36:
   DJNZ LBC36
   RET
 ;
-; Draw code ??
-;   HL = code address??
+; Draw access code, 4 tiles
+;   HL = access code buffer address
 LBC3C:
   LD DE,$5038
   LD (L86D7),DE
@@ -3111,16 +3119,17 @@ LBC45:
   PUSH BC
   PUSH HL
   LD A,(HL)
-  CP $24                  ; '$'
+  CP $24                  ; tile number for '-' sign
   JR Z,LBC64
-  SUB $1A
-;TODO
+;  SUB $1A
+  add a,$30-$1A           ; from tile number to '0'..'9' char
 ;  RST $28                 ; rBR_CALL
 ;  DEFW $478C
-  LD A,$01
-;TODO
+  call DrawChar
+  LD A,$02                ; small space between digits
 ;  RST $28                 ; rBR_CALL
 ;  DEFW $4BF7              ; _DispOP1A - Rounds a floating-point number to the current fix setting and display it at the current pen location
+  call DrawChar
   LD A,(L86D7)
   DEC A
   DEC A
@@ -3133,13 +3142,13 @@ LBC5E:
   RET
 LBC64:
   LD A,$2D                 ; '-'
-;TODO
 ;  RST $28                 ; rBR_CALL
 ;  DEFW $455E              ; _VPutMap - Displays either a small variable width or large 5x7 character at the current pen location and updates penCol.
+  call DrawChar
   JR LBC5E
 ;
-; Generate random code
-;   HL = 4-byte buffer
+; Generate random access code
+;   HL = 4-byte buffer address
 LBC6B:
   LD B,$04
 LBC6D:
@@ -3147,13 +3156,13 @@ LBC6D:
   PUSH HL
 ;  LD B,$0B
 ;  CALL $4086
-  call GetRandom11         ; Generate random number 0..10
-  ADD A,$1A
+  call GetRandom11        ; Generate random number 0..10
+  ADD A,$1A               ; tile number for '0'
   POP HL
   LD (HL),A
   INC HL
   POP BC
-  DJNZ LBC6D
+  DJNZ LBC6D              ; continue the loop
   RET
 ;
 ; Clear shadow screen and copy to ZX screen
