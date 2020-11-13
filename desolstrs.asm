@@ -144,6 +144,6 @@ SE13B: DEFM "The Evacuation Deck has|",$09,"been re-pressurised",0
 SE13D: DEFM "You Insert a Power Cell.|Guidance System Online",0
 SE13F: DEFM $0C,"The Life Support System|",$15,"needs Re-Configuring",0
 SE141: DEFM $1F,$0B,"AirLock Control &| Re-Pressurisation Station",0
-SE143: DEFM $09,"This MainFrame is missing|",$1F,$1F,$0A,"a Power Cell",0
+SE143: DEFM $05,"This MainFrame is missing|",$1F,$1C,"a Power Cell",0
 SE145: DEFM $09,"This Pod cant naviagate.|Guidance System is offline",0
 SQuit: DEFM "Its now safe to turn off|",$1F,$0E,"your computer.",0

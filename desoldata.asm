@@ -768,7 +768,7 @@ LDCF3:  DEFB $00          ; Left margin size for text
 LDCF4:  DEFB $0E          ; Line interval for text
 LDCF5:  DEFB $00,$00
 LDCF7:  DEFB $00          ; Weapon: $00 $01
-LDCF8:  DEFB $00
+LDCF8:  DEFB $00          ; $01 = Data cartridge selected, used on the Data cartridge reader screen
 LDCF9:  
   DEFB $20,$20,$20,$20,$20,$20,$20,$20
   DEFB $20,$20,$20,$20,$20,$20,$20,$20
@@ -786,7 +786,7 @@ SE029:  ; Empty string
 LDD53:  DEFB $00                ; empty string
 LDD54:  DEFB $00                ; ?? $00 INC $03
 LDD55:  DEFB $00                ; ?? $00 $01
-LDD56:  DEFB $00                ; Credits counter within one line 0..11
+LDD56:  DEFB $00                ; Credits counter within one line: 0..11
 LDD57:  DEFB $00                ; Credits line number
 LDD58:                    ; Table of Credits strings
   DEFW SE02B,SE02D,SE029,SE02F,SE031
@@ -804,14 +804,14 @@ LDD58:                    ; Table of Credits strings
   DEFW SE029,SE029,SE029,SE029,SE029
   DEFW SE029,SE029,SE029,SE029,SE029
   DEFW SE029,SE029,SE029,SE029,SE029
-  DEFW SE029,SE029
+;  DEFW SE029,SE029
 LDDF2:                    ; Table of left margins for Credits strings
   DEFB $1C,$1C,$00,$20,$10,$16,$1E,$0C,$14,$18,$00,$4A,$38,$3A,$3A,$2E
   DEFB $26,$44,$40,$38,$38,$44,$46,$40,$32,$26,$36,$40,$32,$30,$00,$10
   DEFB $14,$08,$3E,$00,$00,$08,$1E,$20,$00,$32,$00,$00,$22,$0E,$00,$00
   DEFB $00,$00,$00,$00,$00,$00,$00,$00,$00,$00,$08,$00,$00,$00,$00,$00
   DEFB $00,$00,$00,$00,$00,$00,$00,$00,$00,$00,$00,$00,$00,$00,$00,$00
-  DEFB $00,$00,$00,$00,$00
+;  DEFB $00,$00,$00,$00,$00
 ;
 LDE47:
   DEFB $00,$01,$02,$03,$00,$01,$04,$05    ; $00 down
