@@ -4,13 +4,13 @@
 L9DDD:
   LD A,(LDB7A)            ; Get Health
   OR A
-  JP Z,LB9A2              ; Player is dead
-  CALL LADE5              ; Decode current room; HL = LDBF5
+  JP Z,LB9A2              ; zero => Player is dead
+  CALL LADE5              ; Decode current room to LDBF5; HL = LDBF5
   CALL LA88F              ; Display 96 tiles on the screen
   CALL LB96B              ; Display Health
   CALL LB8EA              ; Show look/shoot selection indicator
   CALL LB76B              ; Process shoot
-  CALL LB551              ; Process alien in the room
+  CALL LB551              ; Process Alien in the room
   CALL LA0F1              ; Scan keyboard
   CP $0F                  ; CLEAR
   JP Z,LBA3D
@@ -22,9 +22,9 @@ L9DDD:
   JP Z,LA9EB
   CP $03                  ; Right
   JP Z,LAA1A
-  XOR A                   ;
-  LD (LDB7C),A
-  JP LA8C6
+;  XOR A
+;  LD (LDB7C),A            ; ??
+  JP LA8C6                ; Draw the Player, then go to the Ending of main game loop
 ;
 ; Ending of main game loop
 L9E19:
@@ -39,7 +39,7 @@ L9E19:
 ; Show the screen, continue the game main loop
 L9E2E:
   CALL ShowShadowScreen   ; Copy shadow screen to ZX screen
-  JP L9DDD                ; continue main game loop
+  jr L9DDD                ; continue main game loop
 
 ; Quit menu item selected
 L9E51:
@@ -304,24 +304,21 @@ L9FEA EQU ShowShadowScreen
 ;
 ClearShadowScreen:
 L9FCF:
-  ld bc,24*138-1	        ; 64 line pairs
+  ld bc,24*138-1	        ; 64 line pairs + 10 extra lines
   ld hl,ShadowScreen
-  ld e,l
-  ld d,h
-  inc de
-  xor a
-  ld (hl),a
+  ld de,ShadowScreen+1
+  ld (hl),$00
   ldir
   ret
 
-; Scan keyboard; returns key in A
+; Scan keyboard
+; Returns key in A; Z=0 for key, Z=1 for no key
 ;
 LA0F1:
   PUSH BC
   PUSH DE
   PUSH HL
   call ReadKeyboard
-;TODO: Protect from reading same key several times
   POP HL
   POP DE
   POP BC
@@ -346,18 +343,18 @@ LA88F:
 LA892:
   PUSH HL
   PUSH DE
-  LD L,(HL)
+  LD L,(HL)               ; get tile number
   LD A,L
-  OR A
-  JR Z,LA8B0
-  CP $47
-  CALL Z,LBC29
+  OR A                    ; empty tile?
+  JR Z,LA8B0              ; yes => skip it
+  CP $47                  ; menu background tile?
+  CALL Z,LBC29            ; yes => add phase to L
   LD H,$00
-  ADD HL,HL               ; HL <- HL * 16
   ADD HL,HL               ;
   ADD HL,HL               ;
   ADD HL,HL               ;
-  add hl,hl               ; HL <- HL * 32
+  ADD HL,HL               ; now HL = HL * 16
+  add hl,hl               ; now HL = HL * 32
   LD BC,Tileset1
   ADD HL,BC
   PUSH HL
@@ -371,33 +368,34 @@ LA8B0:
   INC HL
   INC E
   LD A,E
-  CP $0C
-  jr NZ,LA892
+  CP $0C                  ; was last column?
+  jr NZ,LA892             ; no => continue loop by columns
   LD E,$00
   LD A,$10
-  ADD A,D
+  ADD A,D                 ; next tile row
   LD D,A
-  CP $80
-  jr NZ,LA892
+  CP $80                  ; was last tile row?
+  jr NZ,LA892             ; no => continue loop by tile rows
   RET
 ;
 LA8C6:
   XOR A
-  LD (LDD54),A
+  LD (LDD54),A            ; clear animation phase
 ;  JP LA8CD
 ;
+; Draw Player tiles
 LA8CD:
   LD C,$00
-  LD A,(LDD55)
-  OR A
-  JR Z,LA8DF
-  LD HL,LDE87             ; Table
+  LD A,(LDD55)            ; get shooting flag
+  OR A                    ; shooting animation?
+  JR Z,LA8DF              ; no => jump
+  LD HL,LDE87             ; Table with Player's tile numbers
   LD A,(LDB75)            ; Direction/orientation
   ADD A,A
   ADD A,A                 ; now A = Direction * 4
   JR LA8E9
 LA8DF:
-  LD HL,LDE47             ; Table
+  LD HL,LDE47             ; Table with Player's tile numbers
   LD A,(LDB75)            ; Direction/orientation
   ADD A,A
   ADD A,A
@@ -407,7 +405,7 @@ LA8E9:
   LD E,A
   LD D,$00
   ADD HL,DE
-  LD A,(LDD54)
+  LD A,(LDD54)            ; get animation phase
   ADD A,A
   ADD A,A                 ; now A = A * 4
   LD E,A
@@ -435,25 +433,26 @@ LA8F8:                    ; loop by B
   POP HL
   INC HL
   DJNZ LA8F8              ; continue loop by tiles
-  LD A,(LDD54)
-  CP $03
-  JR Z,LA927
-  INC A
-  LD (LDD54),A
+  LD A,(LDD54)            ; get animation phase 0..3
+  CP $03                  ; was last phase?
+  JR Z,LA927              ; yes => jump
+  INC A                   ; next phase
+  LD (LDD54),A            ; set animation phase
   XOR A
-  LD (LDD55),A
+  LD (LDD55),A            ; clear shooting flag for player's animation
   JP L9E19                ; Go to ending of main game loop
 LA927:
   XOR A
-  LD (LDD54),A
+  LD (LDD54),A            ; clear animation phase
   JP L9E19                ; Go to ending of main game loop
+;
 LA92E:
   INC C
   LD A,(LDB76)            ; get X coord in tiles
   add a,a                 ; now coord in 8px columns
   LD H,A
   LD A,(LDB77)            ; get Y coord in lines
-  SUB 16                  ; was: $08
+  SUB 16    ; was: $08
   LD L,A
   LD A,C
   CP $01
@@ -472,7 +471,7 @@ LA94A:
   dec h
   RET
 LA94C:
-  LD A,16                 ; was: $08
+  LD A,16   ; was: $08
   ADD A,L
   LD L,A
   LD A,C
@@ -501,11 +500,11 @@ LA966:
   CP $01
   jr NZ,LA97C
   XOR A                   ; down
-  LD (LDB75),A            ; Direction/orientation
-  JP LA8C6
+  LD (LDB75),A            ; set Direction/orientation
+  JP LA8C6                ; Proceed to Draw the Player
 LA97C:
   XOR A                   ; down
-  LD (LDB75),A            ; Direction/orientation
+  LD (LDB75),A            ; set Direction/orientation
   CALL LAA60
   CP $01
   JP NZ,LA8CD
@@ -529,7 +528,7 @@ LA99B:
   jr NZ,LA9B3
   LD A,$01                ; up
   LD (LDB75),A            ; Direction/orientation
-  JP LA8C6
+  JP LA8C6                ; Proceed to Draw the Player
 LA9B3:
   LD A,$01                ; up
   LD (LDB75),A            ; Direction/orientation
@@ -544,6 +543,7 @@ LA9B3:
   PUSH AF
   DEC A
   LD (LDB78),A            ; set Y tile coord
+; Moved down or up, check for Alien
 LA9D1:
   LD A,(LDB84)
   OR A
@@ -563,25 +563,25 @@ LA9E6:
 ; Move Left
 LA9EB:
   LD A,(LDB75)            ; Direction/orientation
-  CP $02                  ; left?
+  CP $02                  ; looking left?
   jr Z,LAA03
   LD A,(LDB7D)            ; Get look/shoot switch value
   CP $01                  ; shoot?
   jr NZ,LAA03
   LD A,$02                ; left
-  LD (LDB75),A            ; Direction/orientation
-  JP LA8C6
+  LD (LDB75),A            ; set Direction/orientation
+  JP LA8C6                ; Proceed to Draw the Player
 LAA03:
   LD A,$02                ; left
-  LD (LDB75),A            ; Direction/orientation
+  LD (LDB75),A            ; set Direction/orientation
   CALL LAA60
   CP $01
   JP NZ,LA8CD
   LD A,(LDB76)            ; get X coord in tiles
   PUSH AF
-  DEC A                   ; X = X - 1
+  DEC A                   ; one tile left
   LD (LDB76),A            ; set X coord in tiles
-  JR LAA47
+  JR LAA47                ; go to Alien check
 ;
 ; Move Right
 LAA1A:
@@ -593,7 +593,7 @@ LAA1A:
   jr NZ,LAA32             ; no => jump
   LD A,$03                ; right
   LD (LDB75),A            ; Direction/orientation
-  JP LA8C6
+  JP LA8C6                ; Proceed to Draw the Player
 LAA32:
   LD A,$03                ; right
   LD (LDB75),A            ; Direction/orientation
@@ -602,8 +602,9 @@ LAA32:
   JP NZ,LA8CD
   LD A,(LDB76)            ; get X coord in tiles
   PUSH AF
-  INC A                   ; X = X + 1
+  INC A                   ; one tile right
   LD (LDB76),A            ; set X coord in tiles
+; Moved left or right, check for Alien
 LAA47:
   LD A,(LDB84)
   OR A
@@ -620,7 +621,7 @@ LAA5C:
   JP LA8CD
 ;
 LAA60:
-  CALL LADE5              ; Decode current room; HL = LDBF5
+  CALL LADE5              ; Decode current room to LDBF5; HL = LDBF5
   LD A,(LDB76)            ; get X coord in tiles
   LD E,A
   CALL LAA7D              ; For direction left - dec E, right - inc E
@@ -746,10 +747,11 @@ LAB28:
   PUSH DE
   LD BC,$0060             ; Number of bytes to decode = 96
   LD HL,LEB27             ; Decode from: Small message popup
+;TODO: Replace with call to LADF5
   LD DE,LDBF5             ; Decode to
   CALL LB9F1              ; Decode the screen
   LD HL,LDBF5
-  CALL LB177              ; Display screen from tiles with Tileset 2
+  CALL LB177              ; Display screen HL from tiles with Tileset 2
   POP DE
   POP BC
   RET
@@ -969,8 +971,9 @@ LACE3:
 LACF6:
   CALL ShowShadowScreen   ; Copy shadow screen to ZX screen
   CALL LAD99              ; Wait for Down key
-  CALL LAB28              ; Show small message popup
-  RET
+;  CALL LAB28              ; Show small message popup
+  jp LAB28
+;  RET
 ;
 LAD00:
   CALL LACF6              ; Show screen, wait for down key, show small message popup
@@ -1083,23 +1086,22 @@ LADA9:
   CALL LBEDE              ; Show message char-by-char
   JP LAD8C                ; Show screen and wait for MODE key
 ;
-; Decode current room
+; Decode current room to LDBF5
 ;   Returns: HL = LDBF5
 LADE5:
   LD A,(LDB79)            ; Get the room number
   LD HL,LDE97             ; List of encoded room addresses
-  CALL LADFF              ; now HL = encoded room
+  CALL LADFF              ; now HL = encoded room address
+;TODO: Entry point here to decode 96 bytes to LDBF5
   LD BC,$0060             ; decode 96 bytes
-  CALL LADF5              ; Decode the room to DBF5
-  RET
-;
-; Decode the room to DBF5
-;   HL = decode from
-;   BC = tile count to decode
+;  CALL LADF5              ; Decode the room to LDBF5
+;  RET
+; Decode the room/screen to LDBF5
+;   HL = decode from; BC = tile count to decode
 ;   Returns: HL = LDBF5
 LADF5:
   LD DE,LDBF5             ; Decode to
-  CALL LB9F1              ; Decode the room
+  CALL LB9F1              ; Decode the room/screen
   LD HL,LDBF5
   RET
 ;
@@ -1124,15 +1126,17 @@ LAE09:
   LD HL,LDF27             ; Table of adresses for room descriptions
   CALL LADFF              ; Get address from table by index A
   LD BC,$0031             ; decode 49 bytes
-  CALL LADF5              ; Decode the room description to LDBF5
-  RET
+;  CALL LADF5              ; Decode the room description to LDBF5
+  jr LADF5
+;  RET
 ;
 ; Inventory item to item description string
 LAE19:
   LD A,(LDC89)            ; get current item number
   LD HL,LDFB7
-  CALL LADFF              ; Get address from table by index A
-  RET
+;  CALL LADFF              ; Get address from table by index A
+  jr LADFF
+;  RET
 ;
 LAE23:
   LD A,$28
@@ -1153,8 +1157,8 @@ LAE3D:
   DJNZ LAE3D
   LD BC,$0060             ; decode 96 bytes
   LD HL,LF468             ; Encoded screen: Door access panel popup
-  CALL LADF5              ; Decode the room to DBF5
-  CALL LB177              ; Display screen from tiles with Tileset 2
+  CALL LADF5              ; Decode the screen to DBF5
+  CALL LB177              ; Display screen HL from tiles with Tileset 2
   LD A,10     ; was: $05
   LD (LDCF3),A            ; Left margin size for text
   ld a,12     ; was: $06
@@ -1370,8 +1374,9 @@ LAFD2:
   LD L,A
   LD A,(LDC83)            ; get X pos
   CALL L9E5F              ; Draw tile by XOR operation
-  CALL ShowShadowScreen   ; Copy shadow screen to ZX screen
-  RET
+;  CALL ShowShadowScreen   ; Copy shadow screen to ZX screen
+  jp ShowShadowScreen
+;  RET
 ;
 ; LDC8C access code level -> address from LE015 table
 LAFEC:
@@ -1492,7 +1497,7 @@ LB0A2:
   LD BC,$0060             ; decode 96 bytes
   LD HL,LF329             ; Encoded screen for Inventory/Info popup
   CALL LADF5              ; Decode the screen to DBF5
-  CALL LB177              ; Display screen from tiles with Tileset 2
+  CALL LB177              ; Display screen HL from tiles with Tileset 2
   LD A,22     ; was: $0B
   LD (LDCF3),A            ; Left margin size for text
   LD A,12     ; was: $06
@@ -1775,8 +1780,9 @@ LB295:
   LD L,A
   LD A,(LDC83)            ; get X pos
   CALL L9E5F              ; Draw tile by XOR operation
-  CALL ShowShadowScreen   ; Copy shadow screen to ZX screen
-  RET
+;  CALL ShowShadowScreen   ; Copy shadow screen to ZX screen
+  jp ShowShadowScreen
+;  RET
 ;
 ; Prepare item description string
 ;   Returns: HL = item description string
@@ -1792,8 +1798,9 @@ LB2AF:
   CP $63                  ; empty slot?
   jr Z,LB2CC
   LD (LDC89),A            ; set as current item
-  CALL LAE19              ; Get inventory item description string
-  RET
+;  CALL LAE19              ; Get inventory item description string
+  jp LAE19
+;  RET
 LB2CC:
   LD HL,SE0DB             ; "---- N o  I t e m ----"
   RET
@@ -1827,10 +1834,10 @@ LB2EC:
 LB2F7:
   LD (L86D7),HL           ; Set penRow/penCol
   LD HL,LDCF9
-  call DrawString
+  jp DrawString
   ;RST $28                 ; rBR_CALL
   ;DEFW $4561              ; _VPutS - Displays a zero (0) terminated string
-  RET
+;  RET
 ;
 ; We've got Data cartridge reader
 LB301:
@@ -1873,7 +1880,7 @@ LB33F:
   LD BC,$0060             ; decode 96 bytes
   LD HL,LF42F             ; Encoded screen for Data cartridge reader
   CALL LADF5              ; Decode the screen to DBF5
-  CALL LB177              ; Display screen from tiles with Tileset 2
+  CALL LB177              ; Display screen HL from tiles with Tileset 2
   LD A,(LDCF8)
   CP $01                  ; was cartridge selected?
   jr Z,LB36C              ; no => jump
@@ -1891,11 +1898,11 @@ LB373:
   CALL LBEDE              ; Show message char-by-char
   LD A,(LDC89)            ; get current item number
   CP $02
-  CALL Z,LB39A
+  CALL Z,LB39A            ; Draw level 2 access code
   CP $03
-  CALL Z,LB3A1
+  CALL Z,LB3A1            ; Draw level 3 access code
   CP $04
-  CALL Z,LB3A8
+  CALL Z,LB3A8            ; Draw level 4 access code
   CALL ShowShadowScreen   ; Copy shadow screen to ZX screen
 LB38B:
   CALL LA0F1              ; Scan keyboard
@@ -1906,16 +1913,19 @@ LB38B:
   JP L9DDD                ; return to the main game loop
 LB39A:
   LD HL,LDC96             ; Get code address - level 2 access code buffer
-  CALL LBC3C              ; Draw the code
-  RET
+;  CALL LBC3C              ; Draw the code
+  jp LBC3C
+;  RET
 LB3A1:
   LD HL,LDC9A             ; Get code address - level 3 access code buffer
-  CALL LBC3C              ; Draw the code
-  RET
+;  CALL LBC3C              ; Draw the code
+  jp LBC3C
+;  RET
 LB3A8:
   LD HL,LDC9E             ; Get code address - level 4 access code buffer
-  CALL LBC3C              ; Draw the code
-  RET
+;  CALL LBC3C              ; Draw the code
+  jp LBC3C
+;  RET
 ;
 ; Data cartridge selected in the Inventory
 LB3AF:
@@ -1925,9 +1935,9 @@ LB3AF:
   LD A,(LDC89)            ; get current item number
   LD HL,LDFF3             ; Table address for data cartridge messages
   CALL LADFF              ; Get address from table by index A
-  PUSH HL
+  PUSH HL                 ; store the message address
   LD A,$01
-  LD (LDCF8),A            ; mark that cartridge was selecte
+  LD (LDCF8),A            ; mark that cartridge was selected
   JP LB33F                ; => go like the Data cartridge reader selected
 LB3C8:                    ; We don't have data cartridge reader
   CALL LB2DE              ; Print string LDCF9
@@ -2160,7 +2170,7 @@ LB551:
   LD (LDB81),A            ; set Alien type
   DEC HL                  ; now HL = RoomDesc + $2D
   LD A,(HL)
-  LD (LDB80),A            ; Alien Y tile coord ??
+  LD (LDB80),A            ; set Alien Y tile coord
   DEC HL                  ; now HL = RoomDesc + $2C
   LD A,(HL)
   add a,a
@@ -2180,17 +2190,18 @@ LB57B:
 ;  CALL $4086
   call GetRandom8         ; Generate random number 0..7
   OR A
-  jr Z,LB59D
+  jr Z,LB59D              ; Alien down
   CP $02
-  jr Z,LB5C3
+  jr Z,LB5C3              ; Alien up
   CP $04
-  JP Z,LB5E9
+  JP Z,LB5E9              ; Alien left
   CP $06
-  JP Z,LB607
+  JP Z,LB607              ; Alien right
   JP LB622
 LB59D:
-  LD A,$00
-  LD (LDB86),A
+;  LD A,$00
+  xor a
+  LD (LDB86),A            ; set Alien direction/orientation = down
   CALL LB713
   OR A
   JP Z,LB737
@@ -2200,13 +2211,13 @@ LB59D:
   LD A,(LDB7F)            ; get Alien Y coord
   ADD A,16    ; was: $08  ; down one tile
   LD (LDB7F),A            ; set Alien Y coord
-  LD A,(LDB80)
-  INC A
-  LD (LDB80),A
+  LD A,(LDB80)            ; get Alien Y tile coord
+  INC A                   ; down one tile
+  LD (LDB80),A            ; set Alien Y tile coord
   JP LB622
 LB5C3:
   LD A,$01
-  LD (LDB86),A
+  LD (LDB86),A            ; set Alien direction/orientation = up
   CALL LB713
   OR A
   JP Z,LB737
@@ -2216,13 +2227,13 @@ LB5C3:
   LD A,(LDB7F)            ; get Alien Y coord
   ADD A,-16   ; was: $F8  ; up one tile
   LD (LDB7F),A            ; set Alien Y coord
-  LD A,(LDB80)
-  DEC A
-  LD (LDB80),A
+  LD A,(LDB80)            ; get Alien Y tile coord
+  DEC A                   ; up one tile
+  LD (LDB80),A            ; set Alien Y tile coord
   JP LB622
 LB5E9:
   LD A,$02
-  LD (LDB86),A
+  LD (LDB86),A            ; set Alien direction/orientation = left
   CALL LB713
   OR A
   JP Z,LB737
@@ -2235,7 +2246,7 @@ LB5E9:
   JP LB622
 LB607:
   LD A,$03
-  LD (LDB86),A
+  LD (LDB86),A            ; set Alien direction/orientation = right
   CALL LB713
   OR A
   JP Z,LB737
@@ -2252,23 +2263,24 @@ LB622:
   LD H,A                  ; column
   LD A,(LDB7F)            ; get Alien Y coord
   LD L,A                  ; row
-  LD A,$00                ; clear draw flags
+;  LD A,$00                ; clear draw flags
+  xor a
   CALL LB67B              ; Get alien tile address in DE
   CALL L9EDE              ; Draw tile DE at column H row L
   LD A,$01
-  LD (LDB82),A            ; mark that we already have an alien in the room
-  LD A,(LDB83)
-  INC A
+  LD (LDB82),A            ; mark that we already have an Alien in the room
+  LD A,(LDB83)            ; get Alien tile phase
+  INC A                   ; next phase
   CP $01
-  CALL NZ,LB676
-  LD (LDB83),A
+  CALL NZ,LB676           ; => Clear Alien tile phase
+  LD (LDB83),A            ; set Alien tile phase
   LD A,(LDB81)            ; get Alien type
-  CP $02
-  JP Z,LB82B
+  CP $02                  ; the big one?
+  JP Z,LB82B              ; yes => jump to Check if the Bullet hit the Alien
 LB64B:
-  CALL LB8CA
+  CALL LB8CA              ; Is the Bullet hit the Alien?
   OR A
-  CALL Z,LB71F            ; => Killed the alien
+  CALL Z,LB71F            ; yes => Killed the Alien
   RET
 ;
 LB653:
@@ -2289,115 +2301,121 @@ LB653:
   LD A,(LDB7F)            ; get Alien Y coord
   ADD A,-16   ; $F8
   LD L,A
-  LD A,$00                ; clear draw flags
+;  LD A,$00                ; clear draw flags
+  xor a
   CALL LB69D              ; Get alien tile address
-  CALL L9EDE              ; Draw tile DE at column H row L
-  RET
+;  CALL L9EDE              ; Draw tile DE at column H row L
+  jp L9EDE
+;  RET
 ;
+; Clear Alien tile phase
 LB676:
   XOR A
-  LD (LDB83),A
+  LD (LDB83),A            ; clear Alien tile phase
   RET
 ;
 ; Get alien tile address
+; Returns DE = tile address, A = draw flags
 LB67B:
   LD A,(LDB84)
   jr NZ,LB685
-  LD DE,Tileset1+$92*32   ; was $EA67 = $E147 + $0920 = tile $92
+  LD DE,Tileset1+$92*32   ; was $EA67 = $E147 + $0920 = tile $92 - Alien dead
   RET
 LB685:
   LD A,(LDB81)            ; get Alien type
   CP $02
   jr Z,LB698
-  LD DE,Tileset1+$91*32   ; was $EA57 = $E147 + $0910 = tile $91
-  LD A,(LDB83)
+  LD DE,Tileset1+$91*32   ; was $EA57 = $E147 + $0910 = tile $91 - small Alien
+  LD A,(LDB83)            ; get Alien tile phase
   OR A
   RET Z
-  LD A,$40
+  LD A,$40                ; draw flags
   RET
 LB698:                    ; Alien type 2
-  LD DE,Tileset1+$94*32   ; was $EA87 = $E147 + $0940 = tile $94
+  LD DE,Tileset1+$94*32   ; was $EA87 = $E147 + $0940 = tile $94 - big Alien body
   JR LB6A0
 LB69D:
-  LD DE,Tileset1+$93*32   ; was $EA77 = $E147 + $0930 = tile $93
-; Now DE = tile address
+  LD DE,Tileset1+$93*32   ; was $EA77 = $E147 + $0930 = tile $93 - big Alien head
 LB6A0:
-  LD A,(LDB83)
+  LD A,(LDB83)            ; get Alien tile phase
   OR A
   RET Z
   PUSH HL
-  LD HL,$0020
+  LD HL,$0020*2           ; switch to other tile
   ADD HL,DE
   PUSH HL
   POP DE
-  LD A,$00
+;  LD A,$00                ; draw flags
+  xor a
   POP HL
   RET
 ;
 LB6B0:
-  CALL LADE5              ; Decode current room
+  CALL LADE5              ; Decode current room to LDBF5
   LD A,(LDB7E)            ; get Alien X coord
   LD E,A
-  CALL LB6CD
+  CALL LB6CD              ; ?? left/right
   LD D,$00
   ADD HL,DE
-  LD A,(LDB74)
+  LD A,(LDB74)            ; $0C - line width in tiles ??
   LD E,A
   LD D,$00
-  LD A,(LDB80)
+  LD A,(LDB80)            ; get Alien Y tile coord
   LD B,A
-  CALL LB6DD
+  CALL LB6DD              ; ?? up/down
   JP LAA78
 ;
 LB6CD:
-  LD A,(LDB86)
+  LD A,(LDB86)            ; get Alien direction/orientation
   OR A
   RET Z
   CP $01
   RET Z
-  CP $02
+  CP $02                  ; left?
   JR NZ,LB6DB
-  DEC E
+  DEC E                   ; one left
   RET
 LB6DB:
-  INC E
+  INC E                   ; one right
   RET
 ;
 LB6DD:
-  LD A,(LDB86)
+  LD A,(LDB86)            ; get Alien direction/orientation
   CP $02
   RET Z
   CP $03
   RET Z
-  OR A
+  OR A                    ; down?
   JR NZ,LB6EB
-  INC B
+  INC B                   ; one down
   RET
 LB6EB:
-  DEC B
+  DEC B                   ; one up
   RET
 ;
+; Get A = Alien position within the room
 LB6ED:
-  CALL LB6FA
+  CALL LB6FA              ; Get B=Alien Y tile coord, C=12 line width
   LD A,(LDB7E)            ; get Alien X coord
 LB6F3:
   ADD A,C
   DJNZ LB6F3
-  LD (LDB87),A
+  LD (LDB87),A            ; A = Alien Y tile coord * 12 + Alien X coord
   RET
+; Get B=Alien Y tile coord, C=12 line width
 LB6FA:
-  LD A,(LDB74)
+  LD A,(LDB74)            ; $0C - line width in tiles ??
   LD C,A
-  LD A,(LDB80)
+  LD A,(LDB80)            ; get Alien Y tile coord
   LD B,A
   RET
 ;
 LB703:
-  CALL LB6FA
-  CALL LB6DD
+  CALL LB6FA              ; Get B=Alien Y tile coord, C=12 line width
+  CALL LB6DD              ; ?? up/down
   LD A,(LDB7E)            ; get Alien X coord
   LD E,A
-  CALL LB6CD
+  CALL LB6CD              ; ?? left/right
   LD A,E
   JR LB6F3
 ;
@@ -2439,7 +2457,7 @@ LB737:
 ;
 LB74C:
   CALL LAA9D              ; Get room offset in tiles for X = LDB76, Y = LDB78
-  CALL LB6ED
+  CALL LB6ED              ; Get A = Alien position within the room
   LD C,A
   LD A,(LDC56)            ; get offset in the room
   SUB C
@@ -2452,7 +2470,7 @@ LB758:
   jr Z,LB768
   LD A,$01
   LD (LDB8D),A            ; set shooting process flag
-  LD (LDD55),A
+  LD (LDD55),A            ; set shooting flag for player's animation
 LB768:
   JP L9E2E                ; Show the screen, continue the game main loop
 ;
@@ -2476,15 +2494,16 @@ LB76B:
   LD A,(LDB78)            ; get player Y coord in tiles
   LD (LDB8A),A            ; set bullet Y coord in tiles
 LB797:
-  LD A,(LDB8B)
-  OR A
+  LD A,(LDB8B)            ; get Bullet Direction/orientation
+  OR A                    ; down?
   jr Z,LB7AD
-  CP $01
+  CP $01                  ; up?
   jr Z,LB7C7
-  CP $02
+  CP $02                  ; left?
   jr Z,LB7E1
-  CP $03
+  CP $03                  ; right?
   jr Z,LB7F3
+; Bullet down
 LB7AD:
   CALL LB87C
   CP $01
@@ -2496,6 +2515,7 @@ LB7AD:
   INC A                   ; down one tile
   LD (LDB8A),A            ; set Bullet Y coord in tiles
   JP LB805
+; Bullet up
 LB7C7:
   CALL LB87C
   CP $01
@@ -2507,6 +2527,7 @@ LB7C7:
   DEC A                   ; up one tile
   LD (LDB8A),A            ; set Bullet Y coord in tiles
   jr LB805
+; Bullet left
 LB7E1:
   CALL LB87C
   CP $01
@@ -2515,6 +2536,7 @@ LB7E1:
   DEC A                   ; left one tile
   LD (LDB88),A            ; set bullet X coord in tiles
   jr LB805
+; Bullet right
 LB7F3:
   CALL LB87C
   CP $01
@@ -2522,12 +2544,12 @@ LB7F3:
   LD A,(LDB88)            ; get bullet X coord in tiles
   INC A                   ; right one tile
   LD (LDB88),A            ; set bullet X coord in tiles
-  jr LB805
+;  jr LB805
 ; 
 LB805:
   LD A,(LDB8D)            ; get shooting process flag
   OR A                    ; in the process?
-  JP Z,LB84A              ; no => jump
+  jr Z,LB84A              ; no => jump
   LD A,(LDB88)            ; get bullet X coord in tiles
   add a,a                 ; tile coord -> column number
   LD H,A
@@ -2538,26 +2560,31 @@ LB805:
   LD A,$01
   LD (LDB8C),A
   LD A,(LDB81)            ; get Alien type
-  CP $02
-  jr Z,LB82B
-  CALL LB64B
-LB82A:
-  RET
+  CP $02                  ; the big one?
+  jr Z,LB82B              ; yes => jump to Check if the Bullet hit the Alien
+;  CALL LB64B              ; Check Is the Bullet hit the Alien, process the hit
+  jp LB64B
+;LB82A:
+;  RET
 ;
 LB82B:
-  CALL LB8CA
+  CALL LB8CA              ; Is the Bullet hit the Alien?
   OR A
-  jr NZ,LB82A
+;  jr NZ,LB82A             ; no => return
+  ret nz
+; Bullet hit the Alien, the big one
   XOR A
   LD (LDB8D),A            ; clear shooting process flag
   LD (LDB88),A            ; clear Bullet X coord in tiles
   LD (LDB89),A            ; clear Bullet Y coord/line on the screen
-  LD A,(LDB85)            ; get alien health
+  LD A,(LDB85)            ; get Alien health
   DEC A
-  LD (LDB85),A            ; set alien health
+  LD (LDB85),A            ; set Alien health
   OR A
   CALL Z,LB71F            ; => Killed the alien
-  jr LB82A
+;  jr LB82A                ; return
+  ret
+;
 LB84A:
   XOR A
   LD (LDB8C),A
@@ -2566,7 +2593,7 @@ LB84A:
 ; Get tile address and draw flags
 ;   Returns: DE = tile address; A = draw flags
 LB84F:
-  LD A,(LDB8B)
+  LD A,(LDB8B)            ; get Bullet Direction/orientation
   OR A
   jr Z,LB865
   CP $01
@@ -2576,71 +2603,74 @@ LB84F:
   CP $03
   jr Z,LB876
 LB865:
-  LD DE,Tileset1+$98*32  ; was: $EAC7 = $E147 + $0980 = tile $98
+  LD DE,Tileset1+$98*32  ; was: $EAC7 = $E147 + $0980 = tile $98 - Bullet vert
   XOR A                   ; no draw flags
   RET
 LB86A:
-  LD DE,Tileset1+$98*32  ; was: $EAC7 = $E147 + $0980 = tile $98
+  LD DE,Tileset1+$98*32  ; was: $EAC7 = $E147 + $0980 = tile $98 - Bullet vert
   LD A,$40                ; reflect tile vertically
   RET
 LB870:
-  LD DE,Tileset1+$97*32  ; was: $EAB7 = $E147 + $0970 = tile $97
+  LD DE,Tileset1+$97*32  ; was: $EAB7 = $E147 + $0970 = tile $97 - Bullet horz
   LD A,$80                ; reflect tile horizontally
   RET
 LB876:
-  LD DE,Tileset1+$97*32  ; was: $EAB7 = $E147 + $0970 = tile $97
+  LD DE,Tileset1+$97*32  ; was: $EAB7 = $E147 + $0970 = tile $97 - Bullet horz
   LD A,$40                ; reflect tile vertically
   RET
 ;
 LB87C:
-  CALL LADE5              ; Decode current room
+  CALL LADE5              ; Decode current room to LDBF5
   LD A,(LDB88)            ; get Bullet X coord in tiles
   LD E,A
-  CALL LB89B
+  CALL LB89B              ; For Bullet direction left: dec E, right: inc E
   LD D,$00
   ADD HL,DE
-  LD A,(LDB74)
+  LD A,(LDB74)            ; $0C - line width in tiles ??
   LD E,A
   LD D,$00
   LD A,(LDB8A)            ; get Bullet Y coord in tiles
   LD B,A
-  CALL LB8AB
+  CALL LB8AB              ; For Bullet direction up: dec B, down: inc B
 LB896:
   ADD HL,DE
   DJNZ LB896
   LD A,(HL)
   RET
 ;
+; For Bullet direction left: dec E, right: inc E
 LB89B:
-  LD A,(LDB8B)
+  LD A,(LDB8B)            ; get Bullet Direction/orientation
   OR A
   RET Z
   CP $01
   RET Z
-  CP $02
+  CP $02                  ; left?
   JR NZ,LB8A9
-  DEC E
+  DEC E                   ; one left
   RET
 LB8A9:
-  INC E
+  INC E                   ; one right
   RET
 ;
+; For Bullet direction up: dec B, down: inc B
 LB8AB:
-  LD A,(LDB8B)
+  LD A,(LDB8B)            ; get Bullet Direction/orientation
   CP $02
   RET Z
   CP $03
   RET Z
-  OR A
+  OR A                    ; down?
   JR NZ,LB8B9
-  INC B
+  INC B                   ; one down
   RET
 LB8B9:
-  DEC B
+  DEC B                   ; one up
   RET
 ;
+; Get A = Bullet position within the room
 LB8BB:
-  LD A,(LDB74)
+  LD A,(LDB74)            ; $0C - line width in tiles ??
   LD C,A
   LD A,(LDB8A)            ; get Bullet Y coord in tiles
   LD B,A
@@ -2648,13 +2678,14 @@ LB8BB:
 LB8C6:
   ADD A,C
   DJNZ LB8C6
-  RET
+  RET                     ; now A = Bullet Y coord * 12 + Bullet X coord
 ;
+; Is the Bullet hit the Alien?
 LB8CA:
-  CALL LB6ED
-  CALL LB8BB
+  CALL LB6ED              ; Get A = Alien position within the room
+  CALL LB8BB              ; Get A = Bullet position within the room
   LD C,A
-  LD A,(LDB87)
+  LD A,(LDB87)            ; get Alien position within the room
   SUB C
   RET
 LB8D6:
@@ -2681,16 +2712,18 @@ LB8EA:
   CALL L9E5F              ; Draw tile by XOR operation
   CALL LB91C              ;
   LD A,$A0                ;
-  CALL L9E5F              ; Draw tile by XOR operation
-  RET                     ;
+;  CALL L9E5F              ; Draw tile by XOR operation
+  jp L9E5F
+;  RET                     ;
 LB902:
   CALL LB913              ;
   LD A,$76                ;
   CALL L9E5F              ; Draw tile by XOR operation
   CALL LB91C              ;
   LD A,$8A                ;
-  CALL L9E5F              ; Draw tile by XOR operation
-  RET                     ;
+;  CALL L9E5F              ; Draw tile by XOR operation
+  jp L9E5F
+;  RET                     ;
 LB913:
   LD IX,Tileset3+20       ; Small triange pointing right
   LD B,6                  ; Tile height
@@ -2750,15 +2783,14 @@ IF DEFINED CHEAT_SHOW_ROOM_NUMBER
 ENDIF
   LD HL,$012C
   LD (L86D7),HL           ; Set penRow/penCol
-  LD HL,(LDB7A)           ; get Health
+  LD HL,(LDB7A)           ; get Health value
   jp DrawNumber3          ; Show 3-digit decimal number HL
 ;
 ; Draw 5-digit number HL at row/col DE, and show the screen
 LB97D:
   LD (L86D7),DE           ; set penRow/penCol
   call DrawNumber5
-  call ShowShadowScreen   ; Copy shadow screen to ZX screen
-  ret
+  jp ShowShadowScreen   ; Copy shadow screen to ZX screen
 ;
 ; Decrease Health
 LB994:
@@ -2766,6 +2798,7 @@ LB994:
   SUB $02                 ; Health = Health minus 2
   CALL C,LB9A0
   LD (LDB7A),A            ; set Health
+;TODO: Set border to red
   RET
 LB9A0:
   XOR A
@@ -2794,7 +2827,8 @@ LB9C9:
   CALL LA0F1              ; Scan keyboard
   CP $37                  ; "MODE" key? TODO: any key
   JP Z,L9E19              ; yes => Go to ending of main game loop
-  JR LB9C9
+  JR LB9C9                ; continue the waiting loop
+;
 ; Clear player variables
 LB9D6:
   LD (LDB79),A            ; set the room number
@@ -2815,7 +2849,7 @@ LB9D6:
 ;   BC = number of bytes to decode
 LB9F1:
   LD A,(HL)
-  CP $FF
+  CP $FF                  ; repeater?
   JR Z,LB9FB
   LDI
 LB9F8:
@@ -2842,14 +2876,14 @@ LBA07:
   LD (L86D7),HL           ; Set penRow/penCol
   LD HL,SE09D             ; "MaxCoderz Presents"
   CALL LBEDE              ; Show message char-by-char
-  CALL LBA81              ; Delay x2
+  CALL LBA81              ; Delay x40
   CALL LBC7D              ; Clear shadow screen and copy to ZX screen
   CALL LBC34              ; Delay x20
   LD HL,$3A2E
   LD (L86D7),HL           ; Set penRow/penCol
   LD HL,SE09F             ; "a tr1p1ea game"
   CALL LBEDE              ; Show message char-by-char
-  CALL LBA81              ; Delay x2
+  CALL LBA81              ; Delay x40
   CALL LBC7D              ; Clear shadow screen and copy to ZX screen
   CALL LBC34              ; Delay x20
   XOR A
@@ -2858,51 +2892,57 @@ LBA07:
 ; Return to Menu
 ;
 LBA3D:
-  LD A,(LDC55)
+  LD A,(LDC55)            ; get Menu background phase
   INC A
   CP $08
+;TODO: Just AND $07
   CALL Z,LBC2F
-  LD (LDC55),A
+  LD (LDC55),A            ; set Menu background phase
   DI
-  LD HL,LF515
+  LD HL,LF515             ; Main menu screen moving background, 96 tiles
   CALL LA88F              ; Display 96 tiles on the screen
   LD HL,LF4B5             ; Main menu screen
   EI
-  CALL LB177              ; Display screen from tiles with Tileset 2
-  LD C,$09                ; left triangle X pos
+  CALL LB177              ; Display screen HL from tiles with Tileset 2
+  LD C,$0B                ; left triangle X pos
   LD IX,Tileset3          ; Tile arrow right
   DI
-  CALL LBA88
+  CALL LBA88              ; Draw menu item selection triangle
   LD C,$4D                ; right triangle X pos
   LD IX,Tileset3+32       ; Tile arrow left
   DI
-  CALL LBA88
+  CALL LBA88              ; Draw menu item selection triangle
   CALL ShowShadowScreen   ; Copy shadow screen to ZX screen
   CALL LA0F1              ; Scan keyboard
   CP $36                  ; look/shoot key
   jr Z,LBA93              ;   select menu item
   cp $09                  ; Enter key
-  jr z,LBA93
+  jr z,LBA93              ;   select menu item
   CP $04                  ; Up key
   JP Z,LBBCC
   CP $01                  ; Down key
   JP Z,LBBDC
   jr LBA3D
 ;
+;TODO: Move close to LBC34
+; Delay x40
 LBA81:
   CALL LBC34              ; Delay x20
-  CALL LBC34              ; Delay x20
-  RET
+;  CALL LBC34              ; Delay x20
+  jp LBC34
+;  RET
 ;
-; Draw menu item selection triangles
+; Draw menu item selection triangle
 LBA88:
   LD A,(LDB8F)            ; get Menu Y pos
   LD L,A                  ; L = Y coord
   LD A,C                  ; A = X coord
   LD B,10                 ; B = tile height
-  CALL L9E5F              ; Draw tile by XOR operation
-  RET
+;  CALL L9E5F              ; Draw tile by XOR operation
+  jp L9E5F
+;  RET
 ;
+; Select on Menu item
 LBA93:
   LD A,(LDB8F)            ; get Menu Y pos
   CP $3A
@@ -2983,16 +3023,16 @@ LBB17:
   LD (LDC59),A            ; set delay factor
   LD (LDC85),A            ; Use delay and copy screen in LBEDE
   LD A,14   ; was: $0E
-  LD (LDCF4),A            ; Line interval for text
+  LD (LDCF4),A            ; set Line interval for text
   XOR A
-  LD (LDCF3),A            ; Left margin size for text
+  LD (LDCF3),A            ; clear Left margin size for text
   LD HL,$3A14
   LD (L86D7),HL           ; Set penRow/penCol
   LD HL,SE115             ; "In the Distant Future . . ."
   CALL LBEDE              ; Show message char-by-char
-  CALL LBA81              ; Delay x2
+  CALL LBA81              ; Delay x40
   CALL LBC7D              ; Clear shadow screen and copy to ZX screen
-  CALL LBA81              ; Delay x2
+  CALL LBA81              ; Delay x40
   CALL LBC84              ; Set zero penRow/penCol
   LD HL,SE117             ; "'The Desolate' Space Cruiser leaves orbit. ...
   CALL LBEDE              ; Show message char-by-char
@@ -3071,10 +3111,11 @@ LBBDC:
 LBBEC:
   LD BC,$0060             ; Counter = 96 bytes or tiles
   LD HL,LF329             ; Decode from - Encoded screen for Inventory/Info popup
+;TODO: Replace with call to LADF5
   LD DE,LDBF5             ; Where to decode
   CALL LB9F1              ; Decode the screen
   LD HL,LDBF5
-  CALL LB177              ; Display screen from tiles with Tileset 2
+  CALL LB177              ; Display screen HL from tiles with Tileset 2
   LD A,10   ; was: $05
   LD (LDCF3),A            ; Left margin size for text
   LD A,14   ; was: $07
@@ -3091,16 +3132,18 @@ LBBEC:
   CALL LADA1              ; Wait for MODE key
   JP LBA3D                ; Return to Menu
 ;
+; Add menu background phase 0..7 to L
 LBC29:
-  LD A,(LDC55)
+  LD A,(LDC55)            ; get Menu background phase
   ADD A,L
   LD L,A
   RET
 ;
 LBC2F:
   XOR A
-  LD (LDC55),A
+  LD (LDC55),A            ; clear Menu background phase
   RET
+;
 ; Delay x20
 LBC34:
   LD B,$14                ; x20
@@ -3109,11 +3152,11 @@ LBC36:
   DJNZ LBC36
   RET
 ;
-; Draw access code, 4 tiles
+; Draw access code, 4 chars
 ;   HL = access code buffer address
 LBC3C:
   LD DE,$5038
-  LD (L86D7),DE
+  LD (L86D7),DE           ; penRow/penCol
   LD B,$04
 LBC45:
   PUSH BC
@@ -3351,7 +3394,7 @@ LBD85:
   jr C,LBE06              ; no => jump
   LD HL,$520C
   LD (L86D7),HL           ; Set penRow/penCol
-  LD HL,SE0AD             ; "Sherlock Holmes"
+  LD HL,SE0AD             ; "Sherlock Holmes" (achievement)
   CALL LBEDE              ; Show message char-by-char
   LD A,(LDBF4)
   INC A                   ; increase counter of achievements
@@ -3360,16 +3403,16 @@ LBD85:
 LBE06:
   LD HL,$520C
   LD (L86D7),HL           ; Set penRow/penCol
-  LD HL,SE0AB             ; "Sir Miss-A-Lot"
+  LD HL,SE0AB             ; "Sir Miss-A-Lot" (achievement)
   CALL LBEDE              ; Show message char-by-char
 LBE12:
   LD DE,$0032             ; 50
   LD HL,(LDBC5)           ; get Enemies Killed count
   call CpHLDE             ; Compare HL and DE
-  JR C,LBE32
+  JR C,LBE32              ; less 50? => jump
   LD HL,$600C
   LD (L86D7),HL           ; Set penRow/penCol
-  LD HL,SE0B1             ; "Terminator"
+  LD HL,SE0B1             ; "Terminator" (achievement)
   CALL LBEDE              ; Show message char-by-char
   LD A,(LDBF4)
   INC A                   ; increase counter of achievements
@@ -3387,7 +3430,7 @@ LBE3E:
   JR NZ,LBE5E
   LD HL,$6E0C
   LD (L86D7),HL           ; Set penRow/penCol
-  LD HL,SE0B5             ; "Survivor"
+  LD HL,SE0B5             ; "Survivor" (achievement)
   CALL LBEDE              ; Show message char-by-char
   LD A,(LDBF4)
   INC A                   ; increase counter of achievements
@@ -3423,7 +3466,7 @@ LBE8A:
 LBE9B:
   call WaitAnyKey         ; was: Wait for MODE key
   CALL ClearShadowScreen
-  LD HL,$3A46
+  LD HL,$2E46
   LD (L86D7),HL           ; Set penRow/penCol
   LD HL,SE11F             ; "The End"
   CALL LBEDE              ; Show message char-by-char
@@ -3433,7 +3476,7 @@ LBE9B:
 ;NOTE: This code is not used
 ;LBEB3:
 ;
-; Draw string on the screen using FontProto
+; Draw string on the screen
 ;   HL = String address
 LBEDE:
   ld a,(hl)
@@ -3509,8 +3552,8 @@ LBF6F_2:
   CALL LB2D0              ; Delay
 LBF6F_3:
   CALL LA0F1              ; Scan keyboard
-  or a                    ; any key pressed?
-  jp nz,LBA3D             ; Return to main Menu
+;  or a                    ; any key pressed?
+  jp nz,LBA3D             ; any key => Return to main Menu
   CALL LBFD5              ; Scroll shadow screen up one line
 ;  CALL LBFEC
   JR LBF686
@@ -3522,9 +3565,10 @@ LBF6F_4:
   jr NZ,LBF6F_2           ; no => continue the scrolling
   XOR A
   LD (LDD56),A            ; clear counter within the line
+  ld d,a                  ; clear D
   LD A,(LDD57)
   LD E,A
-  LD D,$00
+;  LD D,$00
   LD HL,LDDF2             ; Table of left margins for Credits strings
   ADD HL,DE
   LD A,(HL)               ; now A = left margin for the string

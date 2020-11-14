@@ -655,7 +655,7 @@ L86D8:  DEFB $00          ; penRow
 ;
 LDB73:  DEFB $00          ; ?? $00 $01
 LDB74:  DEFB $0C          ; Line width in tiles ??
-LDB75:  DEFB $00          ; Direction/orientation: $00 down, $01 up, $02 left, $03 right
+LDB75:  DEFB $00          ; Player Direction/orientation: $00 down, $01 up, $02 left, $03 right
 LDB76:  DEFB $06          ; X coord in tiles: $01 $06 $0A INC/DEC
 LDB77:  DEFB $30          ; Y coord/line on the screen: 0..127
 LDB78:  DEFB $03          ; Y coord in tiles: $03 $06 INC/DEC
@@ -668,15 +668,15 @@ LDB7F:  DEFB $00          ; Alien Y coord ??
 LDB80:  DEFB $00          ; Alien Y tile coord ??
 LDB81:  DEFB $00          ; Alien type: $02
 LDB82:  DEFB $00          ; Alien: $01 = we already have an alien in the room
-LDB83:  DEFB $00          ; Alien ??
+LDB83:  DEFB $00          ; Alien tile phase
 LDB84:  DEFB $02          ; Alien ??
 LDB85:  DEFB $03          ; Alien health: $03, then DEC to $00
-LDB86:  DEFB $00
-LDB87:  DEFB $00
+LDB86:  DEFB $00          ; Alien direction/orientation: $00 down, $01 up, $02 left, $03 right
+LDB87:  DEFB $00          ; Alien position within the room, calculated in LB6ED
 LDB88:  DEFB $00          ; Bullet X coord in tiles
 LDB89:  DEFB $00          ; Bullet Y coord/line on the screen
 LDB8A:  DEFB $00          ; Bullet Y coord in tiles
-LDB8B:  DEFB $00          ; Bullet Direction/orientation
+LDB8B:  DEFB $00          ; Bullet Direction/orientation: $00 down, $01 up, $02 left, $03 right
 LDB8C:  DEFB $00
 LDB8D:  DEFB $00          ; $01 = shooting in process, bullet in the air
   DEFB $00
@@ -724,7 +724,7 @@ LDBF5:
   DEFB $00,$00,$00,$00,$00,$00,$00,$00
   DEFB $00,$00,$00,$00,$00,$00,$00,$00
   DEFB $00,$00,$00,$00,$00,$00,$00,$00
-LDC55:  DEFB $03          ; ??
+LDC55:  DEFB $03          ; Menu background phase: $00..$07
 LDC56:  DEFB $00          ; Offset in the room, in tiles ??
 LDC57:  DEFB $00
   DEFB $00
@@ -783,11 +783,11 @@ LDCF9:
   DEFB $20,$20,$20,$20,$20,$20,$20,$20
   DEFB $20,$00
 SE029:  ; Empty string
-LDD53:  DEFB $00                ; empty string
-LDD54:  DEFB $00                ; ?? $00 INC $03
-LDD55:  DEFB $00                ; ?? $00 $01
-LDD56:  DEFB $00                ; Credits counter within one line: 0..11
-LDD57:  DEFB $00                ; Credits line number
+LDD53:  DEFB $00          ; empty string
+LDD54:  DEFB $00          ; Player's animation phase 0..3
+LDD55:  DEFB $00          ; ?? $00 $01
+LDD56:  DEFB $00          ; Credits counter within one line: 0..11
+LDD57:  DEFB $00          ; Credits line number
 LDD58:                    ; Table of Credits strings
   DEFW SE02B,SE02D,SE029,SE02F,SE031
   DEFW SE033,SE035,SE037,SE039,SE03B
@@ -813,16 +813,16 @@ LDDF2:                    ; Table of left margins for Credits strings
   DEFB $00,$00,$00,$00,$00,$00,$00,$00,$00,$00,$00,$00,$00,$00,$00,$00
 ;  DEFB $00,$00,$00,$00,$00
 ;
-LDE47:
-  DEFB $00,$01,$02,$03,$00,$01,$04,$05    ; $00 down
-  DEFB $00,$01,$02,$03,$00,$01,$06,$07
-  DEFB $08,$01,$09,$03,$08,$01,$0A,$05    ; $01 up
-  DEFB $08,$01,$09,$03,$08,$01,$0B,$07
-  DEFB $0C,$0D,$0E,$12,$0C,$0D,$0F,$11    ; $02 left
-  DEFB $0C,$0D,$0E,$12,$0C,$0D,$10,$11
-  DEFB $0C,$0D,$0E,$12,$0C,$0D,$0F,$11    ; $03 right
-  DEFB $0C,$0D,$0E,$12,$0C,$0D,$10,$11
-LDE87:
+LDE47:                    ; Player's tile numbers for shooting animation
+  DEFB $00,$01,$02,$03, $00,$01,$04,$05    ; $00 down, four phases
+  DEFB $00,$01,$02,$03, $00,$01,$06,$07
+  DEFB $08,$01,$09,$03, $08,$01,$0A,$05    ; $01 up
+  DEFB $08,$01,$09,$03, $08,$01,$0B,$07
+  DEFB $0C,$0D,$0E,$12, $0C,$0D,$0F,$11    ; $02 left
+  DEFB $0C,$0D,$0E,$12, $0C,$0D,$10,$11
+  DEFB $0C,$0D,$0E,$12, $0C,$0D,$0F,$11    ; $03 right
+  DEFB $0C,$0D,$0E,$12, $0C,$0D,$10,$11
+LDE87:                    ; Player's tile numbers by Player's direction/orientation
   DEFB $00,$01,$13,$03    ; $00 down
   DEFB $08,$01,$09,$14    ; $01 up
   DEFB $0C,$0D,$15,$16    ; $02 left
@@ -1062,15 +1062,15 @@ Tileset3:
   DB $03,$00,$07,$00,$0F,$00,$1F,$00,$3F,$00,$3F,$00,$1F,$00,$0F,$00,$07,$00,$03,$00,$06,$00,$0E,$00,$1E,$00,$1E,$00,$0E,$00,$06,$00
   DB $00,$00,$00,$00,$FF,$FC,$FF,$FE,$D4,$07,$C0,$03,$C0,$57,$C0,$03,$D5,$57,$C0,$03,$FF,$AB,$FF,$57,$FF,$FF,$FF,$FF,$00,$00,$00,$00
   DB $00,$00,$00,$00,$0F,$F0,$1F,$F8,$35,$5C,$3A,$AC,$35,$5C,$3A,$AC,$3F,$FC,$3F,$FC,$0D,$70,$0C,$30,$0F,$F0,$0F,$F0,$00,$00,$00,$00
-  DB $00,$00,$00,$02,$BF,$FD,$7F,$FE,$FF,$D0,$FF,$E0,$FF,$40,$FF,$80,$F4,$00,$F0,$00,$F0,$00,$F0,$00,$50,$00,$A0,$00,$00,$00,$00,$00
+  DB $00,$00,$00,$00,$3F,$DC,$7F,$FF,$FF,$DC,$FF,$F8,$FA,$C0,$F6,$00,$FC,$00,$F0,$00,$D0,$00,$B0,$00,$E0,$00,$00,$00,$00,$00,$00,$00
   DB $00,$00,$00,$00,$0F,$FC,$1F,$FC,$3B,$EC,$37,$DC,$3B,$EC,$37,$DC,$3A,$AC,$35,$5C,$3A,$AC,$35,$5C,$3F,$FC,$3F,$FC,$00,$00,$00,$00
-  DB $00,$30,$00,$30,$00,$C0,$00,$C0,$01,$D3,$00,$E3,$01,$FC,$02,$FC,$07,$50,$0B,$80,$1D,$00,$2E,$00,$74,$00,$B8,$00,$10,$00,$20,$00
+  DB $00,$00,$00,$30,$00,$E0,$00,$C0,$00,$D2,$00,$E6,$01,$FC,$02,$FC,$07,$40,$0B,$80,$1D,$00,$2E,$00,$74,$00,$B8,$00,$50,$00,$20,$00
   DB $00,$00,$00,$00,$00,$00,$00,$00,$FF,$FC,$FF,$FC,$D1,$5F,$E8,$AF,$D4,$5F,$EA,$2F,$FF,$FC,$FF,$FC,$00,$00,$00,$00,$00,$00,$00,$00
-  DB $3C,$04,$3C,$08,$D7,$1C,$E3,$28,$D7,$5C,$CB,$3C,$3D,$70,$3E,$E0,$07,$FF,$02,$FF,$37,$D7,$3E,$E3,$1C,$D7,$38,$CB,$10,$FF,$00,$FF
+  DB $3C,$04,$7E,$08,$D7,$1C,$E3,$28,$D7,$5C,$CB,$3C,$7E,$70,$3C,$E0,$03,$FF,$02,$FF,$37,$D7,$3E,$E3,$1C,$D7,$38,$CB,$10,$FF,$00,$FF
   DB $00,$00,$00,$00,$00,$00,$00,$00,$0D,$00,$0E,$00,$3F,$1C,$3F,$2C,$0F,$FC,$0F,$FC,$07,$F4,$03,$F8,$07,$D0,$0E,$E0,$00,$00,$00,$00
   DB $00,$00,$7F,$FC,$5E,$C4,$6D,$44,$76,$C4,$7F,$FC,$54,$6C,$6D,$54,$54,$6C,$7F,$FC,$7D,$44,$6E,$C4,$7D,$44,$7F,$FC,$00,$00,$00,$00
   DB $3F,$FC,$3F,$FC,$34,$5C,$30,$8C,$31,$4C,$32,$8C,$34,$1C,$38,$2C,$34,$1C,$38,$2C,$31,$4C,$32,$8C,$35,$1C,$32,$0C,$3F,$FC,$3F,$FC
-  DB $3C,$00,$3C,$00,$D3,$00,$C3,$00,$D4,$C0,$E0,$C0,$35,$30,$38,$30,$0D,$74,$0E,$30,$03,$D0,$03,$C0,$00,$44,$00,$00,$00,$01,$00,$00
+  DB $3C,$00,$3C,$00,$D3,$00,$C3,$00,$D4,$C0,$E0,$C0,$35,$30,$38,$30,$0D,$74,$0E,$30,$03,$D0,$03,$E8,$00,$54,$00,$0A,$00,$01,$00,$00
   DB $00,$00,$00,$00,$00,$7C,$00,$BC,$01,$FC,$02,$FC,$07,$F4,$0B,$F8,$1F,$D0,$2F,$E0,$17,$40,$2B,$80,$15,$00,$2A,$00,$00,$00,$00,$00
   DB $00,$00,$00,$00,$00,$00,$00,$00,$00,$00,$00,$00,$03,$C0,$03,$C0,$03,$C0,$03,$C0,$00,$00,$00,$00,$00,$00,$00,$00,$00,$00,$00,$00
   DB $F8,$1F,$80,$01,$80,$01,$80,$01,$80,$01,$00,$00,$00,$00,$00,$00,$00,$00,$00,$00,$00,$00,$80,$01,$80,$01,$80,$01,$80,$01,$F8,$1F

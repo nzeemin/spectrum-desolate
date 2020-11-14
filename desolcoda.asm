@@ -26,7 +26,7 @@ ENDIF
 ; Cheat code to have all inventory items
 IF DEFINED CHEAT_ALL_INVENTORY
   LD HL,LDB9C
-  LD B,$22
+  LD B,26
 start_2:
   LD (HL),$01
   INC HL
@@ -52,21 +52,8 @@ ENDIF
 ;  call LBD85  ; Final
 ;  call LBF6F  ; The End
 
-;  ld de,Tileset1+$10*32
-;  ld a,0
-;  ld hl,$0210
-;  call L9EDE  
-
 ;  call ShowScreen
-
 ;  call ClearScreen
-
-;  LD HL,LF515
-;  CALL LA88F
-;  LD HL,LF4B5
-;  CALL LB177
-
-;  call LAB28	; Show small message popup
 
 ;  ld ix,Tileset3+32*2
 ;  ld e,0
@@ -127,16 +114,16 @@ WaitKeyUp:
   ret
 
 ; Source: http://www.breakintoprogram.co.uk/computers/zx-spectrum/keyboard
-;TODO: Set Z=0 for key, Z=1 for no key
+; Returns: A=key code; Z=0 for key, Z=1 for no key
 ReadKeyboard:          
   LD HL,ReadKeyboard_map  ; Point HL at the keyboard list
   LD D,8                ; This is the number of ports (rows) to check
-  LD C,&FE              ; C is always FEh for reading keyboard ports
+  LD C,$FE              ; C is always FEh for reading keyboard ports
 ReadKeyboard_0:        
   LD B,(HL)             ; Get the keyboard port address from table
   INC HL                ; Increment to list of keys
   IN A,(C)              ; Read the row of keys in
-  AND &1F               ; We are only interested in the first five bits
+  AND $1F               ; We are only interested in the first five bits
   LD E,5                ; This is the number of keys in the row
 ReadKeyboard_1:        
   SRL A                 ; Shift A right; bit 0 sets carry bit
@@ -146,10 +133,11 @@ ReadKeyboard_1:
   JR NZ,ReadKeyboard_1  ; Loop around until this row finished
   DEC D                 ; Decrement row loop counter
   JR NZ,ReadKeyboard_0  ; Loop around until we are done
-  AND A                 ; Clear A (no key found)
+  xor a                 ; Clear A (no key found)
   RET
 ReadKeyboard_2:
   LD A,(HL)             ; We've found a key at this point; fetch the character code!
+  or a
   RET
 ; TI83 scan codes:
 ;   Down=$01, Left=$02, Right=$03, Up=$04, Enter=$09
@@ -350,7 +338,7 @@ DrawChar_5:     ; loop for shift
   dec c
   jr z, DrawChar_6
   srl a         ; shift right
-  jp DrawChar_5
+  jr DrawChar_5
 DrawChar_6:
   or (hl)
   ld (hl),a     ; put on the screen
@@ -390,7 +378,7 @@ DrawChar_9:     ; loop for shift
   dec c
   jr z, DrawChar_A
   sla a         ; shift left
-  jp DrawChar_9
+  jr DrawChar_9
 DrawChar_A:
   or (hl)
   ld (hl),a     ; put on the screen

@@ -88,36 +88,36 @@ SE0D3: DEFM "You dont have a|",$1E,"Weapon to equip!",0
 SE0D5: DEFM "It is not wise to proceed|",$19,"without a weapon.",0
 SE0D7: DEFM "You cant enter that sector|",$09,"Life-Support is offline.",0
 SE0D9: DEFM "You cant enter until the|AirLock is re-pressurised",0
-SE0DB: DEFM $0C,"---- N o",$06,"I t e m ----",0
+SE0DB: DEFM $0D,"---- N o",$06,"I t e m ----",0
 SE0DD: DEFM $05,"Door Locked",0
 SE0DF: DEFM "INVALID",$02,"CODE",0
 SE0E1: DEFM $0E,"Accepted!",0
 SE0E3: DEFM $1F,"You Need A|Data Cartridge Reader",0
 ; Inventory items
-SE0E5: DEFM $08,"Data Cartridge Reader",0
-SE0E7: DEFM $1B,"Data Cartridge 1",0
-SE0E9: DEFM $19,"Data Cartridge 2",0
-SE0EB: DEFM $19,"Data Cartridge 3",0
-SE0ED: DEFM $19,"Data Cartridge 4",0
-SE0EF: DEFM $19,"Data Cartridge 5",0
-SE0F1: DEFM $19,"Data Cartridge 6",0
-SE0F3: DEFM $19,"Data Cartridge 7",0
-SE0F5: DEFM $19,"Data Cartridge 8",0
-SE0F7: DEFM $19,"Data Cartridge 9",0
-SE0F9: DEFM $16,"Data Cartridge 10",0
-SE0FB: DEFM $16,"Data Cartridge 11",0
-SE0FD: DEFM $16,"Data Cartridge 12",0
-SE0FF: DEFM $16,"Data Cartridge 13",0
-SE101: DEFM $16,"Data Cartridge 14",0
-SE103: DEFM $16,"Data Cartridge 15",0
-SE105: DEFM $16,"Data Cartridge 16",0
-SE107: DEFM $1F,$0E,"Power Drill",0
-SE109: DEFM $0A,"Life Support Data Disk",0
-SE10B: DEFM $1F,$14,"Air-Lock Tool",0
-SE10D: DEFM $14,"Box of Power Cells",0
-SE10F: DEFM $1F,$10,"Pile of Parts",0
-SE111: DEFM $1F,$10,"Duck Idol ;)",0
-SE113: DEFM $1F,$09,"Rubik's Cube",0
+SE0E5: DEFM $06,"Data Cartridge Reader",0
+SE0E7: DEFM $18,"Data Cartridge 1",0
+SE0E9: DEFM $18,"Data Cartridge 2",0
+SE0EB: DEFM $18,"Data Cartridge 3",0
+SE0ED: DEFM $18,"Data Cartridge 4",0
+SE0EF: DEFM $18,"Data Cartridge 5",0
+SE0F1: DEFM $18,"Data Cartridge 6",0
+SE0F3: DEFM $18,"Data Cartridge 7",0
+SE0F5: DEFM $18,"Data Cartridge 8",0
+SE0F7: DEFM $18,"Data Cartridge 9",0
+SE0F9: DEFM $14,"Data Cartridge 10",0
+SE0FB: DEFM $14,"Data Cartridge 11",0
+SE0FD: DEFM $14,"Data Cartridge 12",0
+SE0FF: DEFM $14,"Data Cartridge 13",0
+SE101: DEFM $14,"Data Cartridge 14",0
+SE103: DEFM $14,"Data Cartridge 15",0
+SE105: DEFM $14,"Data Cartridge 16",0
+SE107: DEFM $1F,$0B,"Power Drill",0
+SE109: DEFM $06,"Life Support Data Disk",0
+SE10B: DEFM $1F,$06,"Air-Lock Tool",0
+SE10D: DEFM $12,"Box of Power Cells",0
+SE10F: DEFM $1F,$07,"Pile of Parts",0
+SE111: DEFM $1F,$0A,"Duck Idol ;)",0
+SE113: DEFM $1F,$08,"Rubik's Cube",0
 ;
 SE115: DEFM "In the Distant Future . . .",0
 SE117: DEFM "'The Desolate' Space Cruiser|leaves orbit. Its mission is|secret, its cargo classified.|6014 Cycles into the journey|the ship encounters a savage|meteorite shower.||Contact with Desolate is lost.",0
@@ -144,6 +144,6 @@ SE13B: DEFM "The Evacuation Deck has|",$09,"been re-pressurised",0
 SE13D: DEFM "You Insert a Power Cell.|Guidance System Online",0
 SE13F: DEFM $0C,"The Life Support System|",$15,"needs Re-Configuring",0
 SE141: DEFM $1F,$0B,"AirLock Control &| Re-Pressurisation Station",0
-SE143: DEFM $05,"This MainFrame is missing|",$1F,$1C,"a Power Cell",0
+SE143: DEFM $05,"This MainFrame is missing|",$1F,$16,"a Power Cell",0
 SE145: DEFM $09,"This Pod cant naviagate.|Guidance System is offline",0
 SQuit: DEFM "Its now safe to turn off|",$1F,$0E,"your computer.",0
