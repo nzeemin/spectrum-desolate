@@ -53,8 +53,8 @@ namespace SpriteRotate
             //PrepareArchivedStrings();
             //PrepareLineAddresses();
             //PrepareFontProto();
-            //PrepareTilesetMasked();
-            //PrepareTileset3();
+            PrepareTilesetMasked();
+            PrepareTileset3();
             //PrepareCreditsMargins();
         }
 
@@ -711,6 +711,8 @@ namespace SpriteRotate
             }
         }
 
+        static readonly int[] RoomsNotUsed = {6, 23, 25, 34, 36, 58};
+
         static void ProcessRoomsMap()
         {
             const int colwid = 120;
@@ -759,7 +761,7 @@ namespace SpriteRotate
 
             for (int r = 0; r < coords.Length / 2; r++)
             {
-                if (r == 6 || r == 23 || r == 25 || r == 34 || r == 36 || r == 58)
+                if (RoomsNotUsed.Contains(r))
                     continue;
 
                 int daaddr = 0xDF27 + r * 2;
@@ -809,6 +811,9 @@ namespace SpriteRotate
 
             for (int r = 0; r < coords.Length / 2; r++)
             {
+                if (RoomsNotUsed.Contains(r))
+                    continue;
+
                 int aaddr = 0xDE97 + r * 2;
                 int addr = memdmp[aaddr] + memdmp[aaddr + 1] * 256;
                 if (addr == 0xD6CE)

@@ -669,7 +669,7 @@ LDB80:  DEFB $00          ; Alien Y tile coord ??
 LDB81:  DEFB $00          ; Alien type: $02
 LDB82:  DEFB $00          ; Alien: $01 = we already have an alien in the room
 LDB83:  DEFB $00          ; Alien tile phase
-LDB84:  DEFB $02          ; Alien ??
+LDB84:  DEFB $02          ; Alien $01 = alive, $00 = dead
 LDB85:  DEFB $03          ; Alien health: $03, then DEC to $00
 LDB86:  DEFB $00          ; Alien direction/orientation: $00 down, $01 up, $02 left, $03 right
 LDB87:  DEFB $00          ; Alien position within the room, calculated in LB6ED

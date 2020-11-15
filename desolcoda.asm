@@ -73,7 +73,8 @@ ENDIF
 ;  call ShowShadowScreen
 
 ;  call WaitAnyKey
-;  call ClearScreen
+;  call ClearShadowScreen
+;  call ShowShadowScreen
   jp start
 
 ;----------------------------------------------------------------------------
@@ -85,15 +86,7 @@ ENDIF
   INCLUDE "desoldata.asm"
 
 ;----------------------------------------------------------------------------
-
-; Shadow screen, 192 x 138 pixels
-;   12*2*(64*2+10) = 3312 bytes
-ShadowScreen:
-  DEFS 3312,$00
-
-;----------------------------------------------------------------------------
 DesolateCodeBeg:
-
 
 ; Wait for any key
 WaitAnyKey:
@@ -625,4 +618,17 @@ GetRandom11_1:
 
 ;----------------------------------------------------------------------------
 DesolateCodeEnd:
+
+; Shadow screen, 192 x 138 pixels
+;   12*2*(64*2+10) = 3312 bytes
+ShadowScreen EQU $F300
+;ShadowScreen:
+;  DEFS 3312,$00
+
+IF DesolateCodeEnd > ShadowScreen
+  .ERROR DesolateCodeEnd overlaps ShadowScreen
+ENDIF
+
+;----------------------------------------------------------------------------
+
 END
