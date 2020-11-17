@@ -744,7 +744,7 @@ LDC86:  DEFB $00
 LDC87:  DEFB $00          ; ??
 LDC88:  DEFB $00          ; current offset in the room description $00..$30
 LDC89:  DEFB $00          ; Current inventory item / Picked up item??
-LDC8A:  DEFB $00
+LDC8A:  DEFB $00          ; ?? $01 $02 $03 $04
 LDC8B:  DEFB $FF          ; Access code slot number - see LDCA2 table
 LDC8C:  DEFB $00          ; Access code level ??
 LDC8D:  DEFB $00,$00,$00,$00,$00    ; Buffer for entering access code
@@ -1082,7 +1082,7 @@ LF42F:
   DEFB $0E,$06,$07,$13,$FF,$08,$10,$14,$06,$07,$00,$0C,$00,$FF,$04,$16
   DEFB $00,$0C,$00,$06,$09,$FF,$0A,$08,$0A
 LF468:
-; Encoded screen: Door access panel popup, in Tileset #2
+; Encoded screen: Door Lock panel popup, in Tileset #2
   DEFB $03,$FF,$05,$04,$17,$FF,$05,$01,$07,$FF,$05,$00,$06,$FF,$05,$01
   DEFB $07,$00,$FF,$04,$0F,$06,$03,$04,$04,$15,$05,$07,$FF,$05,$00,$06
   DEFB $07,$1A,$1B,$1C,$0B,$07,$FF,$05,$00,$06,$07,$1D,$1E,$1F,$06,$07

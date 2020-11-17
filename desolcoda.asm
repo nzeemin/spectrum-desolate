@@ -107,8 +107,10 @@ WaitKeyUp:
   ret
 
 ; Source: http://www.breakintoprogram.co.uk/computers/zx-spectrum/keyboard
-; Returns: A=key code; Z=0 for key, Z=1 for no key
-ReadKeyboard:          
+; Returns: A=key code, $00 no key; Z=0 for key, Z=1 for no key
+; Key codes: Down=$01, Left=$02, Right=$03, Up=$04, Look/shoot=$05
+;            Inventory=$06, Escape=$07, Switch look/shoot=$08, Enter=$09, Menu=$0F
+ReadKeyboard:
   LD HL,ReadKeyboard_map  ; Point HL at the keyboard list
   LD D,8                ; This is the number of ports (rows) to check
   LD C,$FE              ; C is always FEh for reading keyboard ports
@@ -132,25 +134,18 @@ ReadKeyboard_2:
   LD A,(HL)             ; We've found a key at this point; fetch the character code!
   or a
   RET
-; TI83 scan codes:
-;   Down=$01, Left=$02, Right=$03, Up=$04, Enter=$09
-;   2nd=$36 (look/shoot), XT0n=$28 (look/shoot switch), Mode=$37 (close any popups)
-;   Alpha=$30 (Inventory), Clear=$0F (quit to menu)
 ; Mapping:
-;   QAOP/1234/6789 - arrows, Enter=Enter
-;   Space/B/M/N/Z/0/5 - look/shoot
-;   S/D - look/shoot switch
-;   W/E - close any popups
-;   U/I - inventory; G - quit to menu
+;   QAOP/1234/6789 - arrows, Space/B/M/N/Z/0/5 - look/shoot
+;   S/D - switch look/shoot, W/E - escape, U/I - inventory; G - menu, Enter=Enter
 ReadKeyboard_map:
-  DB &FE, $00,$36,$00,$00,$00   ; Shift,"Z","X","C","V"
-  DB &FD, $01,$28,$28,$00,$0F   ;   "A","S","D","F","G"
-  DB &FB, $04,$37,$37,$00,$00   ;   "Q","W","E","R","T"
-  DB &F7, $02,$03,$01,$04,$36   ;   "1","2","3","4","5"
-  DB &EF, $36,$04,$01,$03,$02   ;   "0","9","8","7","6"
-  DB &DF, $03,$02,$30,$30,$00   ;   "P","O","I","U","Y"
+  DB &FE, $00,$05,$00,$00,$00   ; Shift,"Z","X","C","V"
+  DB &FD, $01,$08,$08,$00,$0F   ;   "A","S","D","F","G"
+  DB &FB, $04,$07,$07,$00,$00   ;   "Q","W","E","R","T"
+  DB &F7, $02,$03,$01,$04,$05   ;   "1","2","3","4","5"
+  DB &EF, $06,$04,$01,$03,$02   ;   "0","9","8","7","6"
+  DB &DF, $03,$02,$06,$06,$00   ;   "P","O","I","U","Y"
   DB &BF, $09,$00,$00,$00,$00   ; Enter,"L","K","J","H"
-  DB &7F, $36,$00,$36,$36,$36   ; Space,Sym,"M","N","B"
+  DB &7F, $05,$00,$05,$05,$05   ; Space,Sym,"M","N","B"
 
 ; ZX screen address list used to copy shadow screen lines on the ZX screen
 ScreenAddrs:

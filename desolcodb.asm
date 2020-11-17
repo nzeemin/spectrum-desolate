@@ -12,15 +12,15 @@ L9DDD:
   CALL LB76B              ; Process shoot
   CALL LB551              ; Process Alien in the room
   CALL LA0F1              ; Scan keyboard
-  CP $0F                  ; CLEAR
-  JP Z,LBA3D
-  CP $04                  ; Up
+  CP $0F                  ; Menu key
+  JP Z,LBA3D              ;   Return to main Menu
+  CP $04                  ; Up key
   JP Z,LA99B
-  CP $01                  ; Down
+  CP $01                  ; Down key
   JP Z,LA966
-  CP $02                  ; Left
+  CP $02                  ; Left key
   JP Z,LA9EB
-  CP $03                  ; Right
+  CP $03                  ; Right key
   JP Z,LAA1A
 ;  XOR A
 ;  LD (LDB7C),A            ; ??
@@ -30,11 +30,11 @@ L9DDD:
 L9E19:
   CALL LB653
   CALL LA0F1              ; Scan keyboard
-  CP $36                  ; Yellow "2nd" key
+  CP $05                  ; Look/shoot key?
   JP Z,LAAAF              ;   Look / Shoot
-  CP $28                  ; "XT0n" key
+  CP $08                  ; Switch key?
   JP Z,LB930              ;   Look / Shoot Mode
-  CP $30                  ; "ALPHA" key
+  CP $06                  ; Inventory key?
   JP Z,LB0A2              ;   Open the Inventory
 ; Show the screen, continue the game main loop
 L9E2E:
@@ -752,12 +752,12 @@ LAADD:
 LAB28:
   PUSH BC
   PUSH DE
-  LD BC,$0060             ; Number of bytes to decode = 96
   LD HL,LEB27             ; Decode from: Small message popup
-;TODO: Replace with call to LADF5
-  LD DE,LDBF5             ; Decode to
-  CALL LB9F1              ; Decode the screen
-  LD HL,LDBF5
+;  LD BC,$0060             ; Number of bytes to decode = 96
+  call LADEE              ; Decode the screen to LDBF5
+;  LD DE,LDBF5             ; Decode to
+;  CALL LB9F1              ; Decode the screen
+;  LD HL,LDBF5
   CALL LB177              ; Display screen HL from tiles with Tileset 2
   POP DE
   POP BC
@@ -784,7 +784,7 @@ LAB3F:
   CALL LAB73              ; Set penRow/penCol for small message popup
   LD HL,SE0D5             ; "It is not wise to proceed without a weapon."
   CALL LBEDE              ; Show message char-by-char
-  JP LAD8C                ; Show screen and wait for MODE key
+  JP LAD8C                ; Show screen and wait for Escape key
 ;
 ; Set penRow/penCol for small message popup
 LAB73:
@@ -812,7 +812,7 @@ LAB85:
   LD A,(LDC8C)            ; Get Access code level
   OR A                    ; Level 0?
   JP Z,LB00E              ; yes => Going to the next room
-  JP LAE23
+  JP LAE23                ; Check access and show Door Lock
 ;
 ; Found action point at room description offset $03..$04
 LABA4:
@@ -848,7 +848,7 @@ LABBE:
   LD (L86D7),HL           ; Set penRow/penCol
   LD HL,SE0D7             ; "You cant enter that sector Life-Support is offline."
   CALL LBEDE              ; Show message char-by-char
-  JP LAD8C                ; Show screen and wait for MODE key
+  JP LAD8C                ; Show screen and wait for Escape key
 LABF7:
   LD A,$03
   LD (LDC8A),A
@@ -878,7 +878,7 @@ LAC05:
   LD (L86D7),HL           ; Set penRow/penCol
   LD HL,SE0D9             ; "You cant enter until the AirLock is re-pressurised"
   CALL LBEDE              ; Show message char-by-char
-  JP LAD8C                ; Show screen and wait for MODE key
+  JP LAD8C                ; Show screen and wait for Escape key
 LAC3E:
   LD A,$04
   LD (LDC8A),A
@@ -925,7 +925,7 @@ LAC54:
   LD (L86D7),HL           ; Set penRow/penCol
   LD HL,SE0C5             ; " Search Reveals Nothing"
   CALL LBEDE              ; Show message char-by-char
-  JP LAD8C                ; Show screen and wait for MODE key
+  JP LAD8C                ; Show screen and wait for Escape key
 ; Found dead body with some item on it
 LAC97:
   CALL LAD4F              ; Get inventory item flag for item number in LDC89
@@ -994,8 +994,8 @@ LAD00:
   INC A
   LD (LDBC7),A            ; set Items Found count
 LAD22:
-  CALL LACB8
-  CALL LACF6
+  CALL LACB8              ; Show arrow sign in bottom-right corner
+  CALL LACF6              ; Show screen, wait for down key, show small message popup
   LD HL,$5830
   LD (L86D7),HL           ; Set penRow/penCol
   LD HL,SE0CF             ; "You Picked Up A"
@@ -1010,7 +1010,7 @@ LAD22:
   LD DE,LDB9C             ; Inventory table address
   ADD HL,DE               ; HL = item address in my Inventory
   LD (HL),$01             ; Mark that we have the item now
-  JP LAD8C                ; Show screen and wait for MODE key
+  JP LAD8C                ; Show screen and wait for Escape key
 ;
 ; Get inventory item flag for item number in LDC89
 LAD4F:
@@ -1029,7 +1029,7 @@ LAD5B:
   LD A,(HL)
   LD (LDC89),A            ; set as current item
   CP $23                  ; weapon?
-  JP Z,LADA9              ; yes => jump
+  JP Z,LADA9              ; yes => pick it up
   CALL LAD4F              ; Get inventory item flag for item number in LDC89
   CP $01                  ; do we have it?
   JP Z,LAADA              ; yes => Show the screen, continue the game main loop
@@ -1043,12 +1043,12 @@ LAD5B:
   LD (LDBC7),A            ; set Items Found count
   JP LAD22
 ;
-; Show screen and wait for MODE key
+; Show screen and wait for Escape key
 LAD8C:
   CALL ShowShadowScreen   ; Copy shadow screen to ZX screen
 LAD8F:
   CALL LA0F1              ; Scan keyboard
-  CP $37                  ; MODE key?
+  CP $07                  ; Escape key?
   JR NZ,LAD8F
   JP L9E2E                ; Show the screen, continue the game main loop
 ;
@@ -1059,10 +1059,10 @@ LAD99:
   JR NZ,LAD99
   RET
 ;
-; Wait for MODE key
+; Wait for Escape key
 LADA1:
   CALL LA0F1              ; Scan keyboard
-  CP $37                  ; MODE key?
+  CP $07                  ; Escape key?
   JR NZ,LADA1
   RET
 ;
@@ -1077,19 +1077,19 @@ LADA9:
   LD (LDCF7),A            ; We've got the weapon
   LD HL,$581C
   LD (L86D7),HL           ; Set penRow/penCol
-  LD HL,SE0CD             ; "     Hey Whats This  .  .  . ?"
+  LD HL,SE0CD             ; "Hey Whats This  .  .  . ?"
   CALL LBEDE              ; Show message char-by-char
-  CALL LACB8
-  CALL LACF6
+  CALL LACB8              ; Show arrow sign in bottom-right corner
+  CALL LACF6              ; Show screen, wait for down key, show small message popup
   LD HL,$5830
   LD (L86D7),HL           ; Set penRow/penCol
   LD HL,SE0CF             ; "You Picked Up A"
   CALL LBEDE              ; Show message char-by-char
   LD HL,$662C
   LD (L86D7),HL           ; Set penRow/penCol
-  LD HL,SE0B7             ; " Ion Phaser"
+  LD HL,SE0B7             ; "Ion Phaser"
   CALL LBEDE              ; Show message char-by-char
-  JP LAD8C                ; Show screen and wait for MODE key
+  jr LAD8C                ; Show screen and wait for Escape key
 ;
 ; Decode current room to LDBF5
 ;   Returns: HL = LDBF5
@@ -1097,7 +1097,8 @@ LADE5:
   LD A,(LDB79)            ; Get the room number
   LD HL,LDE97             ; List of encoded room addresses
   CALL LADFF              ; now HL = encoded room address
-;TODO: Entry point here to decode 96 bytes to LDBF5
+; Entry point: Decode 96 bytes to LDBF5
+LADEE:
   LD BC,$0060             ; decode 96 bytes
 ; Decode the room/screen to LDBF5
 ;   HL = decode from; BC = tile count to decode
@@ -1135,7 +1136,9 @@ LAE09:
 LAE19:
   LD A,(LDC89)            ; get current item number
   LD HL,LDFB7
-  jr LADFF
+  jr LADFF                ; Get address from table by index A, and return
+;
+; Check access and show Door Lock
 ;
 LAE23:
   LD A,$28
@@ -1154,9 +1157,9 @@ LAE3D:
   LD (HL),$00
   INC HL
   DJNZ LAE3D
-  LD BC,$0060             ; decode 96 bytes
-  LD HL,LF468             ; Encoded screen: Door access panel popup
-  CALL LADF5              ; Decode the screen to DBF5
+  LD HL,LF468             ; Encoded screen: Door Lock panel popup
+;  LD BC,$0060             ; decode 96 bytes
+  CALL LADEE              ; Decode the screen to DBF5
   CALL LB177              ; Display screen HL from tiles with Tileset 2
   LD A,10     ; was: $05
   LD (LDCF3),A            ; Left margin size for text
@@ -1171,9 +1174,9 @@ LAE3D:
   CALL LBEDE              ; Show message HL char-by-char
   LD A,$25
   LD (LDC82),A            ; set Inventory current
-  LD A,$A0                ; was: $50
+  LD A,$A0    ; was: $50
   LD (LDC83),A            ; set X pos
-  LD A,$60                ; was: $30
+  LD A,$60    ; was: $30
   LD (LDC84),A            ; set Y pos
   LD A,$06
   LD (LDC57),A
@@ -1197,21 +1200,22 @@ LAE9B:
   CALL LB2D0              ; Delay by LDC59
   DJNZ LAE9B
   CALL LA0F1              ; Scan keyboard
-  CP $36                  ; Select key
+  CP $05                  ; Select key
   jr Z,LAEBA
   CP $02                  ; left key?
   JP Z,LAF70              ;   Move left
   CP $03                  ; right key?
   JP Z,LAF86              ;   Move right
-  CP $37                  ; Escape key?
+;TODO: up/down keys
+  CP $07                  ; Escape key?
   jr NZ,LAE99             ;   no => continue the key waiting loop
   JP L9E2E                ; Exit Door Lock - Show the screen, continue the game main loop
-; Select key pressed
+; Door Lock Select key pressed
 LAEBA:
   call WaitKeyUp          ; Wait until no key pressed to prevent double-reads of the same key
   LD A,(LDC82)            ; get current selection
-  CP $25
-  JP Z,LAF14
+  CP $25                  ; "Enter" button?
+  JP Z,LAF14              ; Code entered, need to check it
   LD A,(LDC57)
   DEC A
   CP $01
@@ -1232,7 +1236,7 @@ LAED4:
   LD HL,LDC8D             ; Buffer for entering access code
   ADD HL,DE
   LD A,(LDC82)            ; get current selection
-  LD (HL),A
+  LD (HL),A               ; put in the buffer
   LD HL,LDC8D             ; Buffer for entering access code
   LD A,4    ; was: $02
   LD C,A
@@ -1265,6 +1269,7 @@ LAEEF:
   CALL ShowShadowScreen   ; Copy shadow screen to ZX screen
   JP LAE99                ; Return to Delay and wait for key in Door Lock
 ;
+; Access code entered, need to check
 LAF14:
   LD A,(LDC57)
   DEC A
@@ -1302,28 +1307,28 @@ LAF34:
   ADD HL,DE
   LD (HL),$01             ; Mark code here was accepted
   JP LB00E                ; Going to the next room
-;
+; Move selection Left
 LAF5A:
-  CALL LAFD2
-  LD A,(LDC82)
-  INC A
-  LD (LDC82),A
+  CALL LAFD2              ; Draw selection box by XOR
+  LD A,(LDC82)            ; get Inventory current
+  INC A                   ; left
+  LD (LDC82),A            ; set Inventory current
   RET
-;
+; Move selection Right
 LAF65:
-  CALL LAFD2
-  LD A,(LDC82)
-  DEC A
-  LD (LDC82),A
+  CALL LAFD2              ; Draw selection box by XOR
+  LD A,(LDC82)            ; get Inventory current
+  DEC A                   ; right
+  LD (LDC82),A            ; set Inventory current
   RET
 ; Door Lock Move left
 LAF70:
   LD A,(LDC83)            ; get X pos
-  CP $80                  ; was: $40
+  CP $80      ; was: $40
   jr Z,LAF9C              ; => Move prev row
-  CALL LAF65
+  CALL LAF65              ; Move selection Right
   LD A,(LDC83)            ; get X pos
-  ADD A,-16               ; was: $F8
+  ADD A,-16   ; was: $F8
   LD (LDC83),A            ; set X pos
   JP LAE80
 ; Door Lock Move right
@@ -1331,7 +1336,7 @@ LAF86:
   LD A,(LDC83)            ; get X pos
   CP $A0      ; was: $50
   jr Z,LAFB7              ; => Move next row
-  CALL LAF5A
+  CALL LAF5A              ; Move selection Left
   LD A,(LDC83)            ; get X pos
   ADD A,16    ; was: $08
   LD (LDC83),A            ; set X pos
@@ -1341,7 +1346,7 @@ LAF9C:
   LD A,(LDC84)            ; get Y pos
   CP $30      ; was: $18
   JP Z,LAE99              ; Return to Delay and wait for key in Door Lock
-  CALL LAF65
+  CALL LAF65              ; Move selection Right
   LD A,$A0    ; was: $50
   LD (LDC83),A            ; set X pos
   LD A,(LDC84)            ; get Y pos
@@ -1353,7 +1358,7 @@ LAFB7:
   LD A,(LDC84)            ; get Y pos
   CP $60      ; was: $30
   JP Z,LAE99              ; Return to Delay and wait for key in Door Lock
-  CALL LAF5A
+  CALL LAF5A              ; Move selection Left
   LD A,$80    ; was: $40
   LD (LDC83),A            ; set X pos
   LD A,(LDC84)            ; get Y pos
@@ -1361,6 +1366,7 @@ LAFB7:
   LD (LDC84),A            ; set Y pos
   JP LAE80
 ;
+; Draw selection box by XOR
 LAFD2:
 ;  LD HL,$0020
 ;  LD DE,Tileset2
@@ -1491,9 +1497,9 @@ LB09B:
 ; Open the Inventory pop-up
 ;
 LB0A2:
-  LD BC,$0060             ; decode 96 bytes
   LD HL,LF329             ; Encoded screen for Inventory/Info popup
-  CALL LADF5              ; Decode the screen to DBF5
+;  LD BC,$0060             ; decode 96 bytes
+  CALL LADEE              ; Decode the screen to DBF5
   CALL LB177              ; Display screen HL from tiles with Tileset 2
   LD A,22     ; was: $0B
   LD (LDCF3),A            ; Left margin size for text
@@ -1675,9 +1681,9 @@ LB1BB:                    ; Inventory loop starts here
 ; Inventory item selection
 LB1C1:
   CALL LA0F1              ; Scan keyboard
-  CP $37                  ; Escape key? (close any popups)
+  CP $07                  ; Escape key? (close any popups)
   JP Z,L9DDD              ;   yes => return to the game main loop
-  CP $36                  ; Look/shoot key?
+  CP $05                  ; Look/shoot key?
   JP Z,LB307
   CP $02                  ; Left key?
   JP Z,LB1FE
@@ -1867,9 +1873,9 @@ LB33F:
   LD A,$44
   LD (LDC59),A            ; set delay factor
   LD (LDC85),A            ; Use delay and copy screen in LBEDE
-  LD BC,$0060             ; decode 96 bytes
   LD HL,LF42F             ; Encoded screen for Data cartridge reader
-  CALL LADF5              ; Decode the screen to DBF5
+;  LD BC,$0060             ; decode 96 bytes
+  CALL LADEE              ; Decode the screen to DBF5
   CALL LB177              ; Display screen HL from tiles with Tileset 2
   LD A,(LDCF8)
   CP $01                  ; was cartridge selected?
@@ -1896,7 +1902,7 @@ LB373:
   CALL ShowShadowScreen   ; Copy shadow screen to ZX screen
 LB38B:
   CALL LA0F1              ; Scan keyboard
-  CP $37
+  CP $07                  ; Escape key?
   jr NZ,LB38B
   XOR A
   LD (LDC85),A            ; Skip delay and copy screen in LBEDE
@@ -2271,11 +2277,11 @@ LB653:
   add a,a                 ; tile X cord -> 8px column number
   LD H,A
   LD A,(LDB7F)            ; get Alien Y coord
-  ADD A,-16   ; $F8
+  ADD A,-16   ; $F8       ; one tile up
   LD L,A
   xor a                   ; clear draw flags
   CALL LB69D              ; Get alien tile address
-  jp L9EDE
+  jp L9EDE                ; Draw tile DE at column H row L, and return
 ;
 ; Clear Alien tile phase
 LB676:
@@ -2713,7 +2719,7 @@ LB930:
   LD (L86D7),HL           ; Set penRow/penCol
   LD HL,SE0D3             ; "You dont have a Weapon to equip!"
   CALL LBEDE              ; Show message char-by-char
-  JP LAD8C                ; Show screen and wait for MODE key
+  JP LAD8C                ; Show screen and wait for Escape key
 LB94C:
   LD A,(LDB7D)            ; Get look/shoot switch value
   CP $01                  ; shoot mode?
@@ -2785,7 +2791,7 @@ LB9A2:
 LB9C9:
   CALL ShowShadowScreen   ; Copy shadow screen to ZX screen
   CALL LA0F1              ; Scan keyboard
-  CP $37                  ; "MODE" key? TODO: any key
+  CP $07                  ; Escape key? TODO: any key
   JP Z,L9E19              ; yes => Go to ending of main game loop
   JR LB9C9                ; continue the waiting loop
 ;
@@ -2874,7 +2880,7 @@ LBA3D:
   CALL LBA88              ; Draw menu item selection triangle
   CALL ShowShadowScreen   ; Copy shadow screen to ZX screen
   CALL LA0F1              ; Scan keyboard
-  CP $36                  ; look/shoot key
+  CP $05                  ; look/shoot key
   jr Z,LBA93              ;   select menu item
   cp $09                  ; Enter key
   jr z,LBA93              ;   select menu item
@@ -2882,7 +2888,7 @@ LBA3D:
   JP Z,LBBCC
   CP $01                  ; Down key
   JP Z,LBBDC
-  jr LBA3D
+  jr LBA3D                ; Return to main Menu
 ;
 ;NOTE: LBA81 routine moved close to LBC34
 ;
@@ -2907,7 +2913,7 @@ LBA93:
   JP Z,LBF64              ; Credits menu item
   CP $6A
   JP Z,L9E51              ; Quit menu item
-  JP LBA3D
+  JP LBA3D                ; Return to main Menu
 ;
 ; New menu item selected
 LBAB2:
@@ -3020,13 +3026,13 @@ LBB92:
   LD A,(LDB8F)            ; get Menu Y pos
   ADD A,-24               ; up two steps
   LD (LDB8F),A            ; set Menu Y pos
-  JP LBA3D
+  JP LBA3D                ; Return to main Menu
 ; Menu up step
 LBBA4:
   LD A,(LDB8F)            ; get Menu Y pos
   ADD A,-12               ; up one step
   LD (LDB8F),A            ; set Menu Y pos
-  JP LBA3D
+  JP LBA3D                ; Return to main Menu
 LBBAF:
   LD A,(LDB73)
   OR A                    ; do we have the game to continue?
@@ -3034,13 +3040,13 @@ LBBAF:
   LD A,(LDB8F)            ; get Menu Y pos
   ADD A,24                ; down two steps
   LD (LDB8F),A            ; set Menu Y pos
-  JP LBA3D
+  JP LBA3D                ; Return to main Menu
 ; Menu down step
 LBBC1:
   LD A,(LDB8F)            ; get Menu Y pos
   ADD A,12                ; down one step
   LD (LDB8F),A            ; set Menu Y pos
-  JP LBA3D
+  JP LBA3D                ; Return to main Menu
 ; Menu up key pressed
 LBBCC:
   LD A,(LDB8F)            ; get Menu Y pos
@@ -3061,12 +3067,12 @@ LBBDC:
 ; Info menu item, show Controls
 ;
 LBBEC:
-  LD BC,$0060             ; Counter = 96 bytes or tiles
   LD HL,LF329             ; Decode from - Encoded screen for Inventory/Info popup
-;TODO: Replace with call to LADF5
-  LD DE,LDBF5             ; Where to decode
-  CALL LB9F1              ; Decode the screen
-  LD HL,LDBF5
+;  LD BC,$0060             ; Counter = 96 bytes or tiles
+  call LADEE              ; Decode the screen to LDBF5
+;  LD DE,LDBF5             ; Where to decode
+;  CALL LB9F1              ; Decode the screen
+;  LD HL,LDBF5
   CALL LB177              ; Display screen HL from tiles with Tileset 2
   LD A,10   ; was: $05
   LD (LDCF3),A            ; Left margin size for text
@@ -3081,7 +3087,7 @@ LBBEC:
   LD HL,SE0A7             ; "2nd = Look / Shoot Alpha = Inventory ..."
   CALL LBEDE              ; Show message char-by-char
   CALL ShowShadowScreen   ; Copy shadow screen to ZX screen
-  CALL LADA1              ; Wait for MODE key
+  CALL LADA1              ; Wait for Escape key
   JP LBA3D                ; Return to Menu
 ;
 ; Add menu background phase 0..7 to L
@@ -3194,7 +3200,7 @@ LBCC5:
   CALL ShowShadowScreen   ; Copy shadow screen to ZX screen
 LBCCB:
   CALL LA0F1              ; Scan keyboard
-  CP $37                  ;   MODE key?
+  CP $07                  ; Escape key?
   JR NZ,LBCCB             ; no => wait some more
   JP L9E2E                ; Show the screen, continue the game main loop
 ;
