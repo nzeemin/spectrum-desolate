@@ -39,22 +39,38 @@ SE073: DEFM "Travis Supalla",0
 SE075: DEFM "Jim Dieckmann",0
 SE077: DEFM "tr1p1ea@yahoo.com.au",0
 ; Data Cartridge messages
-SE079: DEFM "Im hurt bad . . . I dont|think im gonna make it.|I changed the Level 1|Access Code to: 4057|Maybe that will hold|them off for a while . . .",0
-SE07B: DEFM "For security reasons I|had to change the|Level 2 Access Code.|Maybe now the crew|will stop",$02,"stealing",$02,"stuff!|It is:",0
-SE07D: DEFM "The system is going|haywire. The Level 3|Access Code was over-|written. I only just|recovered it.Turns",$02,"out|it is:",0
-SE07F: DEFM "Crew I am honoured to|have served as your|captain. The Level 4|Access Code will get|to the evacuation deck|It is:",0
-SE081: DEFM "Willis and I are stuck.|Needless to say we are|both done for.",$02,"We",$02,"might|have had a chance, but|some idiot changed the|Level 1 Access Code!",0
-SE083: DEFM "I",$02,"dont see",$02,"why I",$02,"should|be the one who has to|fix the generator.|There is no way im|going with those things|all over the place . . .",0
-SE085: DEFM "DrMorgan: Meteorite|shower claimed a lot|of the crew, however|some feature strange|abrations. Almost like|bite marks . . ?",0
-SE087: DEFM "DrMorgan: I found a|strange creature. At|first I thought it was|deceased.",$02,"But",$02,"it",$02,"sprang|up and attacked my|associate! . . .",0
-SE089: DEFM "DrMorgan: To make|matters worse the|creatures are|evolving rapidly. My|associate claims he|saw one over 7 feet!",0
-SE08B: DEFM "It truly baffles me|considering our cargo|why they insist on|equipping the ship with|ONLY Ion-Phasers.|They are useless!!!",0
-SE08D: DEFM "Capt Millin: We are|losing crew fast.",$02,"I",$02,"sent|Willis to re-animate|the clones. Right now|they are the only|chance we have . . .",0
-SE08F: DEFM "Capt Millin: I am very|anxious to see the|clones in action. I|hear that they are the|most advanced clone|soldiers ever created.",0
-SE091: DEFM "Capt Millin: We are|transporting a cargo|of genetically|modified clones to a|IH-2 Military Facility|for field testing . . .",0
-SE093: DEFM "Capt Millin: I have|just recieved word|that the facility on|earth was destroyed.|We now carry the only|clone prototypes.",0
-SE095: DEFM "Willis: We are in BIG|trouble. Only 1 clone|survived the",$02,"meteorite|shower.",$02,"And the",$02,"system|says Re-animation will|take over 6 hours!!!",0
-SE097: DEFM "This is ludicrous!|65 credits for",$02,"a proton|bar? How are we|meant to snack while|we work? The agency|is",$02,"getting",$02,"on",$02,"my",$02,"nerves.",0
+SE079: DEFM "Im hurt bad . . . I dont|think im gonna make it.|I changed the Level 1|Access Code to: 4057|"
+       DEFM "Maybe that will hold|them off for a while . . .",0
+SE07B: DEFM "For security reasons I|had to change the|Level 2 Access Code.|Maybe now the crew|will stop",$02
+       DEFM "stealing",$02,"stuff!|It is:",0
+SE07D: DEFM "The system is going|haywire. The Level 3|Access Code was over-|written. I only just|recovered it."
+       DEFM "Turns",$02,"out|it is:",0
+SE07F: DEFM "Crew I am honoured to|have served as your|captain. The Level 4|Access Code will get|"
+       DEFM "to the evacuation deck|It is:",0
+SE081: DEFM "Willis and I are stuck.|Needless to say we are|both done for.",$02
+       DEFM "We",$02,"might|have had a chance, but|some idiot changed the|Level 1 Access Code!",0
+SE083: DEFM "I",$02,"dont see",$02,"why I",$02,"should|be the one who has to|fix the generator.|"
+       DEFM "There is no way im|going with those things|all over the place . . .",0
+SE085: DEFM "DrMorgan: Meteorite|shower claimed a lot|of the crew, however|some feature strange|abrations. "
+       DEFM "Almost like|bite marks . . ?",0
+SE087: DEFM "DrMorgan: I found a|strange creature. At|first I thought it was|deceased.",$02
+       DEFM "But",$02,"it",$02,"sprang|up and attacked my|associate! . . .",0
+SE089: DEFM "DrMorgan: To make|matters worse the|creatures are|evolving rapidly. My|associate claims he|"
+       DEFM "saw one over 7 feet!",0
+SE08B: DEFM "It truly baffles me|considering our cargo|why they insist on|equipping the ship with|ONLY "
+       DEFM "Ion-Phasers.|They are useless!!!",0
+SE08D: DEFM "Capt Millin: We are|losing crew fast.",$02,"I",$02,"sent|Willis to re-animate|the clones. "
+       DEFM "Right now|they are the only|chance we have . . .",0
+SE08F: DEFM "Capt Millin: I am very|anxious to see the|clones in action. I|hear that they are the|"
+       DEFM "most advanced clone|soldiers ever created.",0
+SE091: DEFM "Capt Millin: We are|transporting a cargo|of genetically|modified clones to a|IH-2 Military Facility|"
+       DEFM "for field testing . . .",0
+SE093: DEFM "Capt Millin: I have|just recieved word|that the facility on|earth was destroyed.|"
+       DEFM "We now carry the only|clone prototypes.",0
+SE095: DEFM "Willis: We are in BIG|trouble. Only 1 clone|survived the",$02,"meteorite|shower.",$02
+       DEFM "And the",$02,"system|says Re-animation will|take over 6 hours!!!",0
+SE097: DEFM "This is ludicrous!|65 credits for",$02,"a proton|bar? How are we|meant to snack while|we work? "
+       DEFM "The agency|is",$02,"getting",$02,"on",$02,"my",$02,"nerves.",0
 ;
 SE09B: DEFM $10,"No Data Cartridge|",$1F,$04,"Selected",0
 SE09D: DEFM "MaxCoderz Presents",0
@@ -62,7 +78,8 @@ SE09F: DEFM "a tr1p1ea game",0
 SE0A1: DEFM "Items Found (/24):|",$1F,$02,"Enemies Killed:|",$1F,$03,"Player Deaths:||Awards:",0
 SE0A3: DEFM "OverWrite Current Game?|Enter - Yes :: G - No",0
 SE0A5: DEFM "- Controls -",0
-SE0A7: DEFM "QAOP 1234 6789: Arrows|Space ZBMN05: Look/shoot|U I: Inventory|S D: Look/shoot mode|W E: Close all pop-ups|G: Quit to Menu",0
+SE0A7: DEFM "QAOP 1234 6789: Arrows|Space ZBMN05: Look/shoot|U I: Inventory|S D: Look/shoot mode|"
+       DEFM "W E: Close all pop-ups|G: Quit to Menu",0
 SE0A9: DEFM "Earn 3 Good Awards for|an Extended Ending!",0
 SE0AB: DEFM "Sir Miss-A-Lot",0
 SE0AD: DEFM "Sherlock Holmes",0
@@ -120,10 +137,18 @@ SE111: DEFM $1F,$0A,"Duck Idol ;)",0
 SE113: DEFM $1F,$08,"Rubik's Cube",0
 ;
 SE115: DEFM "In the Distant Future . . .",0
-SE117: DEFM "'The Desolate' Space Cruiser|leaves orbit. Its mission is|secret, its cargo classified.|6014 Cycles into the journey|the ship encounters a savage|meteorite shower.||Contact with Desolate is lost.",0
-SE119: DEFM "The ship sustains heavy|damage. Onboard a cryo-|genic incubation cell|finishes re-animation. Its|occupant steps out of the|chamber not knowing who he|is, or what he is going to do.||But at least he is alive.",0
-SE11B: DEFM "The onboard guidance|system picks up a mining|facility close by. The course|is set",$02,"and you sit back,",$02,"finally|free of 'The Desolate' & its|murderous hord of Aliens.|You were a clone, an|experiment. Now, 'you' are|the sole survivor.",0
-SE11D: DEFM "System Alert triggered: |'Foreign Objects Detected|OnBoard'. The Aliens have|attached to the hull!|'Main Drive System Offline'|The ship was on a crash|course for",$02,"the Mining Facility||It wasnt over yet",$06,".",$06,".",$06,".",0
+SE117: DEFM "'The Desolate' Space Cruiser|leaves orbit. Its mission is|secret, its cargo classified.|"
+       DEFM "6014 Cycles into the journey|the ship encounters a savage|meteorite shower.||"
+       DEFM "Contact with Desolate is lost.",0
+SE119: DEFM "The ship sustains heavy|damage. Onboard a cryo-|genic incubation cell|finishes re-animation. "
+       DEFM "Its|occupant steps out of the|chamber not knowing who he|is, or what he is going to do.||"
+       DEFM "But at least he is alive.",0
+SE11B: DEFM "The onboard guidance|system picks up a mining|facility close by. The course|is set",$02
+       DEFM "and you sit back,",$02,"finally|free of 'The Desolate' & its|murderous hord of Aliens.|"
+       DEFM "You were a clone, an|experiment. Now, 'you' are|the sole survivor.",0
+SE11D: DEFM "System Alert triggered: |'Foreign Objects Detected|OnBoard'. The Aliens have|attached to the hull!|"
+       DEFM "'Main Drive System Offline'|The ship was on a crash|course for",$02,"the Mining Facility||"
+       DEFM "It wasnt over yet",$06,".",$06,".",$06,".",0
 SE11F: DEFM "The End",0
 ;
 SAccessLevel1: DEFM $1B,"Level 1|",$09,"Access Code|",$15,"Required",0

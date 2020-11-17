@@ -34,3 +34,6 @@ To run the game on Wabbitemu emulator:
  - `pasmo.exe` cross-assembler
    http://pasmo.speccy.org/
 
+ - `sjasmplus.exe`
+   https://github.com/z00m128/sjasmplus/releases
+

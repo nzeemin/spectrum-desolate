@@ -1,10 +1,10 @@
 
 
-;CHEAT_SHOW_ROOM_NUMBER  EQU 1
-;CHEAT_ALL_ACCESS        EQU 1
-;CHEAT_ALL_INVENTORY     EQU 1
-;CHEAT_HAVE_WEAPON       EQU 1
-;CHEAT_HEALTH_999        EQU 1
+CHEAT_SHOW_ROOM_NUMBER  EQU 0
+CHEAT_ALL_ACCESS        EQU 0
+CHEAT_ALL_INVENTORY     EQU 0
+CHEAT_HAVE_WEAPON       EQU 0
+CHEAT_HEALTH_999        EQU 0
 
 
 ;TODO:  ORG $5FB4   ; = 24500
@@ -14,35 +14,35 @@ start:
   call LBA07  ; Show titles and go to Menu
 
 ; Cheat code to get all door access codes
-IF DEFINED CHEAT_ALL_ACCESS
+  IF CHEAT_ALL_ACCESS = 1
   LD HL,LDCA2
   LD B,$48
 start_1:
   LD (HL),$01
   INC HL
   DJNZ start_1
-ENDIF
+  ENDIF
 
 ; Cheat code to have all inventory items
-IF DEFINED CHEAT_ALL_INVENTORY
+  IF CHEAT_ALL_INVENTORY = 1
   LD HL,LDB9C
   LD B,26
 start_2:
   LD (HL),$01
   INC HL
   DJNZ start_2
-ENDIF
+  ENDIF
 
 ; Cheat code to have the weapon
-IF DEFINED CHEAT_HAVE_WEAPON
+  IF CHEAT_HAVE_WEAPON = 1
   ld a,$01
   ld (LDCF7),a
-ENDIF
+  ENDIF
 
-IF DEFINED CHEAT_HEALTH_999
+  IF CHEAT_HEALTH_999 = 1
   ld hl,999
   ld (LDB7A),hl
-ENDIF
+  ENDIF
 
 ;  call LB0A2  ; Inventory
 ;  call LBBEC  ; Info menu item, show Controls
@@ -138,14 +138,14 @@ ReadKeyboard_2:
 ;   QAOP/1234/6789 - arrows, Space/B/M/N/Z/0/5 - look/shoot
 ;   S/D - switch look/shoot, W/E - escape, U/I - inventory; G - menu, Enter=Enter
 ReadKeyboard_map:
-  DB &FE, $00,$05,$00,$00,$00   ; Shift,"Z","X","C","V"
-  DB &FD, $01,$08,$08,$00,$0F   ;   "A","S","D","F","G"
-  DB &FB, $04,$07,$07,$00,$00   ;   "Q","W","E","R","T"
-  DB &F7, $02,$03,$01,$04,$05   ;   "1","2","3","4","5"
-  DB &EF, $06,$04,$01,$03,$02   ;   "0","9","8","7","6"
-  DB &DF, $03,$02,$06,$06,$00   ;   "P","O","I","U","Y"
-  DB &BF, $09,$00,$00,$00,$00   ; Enter,"L","K","J","H"
-  DB &7F, $05,$00,$05,$05,$05   ; Space,Sym,"M","N","B"
+  DB $FE, $00,$05,$00,$00,$00   ; Shift,"Z","X","C","V"
+  DB $FD, $01,$08,$08,$00,$0F   ;   "A","S","D","F","G"
+  DB $FB, $04,$07,$07,$00,$00   ;   "Q","W","E","R","T"
+  DB $F7, $02,$03,$01,$04,$05   ;   "1","2","3","4","5"
+  DB $EF, $06,$04,$01,$03,$02   ;   "0","9","8","7","6"
+  DB $DF, $03,$02,$06,$06,$00   ;   "P","O","I","U","Y"
+  DB $BF, $09,$00,$00,$00,$00   ; Enter,"L","K","J","H"
+  DB $7F, $05,$00,$05,$05,$05   ; Space,Sym,"M","N","B"
 
 ; ZX screen address list used to copy shadow screen lines on the ZX screen
 ScreenAddrs:
@@ -620,9 +620,9 @@ ShadowScreen EQU $F300
 ;ShadowScreen:
 ;  DEFS 3312,$00
 
-IF DesolateCodeEnd > ShadowScreen
+  IF DesolateCodeEnd > ShadowScreen
   .ERROR DesolateCodeEnd overlaps ShadowScreen
-ENDIF
+  ENDIF
 
 ;----------------------------------------------------------------------------
 

@@ -2739,14 +2739,14 @@ LB960:
 ; Display Health
 LB96B:
 ;DEBUG: Show room number at the bottom-left
-IF DEFINED CHEAT_SHOW_ROOM_NUMBER
+  IF CHEAT_SHOW_ROOM_NUMBER = 1
   LD HL,$7610
   ld (L86D7),hl           ; Set penRow/penCol
   ld a,(LDB79)            ; Get the room number
   ld l,a
   ld h,$00
   call DrawNumber3
-ENDIF
+  ENDIF
   LD HL,$012C
   LD (L86D7),HL           ; Set penRow/penCol
   LD HL,(LDB7A)           ; get Health value
