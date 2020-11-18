@@ -647,13 +647,15 @@ LDB4C:
   DEFB $61,$25,$31,$02,$00,$00,$04,$00,$FF,$05,$61,$46,$61,$61,$61,$4B ; desc
   DEFB $61,$04,$20,$04,$02,$01,$00                                     ;
 ;
+DesolateVarsBeg:
+;
 ; Variables
 ;
 L86D7:  DEFB $00          ; penCol
 L86D8:  DEFB $00          ; penRow
 ;
 LDB73:  DEFB $00          ; ?? $00 $01
-LDB74:  DEFB $0C          ; Line width in tiles ??
+;LDB74:  DEFB $0C          ; Line width in tiles
 LDB75:  DEFB $00          ; Player Direction/orientation: $00 down, $01 up, $02 left, $03 right
 LDB76:  DEFB $06          ; X coord in tiles: $01 $06 $0A INC/DEC
 LDB77:  DEFB $30          ; Y coord/line on the screen: 0..127
@@ -676,9 +678,9 @@ LDB88:  DEFB $00          ; Bullet X coord in tiles
 LDB89:  DEFB $00          ; Bullet Y coord/line on the screen
 LDB8A:  DEFB $00          ; Bullet Y coord in tiles
 LDB8B:  DEFB $00          ; Bullet Direction/orientation: $00 down, $01 up, $02 left, $03 right
-LDB8C:  DEFB $00
+LDB8C:  DEFB $00          ; shooting flag ??
 LDB8D:  DEFB $00          ; $01 = shooting in process, bullet in the air
-  DEFB $00
+;  DEFB $00
 LDB8F:  DEFB $3A          ; Menu Y pos: $3A $46 $52 $5E $6A
 LDB90:                    ; Flags about performed progress
   DEFB $00
@@ -699,17 +701,9 @@ LDB9C:                    ; Inventory items: $00 = not having, $01 = have it
 LDBC3:  DEFW $0000        ; Player Deaths count
 LDBC5:  DEFW $0000        ; Enemies Killed count
 LDBC7:  DEFB $00          ; Items Found count
-;LDBC8:  DEFB $08                ; Smthng about 'DESDATA' DataFile, not used
-;LDBC9:  DEFW $4014              ; Smthng about 'DESDATA' DataFile, not used
-  DEFB $05,$44,$45,$53,$44,$41,$54,$41
-  DEFB $00,$14,$40,$44,$61,$74,$61,$46
-  DEFB $69,$6C,$65,$20,$27,$44,$45,$53
-  DEFB $44,$41,$54,$41,$27,$20,$4E,$6F
-  DEFB $74,$20,$46,$6F,$75,$6E,$64,$21
-  DEFB $00
-LDBF4:  DEFB $00
-
-; Room in titles, 12 * 8 = 96 bytes
+LDBF4:  DEFB $00          ; Counter of achievements on the Stats screen
+;
+; Screen/room buffer, 12 * 8 = 96 bytes
 LDBF5:
   DEFB $00,$00,$00,$00,$00,$00,$00,$00
   DEFB $00,$00,$00,$00,$00,$00,$00,$00
@@ -725,8 +719,8 @@ LDBF5:
   DEFB $00,$00,$00,$00,$00,$00,$00,$00
 LDC55:  DEFB $03          ; Menu background phase: $00..$07
 LDC56:  DEFB $00          ; Offset in the room, in tiles ??
-LDC57:  DEFB $00
-  DEFB $00
+LDC57:  DEFB $00          ; ?? $06 DEC
+;  DEFB $00
 LDC59:  DEFB $44          ; Delay factor: $64 $28 $00 $44 $96 $FF
 LDC5A:  DEFB $00          ; Inventory items count??
 LDC5B:                    ; Inventory list
@@ -784,9 +778,10 @@ LDCF9:
 SE029:  ; Empty string
 LDD53:  DEFB $00          ; empty string
 LDD54:  DEFB $00          ; Player's animation phase 0..3
-LDD55:  DEFB $00          ; ?? $00 $01
+LDD55:  DEFB $00          ; shooting flag for player's animation ?? $00 $01
 LDD56:  DEFB $00          ; Credits counter within one line: 0..11
 LDD57:  DEFB $00          ; Credits line number
+;
 LDD58:                    ; Table of Credits strings
   DEFW SE02B,SE02D,SE029,SE02F,SE031
   DEFW SE033,SE035,SE037,SE039,SE03B
@@ -1035,27 +1030,14 @@ LE01F:          ; Table of strings: access code messages
   DEFW SAccessLevel2
   DEFW SAccessLevel3
   DEFW SAccessLevel4
-LE029:          ; Archived strings offsets (DELETED BLOCK, not needed anymore)
+
+;----------------------------------------------------------------------------
 
   INCLUDE "desoltil1.asm"
 
-; Encoded screen for Small message popup
-LEB27:
-  DEFB $FF,$3C,$01,$26,$FF,$0A,$2A,$27
-  DEFB $2D,$FF,$0A,$00,$2C,$28,$FF,$0A
-  DEFB $2B,$29
-
   INCLUDE "desoltil2.asm"
 
-; Encoded screen for Inventory/Info popup
-LF329:
-  DEFB $FF,$0C,$01,$26,$FF,$0A,$2A,$27
-  DEFB $2D,$FF,$0A,$00,$2C,$2D,$FF,$0A
-  DEFB $00,$2C,$2D,$FF,$0A,$00,$2C,$2D
-  DEFB $FF,$0A,$00,$2C,$2D,$FF,$0A,$00
-  DEFB $2C,$28,$FF,$0A,$2B,$29
-
-; Tiles inventory items, 14 tiles 16x16
+; Tiles inventory items, 16 tiles 16x16
 Tileset3:
   DB $C0,$00,$E0,$00,$F0,$00,$F8,$00,$FC,$00,$FC,$00,$F8,$00,$F0,$00,$E0,$00,$C0,$00,$60,$00,$70,$00,$78,$00,$78,$00,$70,$00,$60,$00
   DB $03,$00,$07,$00,$0F,$00,$1F,$00,$3F,$00,$3F,$00,$1F,$00,$0F,$00,$07,$00,$03,$00,$06,$00,$0E,$00,$1E,$00,$1E,$00,$0E,$00,$06,$00
@@ -1074,6 +1056,20 @@ Tileset3:
   DB $00,$00,$00,$00,$00,$00,$00,$00,$00,$00,$00,$00,$03,$C0,$03,$C0,$03,$C0,$03,$C0,$00,$00,$00,$00,$00,$00,$00,$00,$00,$00,$00,$00
   DB $F8,$1F,$80,$01,$80,$01,$80,$01,$80,$01,$00,$00,$00,$00,$00,$00,$00,$00,$00,$00,$00,$00,$80,$01,$80,$01,$80,$01,$80,$01,$F8,$1F
 
+;----------------------------------------------------------------------------
+
+; Encoded screen for Small message popup, in Tileset #2
+LEB27:
+  DEFB $FF,$3C,$01,$26,$FF,$0A,$2A,$27
+  DEFB $2D,$FF,$0A,$00,$2C,$28,$FF,$0A
+  DEFB $2B,$29
+; Encoded screen for Inventory/Info popup, in Tileset #2
+LF329:
+  DEFB $FF,$0C,$01,$26,$FF,$0A,$2A,$27
+  DEFB $2D,$FF,$0A,$00,$2C,$2D,$FF,$0A
+  DEFB $00,$2C,$2D,$FF,$0A,$00,$2C,$2D
+  DEFB $FF,$0A,$00,$2C,$2D,$FF,$0A,$00
+  DEFB $2C,$28,$FF,$0A,$2B,$29
 LF42F:
 ; Encoded screen: Data cartridge reader screen, in Tileset #2
   DEFB $03,$FF,$09,$04,$15,$05,$07,$11,$FF,$08,$0F,$12,$0B,$07,$0D,$FF

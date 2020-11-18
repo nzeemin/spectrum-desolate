@@ -564,8 +564,8 @@ LA9D1:
   jr Z,LA9E6              ; we don't have it => jump
 ; We have an alien in the room
   CALL LB74C
-  OR A
-  JP Z,LB07B              ; Decrease Health by 4, restore Y coord
+  OR A                    ; Alien in the same cell as Player?
+  JP Z,LB07B              ; yes => Decrease Health by 4, restore Y coord
 LA9E6:
   POP AF
   POP AF
@@ -625,8 +625,8 @@ LAA47:
   jr Z,LAA5C              ; we don't have it => jump
 ; We have an alien in the room
   CALL LB74C
-  OR A
-  JP Z,LB08D              ; Decrease Health by 4, restore X coord
+  OR A                    ; Alien in the same cell as Player?
+  JP Z,LB08D              ; yes => Decrease Health by 4, restore X coord
 LAA5C:
   POP AF
   JP LA8CD
@@ -638,8 +638,9 @@ LAA60:
   CALL LAA7D              ; For direction left - dec E, right - inc E
   LD D,$00
   ADD HL,DE
-  LD A,(LDB74)            ; $0C - line width in tiles ??
-  LD E,A
+;  LD A,(LDB74)            ; $0C - line width in tiles ??
+;  LD E,A
+  ld e,12                 ; Line width in tiles
   LD A,(LDB78)            ; Get Y tile coord
   LD B,A
   CALL LAA8D              ; For direction up - dec B, down - inc B
@@ -682,8 +683,9 @@ LAA9B:
 ; Get room offset in tiles for X = LDB76, Y = LDB78
 ;   Returns the room offset in E, A, and LDC56
 LAA9D:
-  LD A,(LDB74)            ; $0C - line width in tiles ??
-  LD E,A
+;  LD A,(LDB74)            ; $0C - line width in tiles ??
+;  LD E,A
+  ld e,12                 ; Line width in tiles
   LD A,(LDB78)            ; get Y tile coord
   LD B,A
   LD A,(LDB76)            ; get X tile coord
@@ -697,7 +699,7 @@ LAAA8:
 LAAAF:
   LD A,(LDB7D)            ; Get look/shoot switch value
   CP $01                  ; shoot mode?
-  JP Z,LB758              ; yes => jump
+  JP Z,LB758              ; yes => Shooting
 ; Look action
   XOR A
   LD (LDC88),A            ; clear current offset
@@ -2336,8 +2338,9 @@ LB6B0:
   CALL LB6CD              ; ?? left/right
   LD D,$00
   ADD HL,DE
-  LD A,(LDB74)            ; $0C - line width in tiles ??
-  LD E,A
+;  LD A,(LDB74)            ; $0C - line width in tiles ??
+;  LD E,A
+  ld e,12                 ; Line width in tiles
   LD D,$00
   LD A,(LDB80)            ; get Alien Y tile coord
   LD B,A
@@ -2383,8 +2386,9 @@ LB6F3:
   RET
 ; Get B=Alien Y tile coord, C=12 line width
 LB6FA:
-  LD A,(LDB74)            ; $0C - line width in tiles ??
-  LD C,A
+;  LD A,(LDB74)            ; $0C - line width in tiles ??
+;  LD C,A
+  ld c,12                 ; Line width in tiles
   LD A,(LDB80)            ; get Alien Y tile coord
   LD B,A
   RET
@@ -2443,9 +2447,9 @@ LB74C:
   SUB C
   RET
 ;
-; Shoot with the Weapon
+; Fire key pressed in Shoot mode
 LB758:
-  LD A,(LDB8C)
+  LD A,(LDB8C)            ; get shooting flag
   CP $01
   jr Z,LB768
   LD A,$01
@@ -2485,8 +2489,8 @@ LB797:
   jr Z,LB7F3
 ; Bullet down
 LB7AD:
-  CALL LB87C
-  CP $01
+  CALL LB87C              ; Move the Bullet
+  CP $01                  ; Empty cell?
   JP NZ,LB8D6
   LD A,(LDB89)            ; get Bullet Y coord/line on the screen
   ADD A,16    ; was: $08  ; down 16 rows
@@ -2497,8 +2501,8 @@ LB7AD:
   jr LB805
 ; Bullet up
 LB7C7:
-  CALL LB87C
-  CP $01
+  CALL LB87C              ; Move the Bullet
+  CP $01                  ; Empty cell?
   JP NZ,LB8D6
   LD A,(LDB89)            ; get Bullet Y coord/line on the screen
   ADD A,-16   ; was: $F8  ; up 16 rows
@@ -2509,8 +2513,8 @@ LB7C7:
   jr LB805
 ; Bullet left
 LB7E1:
-  CALL LB87C
-  CP $01
+  CALL LB87C              ; Move the Bullet
+  CP $01                  ; Empty cell?
   JP NZ,LB8D6
   LD A,(LDB88)            ; get bullet X coord in tiles
   DEC A                   ; left one tile
@@ -2518,8 +2522,8 @@ LB7E1:
   jr LB805
 ; Bullet right
 LB7F3:
-  CALL LB87C
-  CP $01
+  CALL LB87C              ; Move the Bullet
+  CP $01                  ; Empty cell?
   JP NZ,LB8D6
   LD A,(LDB88)            ; get bullet X coord in tiles
   INC A                   ; right one tile
@@ -2561,7 +2565,7 @@ LB82B:
 ;
 LB84A:
   XOR A
-  LD (LDB8C),A
+  LD (LDB8C),A            ; clear shooting flag
   RET
 ;
 ; Get Bullet tile address and draw flags
@@ -2593,6 +2597,7 @@ LB876:                    ; Bullet goes right
   LD A,$40                ; reflect tile vertically
   RET
 ;
+; Move the Bullet
 LB87C:
   CALL LADE5              ; Decode current room to LDBF5
   LD A,(LDB88)            ; get Bullet X coord in tiles
@@ -2600,8 +2605,9 @@ LB87C:
   CALL LB89B              ; For Bullet direction left: dec E, right: inc E
   LD D,$00
   ADD HL,DE
-  LD A,(LDB74)            ; $0C - line width in tiles ??
-  LD E,A
+;  LD A,(LDB74)            ; $0C - line width in tiles ??
+;  LD E,A
+  ld e,12                 ; Line width in tiles
   LD D,$00
   LD A,(LDB8A)            ; get Bullet Y coord in tiles
   LD B,A
@@ -2644,8 +2650,9 @@ LB8B9:
 ;
 ; Get A = Bullet position within the room
 LB8BB:
-  LD A,(LDB74)            ; $0C - line width in tiles ??
-  LD C,A
+;  LD A,(LDB74)            ; $0C - line width in tiles ??
+;  LD C,A
+  ld c,12                 ; Line width in tiles
   LD A,(LDB8A)            ; get Bullet Y coord in tiles
   LD B,A
   LD A,(LDB88)            ; get Bullet X coord in tiles
@@ -2662,6 +2669,7 @@ LB8CA:
   LD A,(LDB87)            ; get Alien position within the room
   SUB C
   RET
+; Bullet hit something
 LB8D6:
   CALL LB8DC              ; Clear all Bullet variables
   JP LB805

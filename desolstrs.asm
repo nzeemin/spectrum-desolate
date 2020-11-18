@@ -93,7 +93,7 @@ SE0BB: DEFM " - INVENTORY - ",0
 SE0BD: DEFM "The Desolate has claimed|your life too . . .",0
 SE0BF: DEFM "OMG! This Person Is DEAD!",0
 SE0C1: DEFM "What Happened Here!?!",0
-SE0C3: DEFM $0F,"Another Dead Person",0
+SE0C3: DEFM $0A,"Another Dead Person.",0
 SE0C5: DEFM " Search Reveals Nothing",0
 SE0C7: DEFM $0F,"This Person is Dead . . .",0
 SE0C9: DEFM "They Seem To Be Holding",0

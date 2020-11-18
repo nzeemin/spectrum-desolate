@@ -79,11 +79,11 @@ start_2:
 
 ;----------------------------------------------------------------------------
 
-DesolateFontBeg:
-  INCLUDE "desolfont.asm"
-
 DesolateStrsBeg:
   INCLUDE "desolstrs.asm"
+
+DesolateFontBeg:
+  INCLUDE "desolfont.asm"
 
 DesolateDataBeg:
   INCLUDE "desoldata.asm"

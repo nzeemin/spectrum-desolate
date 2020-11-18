@@ -56,6 +56,8 @@ namespace SpriteRotate
             PrepareTilesetMasked();
             PrepareTileset3();
             //PrepareCreditsMargins();
+
+            //TestNewEncode();
         }
 
         static void ParseMemoryDump()
@@ -149,9 +151,9 @@ namespace SpriteRotate
 
             using (var writer = new StreamWriter("desoltil1.asm"))
             {
-                writer.WriteLine("; Tileset 1, 157 tiles 16x8 with mask");
+                writer.WriteLine("; Tileset 1, 155 tiles 16x8 with mask");
                 writer.WriteLine("Tileset1:");
-                PrepareTilesetMaskedImpl(bmp, 8, 157, writer);
+                PrepareTilesetMaskedImpl(bmp, 8, 155, writer);
                 Console.WriteLine("desoltil1.asm saved");
             }
 
@@ -759,6 +761,7 @@ namespace SpriteRotate
                 /*  7 */ 5,13, 6,13
             };
 
+            byte roomdescmax = 0;
             for (int r = 0; r < coords.Length / 2; r++)
             {
                 if (RoomsNotUsed.Contains(r))
@@ -772,6 +775,8 @@ namespace SpriteRotate
                 fileroomdescs.WriteLine(" 0  1  2  3  4  5  6  7  8  9  A  B  C  D  E  F");
                 for (int i = 0; i < rdesc.Length; i++)
                 {
+                    if (rdesc[i] > roomdescmax)
+                        roomdescmax = rdesc[i];
                     if (rdesc[i] == 0x61)
                         fileroomdescs.Write("--");
                     else
@@ -806,9 +811,8 @@ namespace SpriteRotate
                     g.DrawLine(pen, xr + 32, yr, x - 32, y);
                 }
             }
-            fileroomdescs.Flush();
-            Console.WriteLine("roomdescs.txt saved");
 
+            byte roommax = 0;
             for (int r = 0; r < coords.Length / 2; r++)
             {
                 if (RoomsNotUsed.Contains(r))
@@ -819,6 +823,11 @@ namespace SpriteRotate
                 if (addr == 0xD6CE)
                     continue; // Not a valid room
                 byte[] room = DecodeRoom(addr, 12 * 8);
+                for (int i = 0; i < room.Length; i++)
+                {
+                    if (room[i] > roommax)
+                        roommax = room[i];
+                }
 
                 int daaddr = 0xDF27 + r * 2;
                 int daddr = memdmp[daaddr] + memdmp[daaddr + 1] * 256;
@@ -844,9 +853,121 @@ namespace SpriteRotate
                     g.DrawString($"{roomright}", font, Brushes.Navy, xr + 11 * 8 + 2, yr + 1 * 8);
             }
 
+            fileroomdescs.WriteLine();
+            fileroomdescs.WriteLine($"room max byte: {roommax:X2}");
+            fileroomdescs.WriteLine($"roomdescs max byte: {roomdescmax:X2}");
+            fileroomdescs.Flush();
+            Console.WriteLine("roomdescs.txt saved");
+
             var roomsfilename = "roomsmap.png";
             bmp.Save(roomsfilename);
             Console.WriteLine($"{roomsfilename} saved");
+        }
+
+        private static readonly byte[] RoomEtalon = new byte[96]
+        {
+            0x08, 0x13, 0x4F, 0x13, 0x13, 0x13, 0x13, 0x50, 0x51, 0x52, 0x13, 0x09,
+            0x12, 0x16, 0x16, 0x16, 0x16, 0x16, 0x16, 0x16, 0x16, 0x16, 0x16, 0x14,
+            0x12, 0x20, 0x20, 0x20, 0x20, 0x20, 0x20, 0x20, 0x20, 0x20, 0x20, 0x14,
+            0x12, 0x01, 0x01, 0x01, 0x01, 0x01, 0x01, 0x01, 0x01, 0x01, 0x01, 0x14,
+            0x12, 0x01, 0x01, 0x01, 0x01, 0x01, 0x01, 0x01, 0x01, 0x01, 0x01, 0x14,
+            0x12, 0x01, 0x01, 0x01, 0x01, 0x01, 0x01, 0x01, 0x01, 0x01, 0x01, 0x14,
+            0x12, 0x01, 0x01, 0x01, 0x01, 0x01, 0x01, 0x01, 0x01, 0x01, 0x01, 0x14,
+            0x17, 0x15, 0x15, 0x15, 0x15, 0x15, 0x15, 0x15, 0x15, 0x15, 0x15, 0x08,
+        };
+
+        static void TestNewEncode()
+        {
+            byte[] savdmp = File.ReadAllBytes("memdmp.bin");
+            Array.Copy(savdmp, 0, memdmp, 0, 65536);
+
+            int encodedDescSumOld = 0, encodedDescSumNew = 0;
+            int rdescRawSum = 0;
+            for (int r = 0; r < 72; r++)
+            {
+                if (RoomsNotUsed.Contains(r))
+                    continue;
+
+                int daaddr = 0xDF27 + r * 2;
+                int daddr = memdmp[daaddr] + memdmp[daaddr + 1] * 256;
+                int rdescEncodedLength = GetRoomEncodedLength(daddr, 49);
+                encodedDescSumOld += rdescEncodedLength;
+                rdescRawSum += 49;
+                byte[] rdesc = DecodeRoom(daddr, 49);
+
+                byte[] rdescEncodedNew = EncodeRoomNew(rdesc);
+                encodedDescSumNew += rdescEncodedNew.Length;
+
+                //TODO: Check decode back
+            }
+            Console.WriteLine(
+                $"Rdesc sums: raw {rdescRawSum}, old encoded: {encodedDescSumOld}, new encoded: {encodedDescSumNew}, " +
+                $"old ratio: {(float)(encodedDescSumOld) / rdescRawSum}, " +
+                $"new ratio: {(float)(encodedDescSumNew) / rdescRawSum}");
+
+            List<int> roomAddrs = new List<int>();
+            for (int r = 0; r < 72; r++)
+            {
+                if (RoomsNotUsed.Contains(r))
+                    continue;
+                int aaddr = 0xDE97 + r * 2;
+                int addr = memdmp[aaddr] + memdmp[aaddr + 1] * 256;
+                if (addr == 0xD6CE)
+                    continue; // Not a valid room
+                roomAddrs.Add(addr);
+            }
+            roomAddrs.Add(0xEB27);
+            roomAddrs.Add(0xF329);
+            roomAddrs.Add(0xF42F);
+            roomAddrs.Add(0xF468);
+            roomAddrs.Add(0xF4B5);
+            roomAddrs.Add(0xF515);
+
+            int encodedRoomSumOld = 0, encodedRoomSumNew = 0;
+            int roomRawSum = 0;
+            for (int r = 0; r < roomAddrs.Count; r++)
+            {
+                int addr = roomAddrs[r];
+
+                int roomEncodedLength = GetRoomEncodedLength(addr, 12 * 8);
+                encodedRoomSumOld += roomEncodedLength;
+                roomRawSum += 12 * 8;
+                byte[] room = DecodeRoom(addr, 12 * 8);
+                
+                // for regular rooms (not screens) mask all standard tiles
+                if (addr < 0xD243)
+                {
+                    for (int i = 0; i < 96; i++)
+                    {
+                        if (room[i] == RoomEtalon[i])
+                            room[i] = 0x7F;
+                    }
+                }
+
+                byte[] romEncodedNew = EncodeRoomNew(room);
+                encodedRoomSumNew += romEncodedNew.Length;
+
+                //TODO: Check decode back
+            }
+            Console.WriteLine(
+                $"Rooms sums: raw {roomRawSum}, old encoded: {encodedRoomSumOld}, new encoded: {encodedRoomSumNew}, " +
+                $"old ratio: {(float)(encodedRoomSumOld) / roomRawSum}, " +
+                $"new ratio: {(float)(encodedRoomSumNew) / roomRawSum}");
+
+            int totalEncodedOld = encodedDescSumOld + encodedRoomSumOld;
+            int totalEncodedNew = encodedDescSumNew + encodedRoomSumNew;
+            Console.WriteLine(
+                $"Raw length total:\t\t{rdescRawSum + roomRawSum}");
+            Console.WriteLine(
+                $"Old encoding length total:\t{totalEncodedOld}, " +
+                $"ratio: {(float)(totalEncodedOld) / (rdescRawSum + roomRawSum)}");
+            Console.WriteLine(
+                $"New encoding length total:\t{totalEncodedNew}, " +
+                $"ratio: {(float)totalEncodedNew / (rdescRawSum + roomRawSum)}");
+
+            Console.WriteLine(
+                $"Old-new encoding length bonus:\t{totalEncodedOld - totalEncodedNew}, " +
+                $"ratio: {(float)(totalEncodedOld - totalEncodedNew) / (rdescRawSum + roomRawSum)}");
         }
 
         static byte[] DecodeRoom(int addr, int count)
@@ -870,6 +991,80 @@ namespace SpriteRotate
             }
 
             return room;
+        }
+
+        static int GetRoomEncodedLength(int addr, int count)
+        {
+            int startAddr = addr;
+
+            byte[] room = new byte[count];
+            int roomi = 0;
+            while (roomi < count)
+            {
+                byte v = memdmp[addr++];
+                if (v != 0xff)
+                    room[roomi++] = v;
+                else
+                {
+                    int c = memdmp[addr++];
+                    v = memdmp[addr++];
+                    for (int i = 0; i < c; i++)
+                    {
+                        room[roomi++] = v;
+                    }
+                }
+            }
+
+            return addr - startAddr;
+        }
+
+        static byte[] EncodeRoomNew(byte[] room)
+        {
+            var result = new List<byte>();
+
+            int roomi = 0;
+            int repeat = 1;
+            byte prev = (byte)(room[0] ^ 255);
+            while (roomi < room.Length)
+            {
+                byte curr = room[roomi];
+                roomi++;
+                if (prev == curr)
+                {
+                    repeat++;
+                    if (roomi < room.Length)
+                        continue;
+                }
+
+                if (repeat > 63)
+                    throw new Exception($"{nameof(EncodeRoomNew)} Repeat count too big: {repeat}");
+
+                if (repeat == 1)
+                    result.Add(prev);
+                else if (repeat == 2)
+                {
+                    result.Add(prev);
+                    result.Add(prev);
+                }
+                else  // repeat >= 3
+                {
+                    if (prev == 0x7F)
+                    {
+                        // Taking "repeat" bytes from room etalon
+                        result.Add((byte)(256 - repeat));
+                    }
+                    else
+                    {
+                        result.Add((byte)(256 - 64 - repeat));
+                        result.Add(prev);
+                    }
+                }
+
+                repeat = 1;
+                prev = curr;
+            }
+
+            return result.ToArray();
         }
 
         static void DrawRoom(Bitmap bmp, int xr, int yr, byte[] room, int tileaddr, byte[] rdesc = null)
