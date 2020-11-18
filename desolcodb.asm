@@ -5,6 +5,10 @@ L9DDD:
   LD A,(LDB7A)            ; Get Health
   OR A
   JP Z,LB9A2              ; zero => Player is dead
+;
+  xor a                   ; black
+  out ($FE),a             ; set border color
+;
   CALL LADE5              ; Decode current room to LDBF5; HL = LDBF5
   CALL LA88F              ; Display 96 tiles on the screen
   CALL LB96B              ; Display Health
@@ -2764,7 +2768,9 @@ LB994:
   SUB $02                 ; Health = Health minus 2
   CALL C,LB9A0
   LD (LDB7A),A            ; set Health
-;TODO: Set border to red
+; Set border to red as an indication of the injury
+  ld a,2                  ; red
+  out ($FE),a             ; set border color
   RET
 LB9A0:
   XOR A

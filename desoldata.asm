@@ -1,4 +1,3 @@
-;  ORG $BFF8
 
 ; Encoded rooms
 LBFF8:

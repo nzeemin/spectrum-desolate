@@ -14,7 +14,7 @@ bin\pasmo desolcoda.asm desolcode.bin desolate.txt
 )
 @echo off
 
-findstr /B "DesolateCode" desolate.txt
+findstr /B "Desolate" desolate.txt
 
 dir /-c desolcode.bin|findstr /R /C:"desolcode"
 

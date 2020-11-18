@@ -79,10 +79,13 @@ start_2:
 
 ;----------------------------------------------------------------------------
 
+DesolateFontBeg:
   INCLUDE "desolfont.asm"
 
+DesolateStrsBeg:
   INCLUDE "desolstrs.asm"
 
+DesolateDataBeg:
   INCLUDE "desoldata.asm"
 
 ;----------------------------------------------------------------------------
@@ -554,7 +557,7 @@ ClearScreenBlock:
   add hl,hl
   add hl,hl               ; now HL = row * 24
   ld c,a
-  add hl,bc               ; now HL = row * 12 + col
+  add hl,bc               ; now HL = row * 24 + col
   ld bc,ShadowScreen
   add hl,bc               ; now HL = start address
   ld c,24                 ; line width in columns
