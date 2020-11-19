@@ -14,7 +14,7 @@ bin\sjasmplus --raw=desolate.sjbin --sym=desolate.sjsym --syntax=f desolcode.sja
 )
 @echo off
 
-findstr /B "DesolateCode" desolate.sjsym
+findstr /B "Desolate" desolate.sjsym
 
 dir /-c desolate.sjbin|findstr /R /C:"desolate"
 

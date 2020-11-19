@@ -53,8 +53,7 @@ namespace SpriteRotate
             //PrepareArchivedStrings();
             //PrepareLineAddresses();
             //PrepareFontProto();
-            PrepareTilesetMasked();
-            PrepareTileset3();
+            PrepareTilesets();
             //PrepareCreditsMargins();
 
             //TestNewEncode();
@@ -145,25 +144,27 @@ namespace SpriteRotate
             }
         }
 
-        static void PrepareTilesetMasked()
+        static void PrepareTilesets()
         {
             Bitmap bmp = new Bitmap(@"..\tiles.png");
 
-            using (var writer = new StreamWriter("desoltil1.asm"))
+            using (var writer = new StreamWriter("desoltils.asm"))
             {
                 writer.WriteLine("; Tileset 1, 155 tiles 16x8 with mask");
                 writer.WriteLine("Tileset1:");
                 PrepareTilesetMaskedImpl(bmp, 8, 155, writer);
-                Console.WriteLine("desoltil1.asm saved");
-            }
 
-            using (var writer = new StreamWriter("desoltil2.asm"))
-            {
+                writer.WriteLine(";");
+
                 writer.WriteLine("; Tileset 2, 127 tiles 16x8 with mask");
                 writer.WriteLine("Tileset2:");
                 PrepareTilesetMaskedImpl(bmp, 212, 126, writer);
-                Console.WriteLine("desoltil2.asm saved");
+
+                writer.WriteLine(";");
+
+                PrepareTileset3(bmp, writer);
             }
+            Console.WriteLine("desoltils.asm saved");
         }
 
         static void PrepareTilesetMaskedImpl(Bitmap bmp, int x0, int tilescount, StreamWriter writer)
@@ -203,44 +204,37 @@ namespace SpriteRotate
             }
         }
 
-        static void PrepareTileset3()
+        static void PrepareTileset3(Bitmap bmp, StreamWriter writer)
         {
-            using (var writer = new StreamWriter("tileset3.asm"))
+            writer.WriteLine("; Tiles inventory items, 14 tiles 16x16");
+            writer.WriteLine("Tileset3:");
+            for (int tile = 0; tile < 16; tile++)
             {
-                Bitmap bmp = new Bitmap(@"..\tiles.png");
-
-                writer.WriteLine("; Tiles inventory items, 14 tiles 16x16");
-                writer.WriteLine("Tileset3:");
-                for (int tile = 0; tile < 16; tile++)
+                var words = new int[16];
+                int x = 376;
+                int y = 8 + tile * 20;
+                for (int i = 0; i < 16; i++)
                 {
-                    var words = new int[16];
-                    int x = 376;
-                    int y = 8 + tile * 20;
-                    for (int i = 0; i < 16; i++)
+                    int val = 0;
+                    for (int b = 0; b < 16; b++)
                     {
-                        int val = 0;
-                        for (int b = 0; b < 16; b++)
-                        {
-                            Color c = bmp.GetPixel(x + b, y + i);
-                            int v = (c.GetBrightness() > 0.5f) ? 0 : 1;
-                            val |= (v << (15 - b));
-                        }
-
-                        words[i] = val;
+                        Color c = bmp.GetPixel(x + b, y + i);
+                        int v = (c.GetBrightness() > 0.5f) ? 0 : 1;
+                        val |= (v << (15 - b));
                     }
 
-                    writer.Write("  DB ");
-                    for (int i = 0; i < 16; i++)
-                    {
-                        writer.Write($"${(words[i] >> 8):X2},${(words[i] & 0xFF):X2}");
-                        if (i < 15) writer.Write(",");
-                    }
-
-                    writer.WriteLine();
+                    words[i] = val;
                 }
-            }
 
-            Console.WriteLine("tileset3.asm saved");
+                writer.Write("  DB ");
+                for (int i = 0; i < 16; i++)
+                {
+                    writer.Write($"${(words[i] >> 8):X2},${(words[i] & 0xFF):X2}");
+                    if (i < 15) writer.Write(",");
+                }
+
+                writer.WriteLine();
+            }
         }
 
         static void PrepareLineAddresses()
