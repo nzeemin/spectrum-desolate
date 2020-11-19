@@ -110,8 +110,7 @@ L9E9D:
   djnz L9E8D              ; continue loop by rows
   ret
 
-; Put tile on the screen (aligned to 8px column), 16x8 -> 16x16 on shadow screen
-; NOTE: we're using masked tiles here but ignoring the mask
+; Put tile on the screen (aligned to 8px column), 16x16 -> 16x16 on shadow screen
 ;   L = row; E = 8px column; IX = tile address
 L9EAD:
   ld a,e
@@ -124,22 +123,22 @@ L9EAD:
   ld b,8                ; 8 row pairs
   call GetScreenAddr    ; now HL = screen addr
 L9EAD_1:
-  push bc
+;  push bc
 ; Draw 1st line
-  ld a,(ix+$01)
+  ld a,(ix+$00)
   ld (hl),a             ; write 1st byte
   inc hl
-  ld c,a
-  ld a,(ix+$03)
+  ld a,(ix+$01)
   ld (hl),a             ; write 2nd byte
-  ld b,a
   ld de,24-1
   add hl,de             ; to the 2nd line
 ; Draw 2nd line
-  ld (hl),c             ; write 1st byte
+  ld a,(ix+$02)
+  ld (hl),a             ; write 1st byte
   inc hl
-  ld (hl),b             ; write 2nd byte
-  pop bc
+  ld a,(ix+$03)
+  ld (hl),a             ; write 2nd byte
+;  pop bc
   ld de,24-1
   add hl,de             ; to the next line
   ld de,$0004
@@ -432,7 +431,7 @@ LA8F8:                    ; loop by B
   ADD HL,HL
   ADD HL,HL               ; HL = L * 16
   add hl,hl               ; HL = L * 32
-  LD DE,Tileset1+$7A*32   ; was: $E8E7
+  LD DE,Sprites           ; was: $E8E7 - Sprites start address
   ADD HL,DE
   EX DE,HL                ; DE = tile address
   CALL LA92E
@@ -764,7 +763,7 @@ LAB28:
 ;  LD DE,LDBF5             ; Decode to
 ;  CALL LB9F1              ; Decode the screen
 ;  LD HL,LDBF5
-  CALL LB177              ; Display screen HL from tiles with Tileset 2
+  CALL LB177              ; Display screen HL from tiles with Tileset2
   POP DE
   POP BC
   RET
@@ -1166,7 +1165,7 @@ LAE3D:
   LD HL,LF468             ; Encoded screen: Door Lock panel popup
 ;  LD BC,$0060             ; decode 96 bytes
   CALL LADEE              ; Decode the screen to DBF5
-  CALL LB177              ; Display screen HL from tiles with Tileset 2
+  CALL LB177              ; Display screen HL from tiles with Tileset2
   LD A,10     ; was: $05
   LD (LDCF3),A            ; Left margin size for text
   ld a,12     ; was: $06
@@ -2301,23 +2300,23 @@ LB67B:
   LD A,(LDB84)            ; Alien still alive?
   or a                    ; (looks like missing instruction)
   jr NZ,LB685             ; 
-  LD DE,Tileset1+$92*32   ; was $EA67 = $E147 + $0920 = tile $92 - Alien dead
+  LD DE,Sprites+$18*32    ; was $EA67 - Alien dead sprite
   RET
 LB685:
   LD A,(LDB81)            ; get Alien type
   CP $02
   jr Z,LB698
-  LD DE,Tileset1+$91*32   ; was $EA57 = $E147 + $0910 = tile $91 - small Alien
+  LD DE,Sprites+$17*32    ; was $EA57 - Small Alien sprite
   LD A,(LDB83)            ; get Alien tile phase
   OR A
   RET Z                   ; phase 0 => return
   LD A,$40                ; draw flags - reflect
   RET
 LB698:                    ; Alien type 2
-  LD DE,Tileset1+$94*32   ; was $EA87 = $E147 + $0940 = tile $94 - big Alien body
+  LD DE,Sprites+$1A*32    ; was $EA87 - big Alien body sprite
   JR LB6A0
 LB69D:
-  LD DE,Tileset1+$93*32   ; was $EA77 = $E147 + $0930 = tile $93 - big Alien head
+  LD DE,Sprites+$19*32    ; was $EA77 - big Alien head sprite
 LB6A0:
   LD A,(LDB83)            ; get Alien tile phase
   OR A
@@ -2581,19 +2580,19 @@ LB84F:
   CP $03                  ; right?
   jr Z,LB876
 LB865:                    ; Bullet goes down
-  LD DE,Tileset1+$98*32  ; was: $EAC7 = $E147 + $0980 = tile $98 - Bullet vert
+  LD DE,Sprites+$1E*32    ; was: $EAC7 - Bullet vert sprite
   XOR A                   ; no draw flags
   RET
 LB86A:                    ; Bullet goes up
-  LD DE,Tileset1+$98*32  ; was: $EAC7 = $E147 + $0980 = tile $98 - Bullet vert
+  LD DE,Sprites+$1E*32    ; was: $EAC7 - Bullet vert sprite
   LD A,$40                ; reflect tile vertically
   RET
 LB870:                    ; Bullet goes left
-  LD DE,Tileset1+$97*32  ; was: $EAB7 = $E147 + $0970 = tile $97 - Bullet horz
+  LD DE,Sprites+$1D*32    ; was: $EAB7 - Bullet horz sprite
   LD A,$80                ; reflect tile horizontally
   RET
 LB876:                    ; Bullet goes right
-  LD DE,Tileset1+$97*32  ; was: $EAB7 = $E147 + $0970 = tile $97 - Bullet horz
+  LD DE,Sprites+$1D*32    ; was: $EAB7 - Bullet horz sprite
   LD A,$40                ; reflect tile vertically
   RET
 ;

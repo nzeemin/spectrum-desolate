@@ -146,25 +146,59 @@ namespace SpriteRotate
 
         static void PrepareTilesets()
         {
-            Bitmap bmp = new Bitmap(@"..\tiles.png");
-
+            using (var bmp = new Bitmap(@"..\tiles.png"))
             using (var writer = new StreamWriter("desoltils.asm"))
             {
-                writer.WriteLine("; Tileset 1, 155 tiles 16x8 with mask");
+                writer.WriteLine(";");
+                writer.WriteLine("; Tileset 1, 122 tiles 16x16 no mask");
                 writer.WriteLine("Tileset1:");
-                PrepareTilesetMaskedImpl(bmp, 8, 155, writer);
+                PrepareTilesetImpl(bmp, 8, 122, writer);
 
                 writer.WriteLine(";");
+                writer.WriteLine("; Sprites, 33 tiles 16x8 with mask");
+                writer.WriteLine("Sprites:");
+                PrepareTilesetMaskedImpl(bmp, 168, 33, writer);
 
+                writer.WriteLine(";");
                 writer.WriteLine("; Tileset 2, 127 tiles 16x8 with mask");
                 writer.WriteLine("Tileset2:");
-                PrepareTilesetMaskedImpl(bmp, 212, 126, writer);
+                PrepareTilesetMaskedImpl(bmp, 228, 126, writer);
 
                 writer.WriteLine(";");
 
                 PrepareTileset3(bmp, writer);
             }
             Console.WriteLine("desoltils.asm saved");
+        }
+
+        static void PrepareTilesetImpl(Bitmap bmp, int x0, int tilescount, StreamWriter writer)
+        {
+            for (int tile = 0; tile < tilescount; tile++)
+            {
+                var words = new int[16];
+                int x = x0 + (tile / 16) * 20;
+                int y = 8 + (tile % 16) * 20;
+                for (int i = 0; i < 16; i++)
+                {
+                    int val = 0;
+                    for (int b = 0; b < 16; b++)
+                    {
+                        Color c = bmp.GetPixel(x + b, y + i);
+                        int v = (c.GetBrightness() > 0.2f) ? 0 : 1;
+                        val |= (v << (15 - b));
+                    }
+                    words[i] = val;
+                }
+
+                writer.Write("  DB ");
+                for (int i = 0; i < 16; i++)
+                {
+                    writer.Write($"${(words[i] >> 8):X2},${(words[i] & 0xFF):X2}");
+                    if (i < 15) writer.Write(",");
+                }
+
+                writer.WriteLine();
+            }
         }
 
         static void PrepareTilesetMaskedImpl(Bitmap bmp, int x0, int tilescount, StreamWriter writer)
@@ -211,7 +245,7 @@ namespace SpriteRotate
             for (int tile = 0; tile < 16; tile++)
             {
                 var words = new int[16];
-                int x = 376;
+                int x = 392;
                 int y = 8 + tile * 20;
                 for (int i = 0; i < 16; i++)
                 {
