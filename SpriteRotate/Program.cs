@@ -46,7 +46,8 @@ namespace SpriteRotate
             //}
 
             //ProcessRooms();
-            ProcessRoomsMap();
+            ProcessRoomsNewTiles();
+            //ProcessRoomsMap();
 
             //DumpChangedAreas();
             //DumpArchivedStrings();
@@ -724,6 +725,56 @@ namespace SpriteRotate
             Console.WriteLine($"{roomsfilename} saved");
         }
 
+        static void ProcessRoomsNewTiles()
+        {
+            using (var bmp = new Bitmap(106 * 2 * 13 + 16, 74 * 2 * 6 + 16, PixelFormat.Format32bppArgb))
+            using (var bmpTiles = new Bitmap(@"..\tiles.png"))
+            {
+                // Prepare tiles bitmap
+                for (int x = 0; x < bmpTiles.Width; x++)
+                for (int y = 0; y < bmpTiles.Height; y++)
+                {
+                    Color c = bmpTiles.GetPixel(x, y);
+                    Color cn = (c.GetBrightness() > 0.2f) ? Color.AntiqueWhite : Color.Black;
+                    bmpTiles.SetPixel(x, y, cn);
+                }
+
+                int x0 = 8, y0 = 8;
+
+                byte[] savdmp = File.ReadAllBytes("memdmp.bin");
+                Array.Copy(savdmp, 0, memdmp, 0, 65536);
+
+                Graphics g = Graphics.FromImage(bmp);
+                //g.InterpolationMode = InterpolationMode.HighQualityBicubic;
+                //g.PixelOffsetMode = PixelOffsetMode.HighQuality;
+                g.TextRenderingHint = TextRenderingHint.AntiAliasGridFit;
+                var font = new Font("Tahoma", 8);
+
+                int addr, xr, yr;
+                for (int r = 0; r < 72; r++)
+                {
+                    if (RoomsNotUsed.Contains(r))
+                        continue;
+                    int aaddr = 0xDE97 + r * 2;
+                    addr = memdmp[aaddr] + memdmp[aaddr + 1] * 256;
+                    if (addr == 0xD6CE)
+                        continue; // Not a valid room
+                    byte[] room = DecodeRoom(addr, 96);
+
+                    xr = x0 + (r / 6) * 106 * 2;
+                    yr = y0 + (r % 6) * 74 * 2 + 6;
+
+                    DrawRoomNewTiles(g, xr, yr, room, bmpTiles);
+
+                    g.DrawString($"{r}: {addr:X4}", font, Brushes.Navy, xr, yr - 12);
+                }
+
+                var roomsfilename = "roomsnew.png";
+                bmp.Save(roomsfilename);
+                Console.WriteLine($"{roomsfilename} saved");
+            }
+        }
+
         static Color GetRoomPassageColorByAccessLevel(int access)
         {
             switch (access)
@@ -1200,6 +1251,24 @@ namespace SpriteRotate
                                 break;
                         }
                     }
+                }
+            }
+        }
+
+        static void DrawRoomNewTiles(Graphics g, int xr, int yr, byte[] room, Bitmap bmpTiles)
+        {
+            for (int row = 0; row < 8; row++)
+            {
+                for (int col = 0; col < 12; col++)
+                {
+                    var tile = room[col + row * 12];
+                    int x = col * 16 + xr;
+                    int y = row * 16 + yr;
+
+                    var tilex = 8 + (tile / 16) * 20;
+                    var tiley = 8 + (tile % 16) * 20;
+
+                    g.DrawImage(bmpTiles, x, y, new Rectangle(tilex, tiley, 16, 16), GraphicsUnit.Pixel);
                 }
             }
         }
