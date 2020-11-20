@@ -313,14 +313,47 @@ ReflectByte:
 L9FEA EQU ShowShadowScreen
 
 ; Clear shadow screen
-;
+; 128+10 lines, 24 8px columns; 24 * 138 = 3312 bytes
+; Clock timing: 21 + 208*207 + 13*206+8 + 10 = 45773
 ClearShadowScreen:
-L9FCF:
-  ld bc,24*138-1	        ; 64 line pairs + 10 extra lines
+;L9FCF:
+  xor a
+  ld b,207                ; 207 * 16 = 24 * 138 = 3312
   ld hl,ShadowScreen
-  ld de,ShadowScreen+1
-  ld (hl),$00
-  ldir
+ClearShadowScreen_1:
+  ld (hl),a
+  inc hl
+  ld (hl),a
+  inc hl
+  ld (hl),a
+  inc hl
+  ld (hl),a
+  inc hl
+  ld (hl),a
+  inc hl
+  ld (hl),a
+  inc hl
+  ld (hl),a
+  inc hl
+  ld (hl),a
+  inc hl
+  ld (hl),a
+  inc hl
+  ld (hl),a
+  inc hl
+  ld (hl),a
+  inc hl
+  ld (hl),a
+  inc hl
+  ld (hl),a
+  inc hl
+  ld (hl),a
+  inc hl
+  ld (hl),a
+  inc hl
+  ld (hl),a
+  inc hl
+  djnz ClearShadowScreen_1
   ret
 
 ; Scan keyboard
@@ -794,7 +827,7 @@ LAB3F:
 ;
 ; Set penRow/penCol for small message popup
 LAB73:
-  LD HL,$5812
+  LD HL,$5810
   LD (L86D7),HL           ; Set penRow/penCol
   RET
 ;
@@ -1282,7 +1315,7 @@ LAF14:
 LAF1D:
   CALL LB09B              ; Preparing to draw string with the result
   LD HL,SE0DF             ; "INVALID CODE"
-  CALL LBEDE              ; Show message char-by-char
+  CALL DrawString         ; Show message char-by-char
   CALL ShowShadowScreen   ; Copy shadow screen to ZX screen
   JP LAE99                ; Return to Delay and wait for key in Door Lock
 ; Code Accepted!
@@ -1300,8 +1333,8 @@ LAF34:
   INC HL
   DJNZ LAF34
   CALL LB09B              ; Preparing to draw string with the result
-  LD HL,SE0E1             ; " Accepted! "
-  CALL LBEDE              ; Show message char-by-char
+  LD HL,SE0E1             ; "Accepted!"
+  CALL DrawString         ; Show message char-by-char
   CALL ShowShadowScreen   ; Copy shadow screen to ZX screen
   LD A,(LDC8B)            ; get Access code slot number
   LD D,$00
@@ -1309,6 +1342,7 @@ LAF34:
   LD HL,LDCA2             ; Table with Access code slots
   ADD HL,DE
   LD (HL),$01             ; Mark code here was accepted
+  call LBA81              ; Delay x40 - added to have a pause after the Accepted message
   JP LB00E                ; Going to the next room
 ; Move selection Left
 LAF5A:
@@ -1530,7 +1564,7 @@ LB0E0:                    ; loop by B
   DJNZ LB0E0              ; continue loop
   LD A,(LDC5A)            ; get Inventory items count
   LD C,A
-  LD A,$1D                ; 29 items
+  LD A,$1E                ; 30 placeholders
   SUB C
   LD C,A                  ; C = count of empty slots
 LB0F3:
@@ -1546,7 +1580,7 @@ LB0F3:
   LD A,(LDC5A)            ; get Inventory items count
   LD E,A
   LD D,$00
-  ADD HL,DE
+  ADD HL,DE               ; HL = addr of the empty slot
   LD A,$63                ; empty slot marker
   LD (HL),A
   LD A,(LDC5A)            ; get Inventory items count
@@ -2583,7 +2617,7 @@ LB870:                    ; Bullet goes left
   RET
 LB876:                    ; Bullet goes right
   LD DE,Sprites+$1D*32    ; was: $EAB7 - Bullet horz sprite
-  LD A,$40                ; reflect tile vertically
+;  LD A,$40                ; reflect tile vertically (no need to reflect it)
   RET
 ;
 ; Move the Bullet
@@ -3084,7 +3118,7 @@ LBBEC:
   LD HL,$163C
   LD (L86D7),HL           ; Set penRow/penCol
   LD HL,SE0A5             ; "- Controls -"
-  CALL LBEDE              ; Show message char-by-char
+  CALL DrawString         ; Show message char-by-char
   LD HL,$240A
   LD (L86D7),HL           ; Set penRow/penCol
   LD HL,SE0A7             ; "2nd = Look / Shoot Alpha = Inventory ..."
