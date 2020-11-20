@@ -417,17 +417,92 @@ DrawNumber_2:
 	ret 
 
 ; Copy shadow screen 24*128=3072 bytes to ZX screen using pop/push
+; Second version, on LDIs
+; Clock timing: 31 + (433+398+34) * 64 + 10 = 55401 (was 61279 on the DRAFT version with POPs/PUSHes)
+ShowShadowScreen:
+;31 Initializing
+  ld ix,ScreenAddrs             ; table with ZX line addresses
+  ld hl,ShadowScreen            ; shadow screen address
+  ld a,64                       ; 64 line pairs = 128 lines
+ShowShadowScreen_1:             ; loop by A
+;433 Copy the 1st line
+  ld e,(ix+$00)
+  ld d,(ix+$01)                 ; DE = start of first ZX screen line
+  push de
+  ldi                           ; byte 0
+  ldi                           ; byte 1
+  ldi                           ; byte 2
+  ldi                           ; byte 3
+  ldi                           ; byte 4
+  ldi                           ; byte 5
+  ldi                           ; byte 6
+  ldi                           ; byte 7
+  ldi                           ; byte 8
+  ldi                           ; byte 9
+  ldi                           ; byte 10
+  ldi                           ; byte 11
+  ldi                           ; byte 12
+  ldi                           ; byte 13
+  ldi                           ; byte 14
+  ldi                           ; byte 15
+  ldi                           ; byte 16
+  ldi                           ; byte 17
+  ldi                           ; byte 18
+  ldi                           ; byte 19
+  ldi                           ; byte 20
+  ldi                           ; byte 21
+  ldi                           ; byte 22
+  ldi                           ; byte 23
+;398 Copy the 2nd line
+  pop de
+  inc d                         ; Next line on the ZX screen
+  ldi                           ; byte 0
+  ldi                           ; byte 1
+  ldi                           ; byte 2
+  ldi                           ; byte 3
+  ldi                           ; byte 4
+  ldi                           ; byte 5
+  ldi                           ; byte 6
+  ldi                           ; byte 7
+  ldi                           ; byte 8
+  ldi                           ; byte 9
+  ldi                           ; byte 10
+  ldi                           ; byte 11
+  ldi                           ; byte 12
+  ldi                           ; byte 13
+  ldi                           ; byte 14
+  ldi                           ; byte 15
+  ldi                           ; byte 16
+  ldi                           ; byte 17
+  ldi                           ; byte 18
+  ldi                           ; byte 19
+  ldi                           ; byte 20
+  ldi                           ; byte 21
+  ldi                           ; byte 22
+  ldi                           ; byte 23
+;34 Continue the loop
+  inc ix
+  inc ix
+  dec a                         ; loop counter for line pairs
+  jp nz,ShowShadowScreen_1      ; continue the loop
+;10 Finalization
+  ret
+
+IF 0
+; Copy shadow screen 24*128=3072 bytes to ZX screen using pop/push
 ; DRAFT version
 ; See: https://chuntey.wordpress.com/2013/10/02/how-to-write-zx-spectrum-games-chapter-13/
+; Clock timing: 71 + (186+140+ 74+80+74+80+74+80+74+80+14) * 64 + 24 = 61279
 ShowShadowScreen:
+;71 Initializing
   di
-  ld (ShowShadowScreen_sp),sp   ; saving SP till the end of the procedure
+  ld (ShowShadowScreen_fin+1),sp  ; saving SP till the end of the procedure
   ld ix,ScreenAddrs             ; table with ZX line addresses
   ld hl,ShadowScreen            ; shadow screen address
   ld (ShowShadowScreen_src),hl
   ld a,64                       ; 64 line pairs = 128 lines
 ShowShadowScreen_1:             ; loop by A
-; Calculate and set address arguments for ZX screen lines
+;186 Calculate and set address arguments for ZX screen lines
   ld l,(ix+$00)
   ld h,(ix+$01)                 ; HL = start of first ZX screen line
   ld bc,12
@@ -442,7 +517,7 @@ ShowShadowScreen_1:             ; loop by A
   ld (ShowShadowScreen_9+1),hl  ; set argument
   inc ix
   inc ix
-; Calculate and set address arguments for shadow screen lines
+;140 Calculate and set address arguments for shadow screen lines
   ld hl,(ShowShadowScreen_src)  ; HL = start of first shadow screen line
   ld (ShowShadowScreen_2+1),hl  ; set argument
   add hl,bc                     ; HL = start of 2nd half of first shadow screen line
@@ -453,9 +528,8 @@ ShowShadowScreen_1:             ; loop by A
   ld (ShowShadowScreen_8+1),hl  ; set argument
   add hl,bc                     ; HL = shadow screen line for the next iteration
   ld (ShowShadowScreen_src),hl
-
 ; Copy 1st half of the first line
-ShowShadowScreen_2:
+ShowShadowScreen_2:   ;74
   ld sp,$F000                   ; start of shadow screen line
   pop bc
   pop de
@@ -464,7 +538,7 @@ ShowShadowScreen_2:
   pop bc
   pop de
   pop hl
-ShowShadowScreen_3:
+ShowShadowScreen_3:   ;80
   ld sp,$4000                   ; end of 1st half of ZX screen line
   push hl
   push de
@@ -474,7 +548,7 @@ ShowShadowScreen_3:
   push de
   push bc
 ; Copy 2nd half of the first line
-ShowShadowScreen_4:
+ShowShadowScreen_4:   ;74
   ld sp,$F000                   ; start of 2nd half of shadow screen line
   pop bc
   pop de
@@ -483,7 +557,7 @@ ShowShadowScreen_4:
   pop bc
   pop de
   pop hl
-ShowShadowScreen_5:
+ShowShadowScreen_5:   ;80
   ld sp,$4000                   ; end of 2nd half of ZX screen line
   push hl
   push de
@@ -492,9 +566,8 @@ ShowShadowScreen_5:
   push hl
   push de
   push bc
-
 ; Copy 1st half of the second line
-ShowShadowScreen_6:
+ShowShadowScreen_6:   ;74
   ld sp,$F000                   ; start of shadow screen line
   pop bc
   pop de
@@ -503,7 +576,7 @@ ShowShadowScreen_6:
   pop bc
   pop de
   pop hl
-ShowShadowScreen_7:
+ShowShadowScreen_7:   ;80
   ld sp,$4000                   ; end of 1st half of ZX screen line
   push hl
   push de
@@ -513,7 +586,7 @@ ShowShadowScreen_7:
   push de
   push bc
 ; Copy 2nd half of the second line
-ShowShadowScreen_8:
+ShowShadowScreen_8:   ;74
   ld sp,$F000                   ; start of 2nd half of shadow screen line
   pop bc
   pop de
@@ -522,7 +595,7 @@ ShowShadowScreen_8:
   pop bc
   pop de
   pop hl
-ShowShadowScreen_9:
+ShowShadowScreen_9:   ;80
   ld sp,$4000                   ; end of 2nd half of ZX screen line
   push hl
   push de
@@ -531,15 +604,15 @@ ShowShadowScreen_9:
   push hl
   push de
   push bc
-
+;14 Continue the loop
   dec a                         ; loop counter for line pairs
   jp nz,ShowShadowScreen_1      ; continue the loop
-
-  ld sp,(ShowShadowScreen_sp)   ; restoring SP
+ShowShadowScreen_fin:    ;24
+  ld sp,$0000                   ; restoring SP
   ei
   ret
-ShowShadowScreen_sp: DW 0
 ShowShadowScreen_src: DW 0
+ENDIF
 
 ; Clear block on the shadow screen
 ;   HL=row/col, DE=rows/cols

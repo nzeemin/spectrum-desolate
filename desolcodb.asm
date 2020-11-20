@@ -424,7 +424,7 @@ LA8E9:
   LD B,$04                ; 4 tiles
 LA8F8:                    ; loop by B
   PUSH HL
-  LD L,(HL)               ; get tile number
+  LD L,(HL)               ; get sprite number
   LD H,$00
   ADD HL,HL
   ADD HL,HL
