@@ -110,8 +110,9 @@ L9E9D:
   djnz L9E8D              ; continue loop by rows
   ret
 
-; Put tile on the screen (aligned to 8px column), 16x16 -> 16x16 on shadow screen
-;   L = row; E = 8px column; IX = tile address
+; Put background tile on the screen, 16x16 -> 16x16 on shadow screen, no mask
+;   L = row; E = tile column 0..11; IX = tile address
+; Clock timing: 81 + (11+61+61+10)*8 + 13*7+8 + 10 = 1334
 L9EAD:
   ld a,e
   add a,a
@@ -122,27 +123,27 @@ L9EAD:
   ld a,l                ; penRow
   ld b,8                ; 8 row pairs
   call GetScreenAddr    ; now HL = screen addr
+  ld e,ixl
+  ld d,ixh
+  ex de,hl              ; now HL = tile address, DE = shadow screen address
 L9EAD_1:
-;  push bc
+  push bc
 ; Draw 1st line
-  ld a,(ix+$00)
-  ld (hl),a             ; write 1st byte
-  inc hl
-  ld a,(ix+$01)
-  ld (hl),a             ; write 2nd byte
-  ld de,24-1
-  add hl,de             ; to the 2nd line
+  ldi                   ; copy 1st byte
+  ldi                   ; copy 2nd byte
+  ex de,hl
+  ld bc,24-2
+  add hl,bc             ; to the 2nd line
+  ex de,hl
 ; Draw 2nd line
-  ld a,(ix+$02)
-  ld (hl),a             ; write 1st byte
-  inc hl
-  ld a,(ix+$03)
-  ld (hl),a             ; write 2nd byte
-;  pop bc
-  ld de,24-1
-  add hl,de             ; to the next line
-  ld de,$0004
-  add ix,de
+  ldi                   ; copy 1st byte
+  ldi                   ; copy 2nd byte
+  ex de,hl
+  ld bc,24-2
+  add hl,bc             ; to the 2nd line
+  ex de,hl
+; Continue the loop
+  pop bc
   djnz L9EAD_1
   ret
 
@@ -372,12 +373,12 @@ LA892:
   POP IX
   LD A,E
   LD L,D
-  CALL L9EAD              ; Put tile on the screen
+  CALL L9EAD              ; Put background tile on the screen
 LA8B0:
   POP DE
   POP HL
   INC HL
-  INC E
+  INC E                   ; next column
   LD A,E
   CP $0C                  ; was last column?
   jr NZ,LA892             ; no => continue loop by columns
@@ -1186,9 +1187,6 @@ LAE3D:
   LD A,$06
   LD (LDC57),A
 LAE80:
-;  LD HL,$0020
-;  LD DE,Tileset2
-;  ADD HL,DE
   ld hl,Tileset3+15*32    ; Selection box tile
   PUSH HL
   POP IX                  ; IX = tile address
@@ -1373,9 +1371,6 @@ LAFB7:
 ;
 ; Draw selection box by XOR
 LAFD2:
-;  LD HL,$0020
-;  LD DE,Tileset2
-;  ADD HL,DE
   ld hl,Tileset3+15*32   ; Gray square to use as selection box
   PUSH HL
   POP IX
@@ -1777,11 +1772,6 @@ LB27A:
   JP LB1BB                ; continue Inventory loop
 ; Draw Inventory selection square
 LB295:
-;  LD DE,$0020
-;  LD HL,Tileset2
-;  ADD HL,DE
-;  PUSH HL
-;  POP IX
   ld ix,Tileset3+15*32
   LD B,16     ; was: $08
   LD A,(LDC84)            ; get Y pos
@@ -2310,7 +2300,7 @@ LB685:
   LD A,(LDB83)            ; get Alien tile phase
   OR A
   RET Z                   ; phase 0 => return
-  LD A,$40                ; draw flags - reflect
+  LD A,$40                ; draw flags - reflect vertically
   RET
 LB698:                    ; Alien type 2
   LD DE,Sprites+$1A*32    ; was $EA87 - big Alien body sprite
