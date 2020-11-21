@@ -197,7 +197,7 @@ GetScreenAddr:
   pop de
   ret
 
-; Draw tile with mask 16x8 -> 16x16 on ZX screen
+; Draw tile with mask 16x8 -> 16x16 on shadow screen - for Tileset2 tiles
 ;   L = penRow; E = penCol; IX = tile address
 DrawTileMasked:
   ld a,e

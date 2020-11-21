@@ -771,7 +771,6 @@ namespace SpriteRotate
 
         static void ProcessRoomsNewTiles()
         {
-            using (var bmp = new Bitmap(106 * 2 * 13 + 16, 74 * 2 * 6 + 64, PixelFormat.Format32bppArgb))
             using (var bmpTiles = new Bitmap(@"..\tiles.png"))
             {
                 // Prepare tiles bitmap
@@ -788,48 +787,58 @@ namespace SpriteRotate
                 byte[] savdmp = File.ReadAllBytes("memdmp.bin");
                 Array.Copy(savdmp, 0, memdmp, 0, 65536);
 
-                Graphics g = Graphics.FromImage(bmp);
-                //g.InterpolationMode = InterpolationMode.HighQualityBicubic;
-                //g.PixelOffsetMode = PixelOffsetMode.HighQuality;
-                g.TextRenderingHint = TextRenderingHint.AntiAliasGridFit;
-                var font = new Font("Tahoma", 8);
-
-                int addr, xr, yr;
-                for (int r = 0; r < 72; r++)
+                using (var bmp = new Bitmap(106 * 2 * 13 + 16, 74 * 2 * 6 + 64, PixelFormat.Format32bppArgb))
                 {
-                    if (RoomsNotUsed.Contains(r))
-                        continue;
-                    int aaddr = 0xDE97 + r * 2;
-                    addr = memdmp[aaddr] + memdmp[aaddr + 1] * 256;
-                    if (addr == 0xD6CE)
-                        continue; // Not a valid room
-                    byte[] room = DecodeRoom(addr, 96);
+                    Graphics g = Graphics.FromImage(bmp);
+                    g.TextRenderingHint = TextRenderingHint.AntiAliasGridFit;
+                    var font = new Font("Tahoma", 8);
 
-                    xr = x0 + (r / 6) * 106 * 2;
-                    yr = y0 + (r % 6) * 74 * 2 + 6;
+                    int addr, xr, yr;
+                    for (int r = 0; r < 72; r++)
+                    {
+                        if (RoomsNotUsed.Contains(r))
+                            continue;
+                        int aaddr = 0xDE97 + r * 2;
+                        addr = memdmp[aaddr] + memdmp[aaddr + 1] * 256;
+                        if (addr == 0xD6CE)
+                            continue; // Not a valid room
+                        byte[] room = DecodeRoom(addr, 96);
 
-                    DrawRoomNewTiles(g, xr, yr, room, bmpTiles);
+                        xr = x0 + (r / 6) * 106 * 2;
+                        yr = y0 + (r % 6) * 74 * 2 + 6;
 
-                    g.DrawString($"{r}: {addr:X4}", font, Brushes.Navy, xr, yr - 12);
+                        DrawRoomNewTiles(g, xr, yr, room, bmpTiles);
+
+                        g.DrawString($"{r}: {addr:X4}", font, Brushes.Navy, xr, yr - 12);
+                    }
+
+                    var roomsfilename = "roomsnew.png";
+                    bmp.Save(roomsfilename);
+                    Console.WriteLine($"{roomsfilename} saved");
                 }
 
-                addr = 0xDE47;
-                for (int i = 0; i < 20; i++)
+                using (var bmp = new Bitmap(200 + 16, 160 + 16, PixelFormat.Format32bppArgb))
                 {
-                    xr = x0 + i * 40;
-                    yr = y0 + 900;
+                    Graphics g = Graphics.FromImage(bmp);
 
-                    DrawSprite(g, xr, yr, memdmp[addr], bmpTiles);
-                    DrawSprite(g, xr + 16, yr, memdmp[addr + 1], bmpTiles);
-                    DrawSprite(g, xr, yr + 16, memdmp[addr + 2], bmpTiles);
-                    DrawSprite(g, xr + 16, yr + 16, memdmp[addr + 3], bmpTiles);
+                    var addr = 0xDE47;
+                    for (int i = 0; i < 20; i++)
+                    {
+                        var xr = 8 + (i / 4) * 40;
+                        var yr = 8 + (i % 4) * 40;
 
-                    addr += 4;
+                        DrawSprite(g, xr, yr, memdmp[addr], bmpTiles);
+                        DrawSprite(g, xr + 16, yr, memdmp[addr + 1], bmpTiles);
+                        DrawSprite(g, xr, yr + 16, memdmp[addr + 2], bmpTiles);
+                        DrawSprite(g, xr + 16, yr + 16, memdmp[addr + 3], bmpTiles);
+
+                        addr += 4;
+                    }
+
+                    var spritesfilename = "spritesnew.png";
+                    bmp.Save(spritesfilename);
+                    Console.WriteLine($"{spritesfilename} saved");
                 }
-
-                var roomsfilename = "roomsnew.png";
-                bmp.Save(roomsfilename);
-                Console.WriteLine($"{roomsfilename} saved");
             }
         }
 

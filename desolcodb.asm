@@ -1248,16 +1248,14 @@ LAED4:
   POP HL
   INC HL
   DJNZ LAED4
-;  LD DE,$0003
   LD HL,LDC8D+3           ; Buffer for entering access code +3
-;  ADD HL,DE
   LD A,(LDC82)            ; get current selection
   LD (HL),A               ; put in the buffer
 ; Show four tiles with the entered code
   LD HL,LDC8D             ; Buffer for entering access code
   LD A,4    ; was: $02
   LD C,A
-  LD B,$00
+;  LD B,$00
 LAEEF:
   PUSH HL
   LD L,(HL)               ; get tile number
@@ -1267,15 +1265,18 @@ LAEEF:
   ADD HL,HL
   ADD HL,HL
   add hl,hl               ; now HL = L * 32
-  add hl,hl               ; now HL = L * 64
   LD DE,Tileset2
   ADD HL,DE
   PUSH BC
-  EX DE,HL                ; now DE = tile address
-  LD H,C
+  push hl
+  pop ix                  ; now IX = tile address
+  ld a,c
+  add a,a
+  add a,a
+  add a,a
+  ld e,a
   LD L,16   ; was: $08
-  XOR A                   ; clear draw flags
-  CALL L9EDE              ; Draw tile DE at column H row L
+  CALL DrawTileMasked     ; Draw tile IX at column E row L
   POP BC
   POP HL
   INC HL
