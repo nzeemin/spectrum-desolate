@@ -147,9 +147,9 @@ L9EAD_1:
   djnz L9EAD_1
   ret
 
-; Draw tile
-;   DE = tile address; H = column; L = row
-;   A = bits 0..5 - sub-tile ; bit7=1 - reflect horz, bit6=1 - reflect vert
+; Draw sprite
+;   DE = sprite address; H = column; L = row
+;   A = bits 0..5 - sub-sprite ; bit7=1 - reflect horz (was: bit6=1 - reflect vert)
 L9EDE:
   PUSH HL
   PUSH AF
@@ -161,13 +161,23 @@ L9EDE:
   ADD HL,HL
   ADD HL,HL
   add hl,hl
-  ADD HL,DE               ; now HL = source tile address
+  add hl,hl
+  ADD HL,DE               ; now HL = source sprite address
   LD DE,L9FAF             ; DE = buffer address
-  LD BC,32
-  LDIR                    ; get the tile data to the buffer
+  LD BC,64
+L9EDE_copy:
+  ldi
+  ldi
+  ldi
+  ldi
+  ldi
+  ldi
+  ldi
+  ldi
+  jp pe,L9EDE_copy        ;138*8=1104T
   POP AF
   BIT 7,A
-  CALL NZ,L9EDE_HR        ; Reflect tile horizontally
+  CALL NZ,L9EDE_HR        ; Reflect sprite horizontally
   LD IX,L9FAF
   POP HL
   LD A,H
@@ -199,19 +209,19 @@ L9EDE_0:                  ; loop by B
   ld bc,24-1
   add hl,bc               ; next line
 ; Process 2nd line
-  ld a,(ix+$00)           ; get mask byte
+  ld a,(ix+$04)           ; get mask byte
   and (hl)
-  or (ix+$01)             ; use pixels byte
+  or (ix+$05)             ; use pixels byte
   ld (hl),a
   inc hl
-  ld a,(ix+$02)           ; get mask byte
+  ld a,(ix+$06)           ; get mask byte
   and (hl)
-  or (ix+$03)             ; use pixels byte
+  or (ix+$07)             ; use pixels byte
   ld (hl),a
   ld bc,24-1
   add hl,bc               ; next line
-; Increase tile address
-  ld bc,$0004
+; Increase sprite address
+  ld bc,$0008
   add ix,bc
   POP BC
   DJNZ L9EDE_0
@@ -220,7 +230,7 @@ L9EDE_0:                  ; loop by B
 L9EDE_HR:
   push af
   ld ix,L9FAF
-  ld b,8
+  ld b,16
 L9EDE_HR_1:
 ; Exchange bytes 0 <-> 2
   ld a,(ix+$00)
@@ -246,8 +256,8 @@ L9EDE_HR_1:
   pop af
   ret
 ;
-L9FAF:
-  DEFS 32,$00
+L9FAF:                    ; Sprite buffer
+  DEFS 64,$00
 ;
 ; Reflect byte bits of A
 ReflectByte:
@@ -429,6 +439,7 @@ LA8F8:                    ; loop by B
   ADD HL,HL
   ADD HL,HL               ; HL = L * 16
   add hl,hl               ; HL = L * 32
+  add hl,hl               ; HL = L * 64
   LD DE,Sprites           ; was: $E8E7 - Sprites start address
   ADD HL,DE
   EX DE,HL                ; DE = tile address
@@ -1256,6 +1267,7 @@ LAEEF:
   ADD HL,HL
   ADD HL,HL
   add hl,hl               ; now HL = L * 32
+  add hl,hl               ; now HL = L * 64
   LD DE,Tileset2
   ADD HL,DE
   PUSH BC
@@ -2298,15 +2310,15 @@ LB622:
   LD A,(LDB7F)            ; get Alien Y coord
   LD L,A                  ; row
   xor a                   ; clear draw flags
-  CALL LB67B              ; Get alien tile address in DE
-  CALL L9EDE              ; Draw tile DE at column H row L
+  CALL LB67B              ; Get alien sprite address in DE
+  CALL L9EDE              ; Draw sprite DE at column H row L
   LD A,$01
   LD (LDB82),A            ; mark that we already have an Alien in the room
-  LD A,(LDB83)            ; get Alien tile phase
+  LD A,(LDB83)            ; get Alien sprite phase
   INC A                   ; next phase
   CP $01
   CALL NZ,LB676           ; => Clear Alien tile phase
-  LD (LDB83),A            ; set Alien tile phase
+  LD (LDB83),A            ; set Alien sprite phase
   LD A,(LDB81)            ; get Alien type
   CP $02                  ; the big one?
   JP Z,LB82B              ; yes => jump to Check if the Bullet hit the Alien
@@ -2335,8 +2347,8 @@ LB653:
   ADD A,-16   ; $F8       ; one tile up
   LD L,A
   xor a                   ; clear draw flags
-  CALL LB69D              ; Get alien tile address
-  jp L9EDE                ; Draw tile DE at column H row L, and return
+  CALL LB69D              ; Get alien sprite address
+  jp L9EDE                ; Draw sprite DE at column H row L, and return
 ;
 ; Clear Alien tile phase
 LB676:
@@ -2344,36 +2356,36 @@ LB676:
   LD (LDB83),A            ; clear Alien tile phase
   RET
 ;
-; Get alien tile address
+; Get alien sprite address
 ; Returns DE = tile address, A = draw flags
 LB67B:
   LD A,(LDB84)            ; Alien still alive?
   or a                    ; (looks like missing instruction)
   jr NZ,LB685             ; 
-  LD DE,Sprites+$18*32    ; was $EA67 - Alien dead sprite
+  LD DE,Sprites+$18*64    ; was $EA67 - Alien dead sprite
   RET
 LB685:
   LD A,(LDB81)            ; get Alien type
   CP $02
   jr Z,LB698
-  LD DE,Sprites+$17*32    ; was $EA57 - Small Alien sprite
-  LD A,(LDB83)            ; get Alien tile phase
+  LD DE,Sprites+$17*64    ; was $EA57 - Small Alien sprite
+  LD A,(LDB83)            ; get Alien sprite phase
   OR A
   RET Z                   ; phase 0 => return
-  LD DE,Sprites+$21*32    ; Small Alien sprite, reflected vertically
+  LD DE,Sprites+$21*64    ; Small Alien sprite, reflected vertically
   xor a                   ; draw flags
   RET
 LB698:                    ; Alien type 2
-  LD DE,Sprites+$1A*32    ; was $EA87 - big Alien body sprite
+  LD DE,Sprites+$1A*64    ; was $EA87 - big Alien body sprite
   JR LB6A0
 LB69D:
-  LD DE,Sprites+$19*32    ; was $EA77 - big Alien head sprite
+  LD DE,Sprites+$19*64    ; was $EA77 - big Alien head sprite
 LB6A0:
-  LD A,(LDB83)            ; get Alien tile phase
+  LD A,(LDB83)            ; get Alien sprite phase
   OR A
   RET Z
   PUSH HL
-  LD HL,$0020*2           ; switch to other tile
+  LD HL,$0020*4           ; switch to other sprite
   ADD HL,DE
   PUSH HL
   POP DE
@@ -2588,9 +2600,9 @@ LB805:
   LD H,A
   LD A,(LDB89)            ; get Bullet Y coord/line on the screen
   LD L,A
-  CALL LB84F              ; Get Bullet tile address in DE
+  CALL LB84F              ; Get Bullet sprite address in DE
   xor a                   ; draw flags
-  CALL L9EDE              ; Draw tile DE at column H row L
+  CALL L9EDE              ; Draw sprite DE at column H row L
   LD A,$01
   LD (LDB8C),A
   LD A,(LDB81)            ; get Alien type
@@ -2632,16 +2644,16 @@ LB84F:
   CP $03                  ; right?
   jr Z,LB876
 LB865:                    ; Bullet goes down
-  LD DE,Sprites+$1D*32    ; was: $EAC7 - Bullet vert sprite
+  LD DE,Sprites+$1D*64    ; was: $EAC7 - Bullet vert sprite
   RET
 LB86A:                    ; Bullet goes up
-  LD DE,Sprites+$1E*32    ; was: $EAC7 - Bullet vert sprite
+  LD DE,Sprites+$1E*64    ; was: $EAC7 - Bullet vert sprite
   RET
 LB870:                    ; Bullet goes left
-  LD DE,Sprites+$1F*32    ; was: $EAB7 - Bullet horz sprite
+  LD DE,Sprites+$1F*64    ; was: $EAB7 - Bullet horz sprite
   RET
 LB876:                    ; Bullet goes right
-  LD DE,Sprites+$20*32    ; was: $EAB7 - Bullet horz sprite
+  LD DE,Sprites+$20*64    ; was: $EAB7 - Bullet horz sprite
   RET
 ;
 ; Move the Bullet

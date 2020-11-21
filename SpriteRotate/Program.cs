@@ -147,8 +147,10 @@ namespace SpriteRotate
 
         static void PrepareTilesets()
         {
+            const string tilesFileName = "desoltils.asm";
+
             using (var bmp = new Bitmap(@"..\tiles.png"))
-            using (var writer = new StreamWriter("desoltils.asm"))
+            using (var writer = new StreamWriter(tilesFileName))
             {
                 writer.WriteLine(";");
                 writer.WriteLine("; Tileset 1, 122 tiles 16x16 no mask");
@@ -158,7 +160,7 @@ namespace SpriteRotate
                 writer.WriteLine(";");
                 writer.WriteLine("; Sprites, 36 tiles 16x8 with mask");
                 writer.WriteLine("Sprites:");
-                PrepareTilesetMaskedImpl(bmp, 168, 36, writer);
+                PrepareSpritesImpl(bmp, 168, 36, writer);
 
                 writer.WriteLine(";");
                 writer.WriteLine("; Tileset 2, 127 tiles 16x8 with mask");
@@ -169,7 +171,7 @@ namespace SpriteRotate
 
                 PrepareTileset3(bmp, writer);
             }
-            Console.WriteLine("desoltils.asm saved");
+            Console.WriteLine($"{tilesFileName} saved");
         }
 
         static void PrepareTilesetImpl(Bitmap bmp, int x0, int tilescount, StreamWriter writer)
@@ -196,6 +198,48 @@ namespace SpriteRotate
                 {
                     writer.Write($"${(words[i] >> 8):X2},${(words[i] & 0xFF):X2}");
                     if (i < 15) writer.Write(",");
+                }
+
+                writer.WriteLine();
+            }
+        }
+
+        static void PrepareSpritesImpl(Bitmap bmp, int x0, int tilescount, StreamWriter writer)
+        {
+            for (int tile = 0; tile < tilescount; tile++)
+            {
+                var words = new int[16];
+                var masks = new int[16];
+                int x = x0 + (tile / 16) * 20;
+                int y = 8 + (tile % 16) * 20;
+                for (int i = 0; i < 16; i++)
+                {
+                    int val = 0;
+                    int valm = 0;
+                    for (int b = 0; b < 16; b++)
+                    {
+                        Color c = bmp.GetPixel(x + b, y + i);
+                        int v = (c.GetBrightness() > 0.2f) ? 0 : 1;
+                        val |= (v << (15 - b));
+                        int vm = (c.R == 120 && c.G == 120 && c.B == 120) ? 1 : 0;
+                        valm |= (vm << (15 - b));
+                    }
+
+                    words[i] = val;
+                    masks[i] = valm;
+                }
+
+                writer.Write("  DB ");
+                for (int i = 0; i < 16; i++)
+                {
+                    writer.Write($"${(masks[i] >> 8):X2},${(words[i] >> 8):X2},");
+                    writer.Write($"${(masks[i] & 0xFF):X2},${(words[i] & 0xFF):X2}");
+                    if (i == 7)
+                    {
+                        writer.WriteLine();
+                        writer.Write("  DB ");
+                    }
+                    else if (i < 15) writer.Write(",");
                 }
 
                 writer.WriteLine();
@@ -727,7 +771,7 @@ namespace SpriteRotate
 
         static void ProcessRoomsNewTiles()
         {
-            using (var bmp = new Bitmap(106 * 2 * 13 + 16, 74 * 2 * 6 + 16, PixelFormat.Format32bppArgb))
+            using (var bmp = new Bitmap(106 * 2 * 13 + 16, 74 * 2 * 6 + 64, PixelFormat.Format32bppArgb))
             using (var bmpTiles = new Bitmap(@"..\tiles.png"))
             {
                 // Prepare tiles bitmap
@@ -767,6 +811,20 @@ namespace SpriteRotate
                     DrawRoomNewTiles(g, xr, yr, room, bmpTiles);
 
                     g.DrawString($"{r}: {addr:X4}", font, Brushes.Navy, xr, yr - 12);
+                }
+
+                addr = 0xDE47;
+                for (int i = 0; i < 20; i++)
+                {
+                    xr = x0 + i * 40;
+                    yr = y0 + 900;
+
+                    DrawSprite(g, xr, yr, memdmp[addr], bmpTiles);
+                    DrawSprite(g, xr + 16, yr, memdmp[addr + 1], bmpTiles);
+                    DrawSprite(g, xr, yr + 16, memdmp[addr + 2], bmpTiles);
+                    DrawSprite(g, xr + 16, yr + 16, memdmp[addr + 3], bmpTiles);
+
+                    addr += 4;
                 }
 
                 var roomsfilename = "roomsnew.png";
@@ -1271,6 +1329,14 @@ namespace SpriteRotate
                     g.DrawImage(bmpTiles, x, y, new Rectangle(tilex, tiley, 16, 16), GraphicsUnit.Pixel);
                 }
             }
+        }
+
+        static void DrawSprite(Graphics g, int x, int y, int sprite, Bitmap bmpTiles)
+        {
+            var tilex = 168 + (sprite / 16) * 20;
+            var tiley = 8 + (sprite % 16) * 20;
+
+            g.DrawImage(bmpTiles, x, y, new Rectangle(tilex, tiley, 16, 16), GraphicsUnit.Pixel);
         }
 
         static void PrepareCreditsMargins()
