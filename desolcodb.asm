@@ -1235,6 +1235,7 @@ LAE99:
 LAE9B:
   CALL LB2D0              ; Delay by LDC59
   DJNZ LAE9B
+; Door Lock scan keyboard and process key pressed
   CALL LA0F1              ; Scan keyboard
   CP $05                  ; Select key
   jr Z,LAEBA
@@ -1273,7 +1274,7 @@ LAED4:
   INC HL
   DJNZ LAED4
 ;  LD DE,$0003
-  LD HL,LDC8D+3           ; Buffer for entering access code
+  LD HL,LDC8D+3           ; Buffer for entering access code +3
 ;  ADD HL,DE
   LD A,(LDC82)            ; get current selection
   LD (HL),A               ; put in the buffer
@@ -1564,8 +1565,7 @@ LB09B:
 ;
 LB0A2:
   LD HL,LF329             ; Encoded screen for Inventory/Info popup
-;  LD BC,$0060             ; decode 96 bytes
-  CALL LADEE              ; Decode the screen to DBF5
+  CALL LADEE              ; Decode 96 bytes of the screen to LDBF5
   CALL LB177              ; Display screen HL from tiles with Tileset 2
   LD A,22     ; was: $0B
   LD (LDCF3),A            ; Left margin size for text
@@ -1576,13 +1576,13 @@ LB0A2:
   LD (LDC59),A            ; set delay factor
   LD (LDC5A),A            ; clear Inventory items count
   LD (LDCF8),A
-  LD A,16                 ; was: $08
+  LD A,16     ; was: $08
   LD (LDC83),A            ; set X pos
-  LD A,$24                ; was: $12
+  LD A,$24    ; was: $12
   LD (LDC84),A            ; set Y pos
   LD HL,$1630
   LD (L86D7),HL           ; Set penRow/penCol
-  LD HL,SE0BB             ; " - INVENTORY - "
+  LD HL,SE0BB             ; "- INVENTORY -"
   call DrawString         ; was: CALL LBEDE
   LD HL,LDB9C             ; Inventory table address
   LD B,$1D                ; 29 items
@@ -1671,13 +1671,13 @@ LB15D:
   LD B,16   ; was: $08
   CALL L9E5F              ; Draw tile by XOR operation
   LD A,(LDC83)            ; get X pos
-  ADD A,16                ; increase X; was: $08
+  ADD A,16                ;   increase X; was: $08
   LD (LDC83),A            ; set X pos
-  CP 176                  ; was: $58
+  CP 176    ; was: $58
   CALL Z,LB11C
   RET
 ;
-; Display screen from tiles with Tileset 2
+; Display screen from tiles with Tileset2
 ;   HL = Screen in tiles, usually LDBF5
 LB177:
   LD BC,$0000
@@ -1744,17 +1744,21 @@ LB1BB:                    ; Inventory loop starts here
   ld a,$44
   ld (LDC59),a            ; set delay factor
   call LB2D0              ; delay, to make Inventory selection more usable
-; Inventory item selection
+; Inventory item selection loop
 LB1C1:
   CALL LA0F1              ; Scan keyboard
   CP $07                  ; Escape key? (close any popups)
   JP Z,L9DDD              ;   yes => return to the game main loop
   CP $05                  ; Look/shoot key?
   JP Z,LB307
+  cp $01                  ; Down key?
+  jp z,Inventory_KeyDown
   CP $02                  ; Left key?
   JP Z,LB1FE
   CP $03                  ; Right key?
   JP Z,LB214
+  cp $04                  ; Up key?
+  jp z,Inventory_KeyUp
   jr LB1C1                ; continue the loop
 LB1DB:
   CALL LB2DE              ; Print string LDCF9
@@ -1774,6 +1778,32 @@ LB1F0:
   LD (LDC82),A            ; set Inventory current
   CALL LB1DB              ; Print string LDCF9 and Prepare item description string
   RET
+Inventory_KeyDown:
+  call LB295              ; Draw Inventory selection square
+  ld a,(LDC84)            ; get Y pos
+  cp $4C                  ; last row?
+  jr z,Inventory_KeyDown_1
+  add a,20
+  ld (LDC84),a            ; set Y pos
+  ld a,(LDC82)            ; get Inventory current
+  add a,10
+  ld (LDC82),a            ; set Inventory current
+Inventory_KeyDown_1:
+  call LB1DB              ; Print string LDCF9 and Prepare item description string
+  jp LB1BB                ; continue Inventory loop
+Inventory_KeyUp:
+  call LB295              ; Draw Inventory selection square
+  ld a,(LDC84)            ; get Y pos
+  cp $24                  ; first row?
+  jr z,Inventory_KeyUp_1
+  add a,-20
+  ld (LDC84),a            ; set Y pos
+  ld a,(LDC82)            ; get Inventory current
+  add a,-10
+  ld (LDC82),a            ; set Inventory current
+Inventory_KeyUp_1:
+  call LB1DB              ; Print string LDCF9 and Prepare item description string
+  jp LB1BB                ; continue Inventory loop
 LB1FE:                    ; Left key pressed
   LD A,(LDC83)            ; get X pos
   CP 16       ; was: $08
@@ -1794,7 +1824,7 @@ LB214:                    ; Right key pressed
   JP LB1BB                ; continue Inventory loop
 LB22A:
   LD A,(LDC84)            ; get Y pos
-  CP $4C      ; was: $26
+  CP $4C      ; was: $26  ; last row?
   jr Z,LB245
   CALL LB1F0
   LD A,(LDC84)            ; get Y pos
@@ -1807,7 +1837,7 @@ LB245:
   CALL LB295              ; Draw Inventory selection square
   LD A,16     ; was: $08
   LD (LDC83),A            ; set X pos
-  LD A,$24    ; was: $12
+  LD A,$24    ; was: $12  ; top row
   LD (LDC84),A            ; set Y pos
   XOR A
   LD (LDC82),A            ; clear Inventory current
