@@ -16,15 +16,15 @@ L9DDD:
   CALL LB76B              ; Process shoot
   CALL LB551              ; Process Alien in the room
   CALL LA0F1              ; Scan keyboard
-  CP $0F                  ; Menu key
-  JP Z,LBA3D              ;   Return to main Menu
-  CP $04                  ; Up key
+  CP $0F                  ; Menu key?
+  JP Z,MenuFromGame       ;   Return to main Menu
+  CP $04                  ; Up key?
   JP Z,LA99B
-  CP $01                  ; Down key
+  CP $01                  ; Down key?
   JP Z,LA966
-  CP $02                  ; Left key
+  CP $02                  ; Left key?
   JP Z,LA9EB
-  CP $03                  ; Right key
+  CP $03                  ; Right key?
   JP Z,LAA1A
 ;  XOR A
 ;  LD (LDB7C),A            ; ??
@@ -166,8 +166,6 @@ L9EDE:
   LD BC,32
   LDIR                    ; get the tile data to the buffer
   POP AF
-  BIT 6,A
-  CALL NZ,L9EDE_VR        ; Reflect tile vertically
   BIT 7,A
   CALL NZ,L9EDE_HR        ; Reflect tile horizontally
   LD IX,L9FAF
@@ -218,40 +216,6 @@ L9EDE_0:                  ; loop by B
   POP BC
   DJNZ L9EDE_0
   RET
-; Vertical reflection
-L9EDE_VR:
-  push af
-  ld ix,L9FAF
-  ld iy,L9FAF+32-4
-  ld b,4
-L9EDE_VR_1:
-  ld a,(ix+$00)
-  ld c,(iy+$00)
-  ld (ix+$00),c
-  ld (iy+$00),a
-  ld a,(ix+$01)
-  ld c,(iy+$01)
-  ld (ix+$01),c
-  ld (iy+$01),a
-  ld a,(ix+$02)
-  ld c,(iy+$02)
-  ld (ix+$02),c
-  ld (iy+$02),a
-  ld a,(ix+$03)
-  ld c,(iy+$03)
-  ld (ix+$03),c
-  ld (iy+$03),a
-  inc ix
-  inc ix
-  inc ix
-  inc ix
-  dec iy
-  dec iy
-  dec iy
-  dec iy
-  djnz L9EDE_VR_1
-  pop af
-  ret
 ; Horizontal reflection
 L9EDE_HR:
   push af
@@ -2080,7 +2044,7 @@ LB42E:
   LD A,12   ; was: $06
   LD (LDCF4),A            ; Line interval for text
   CALL LB2DE              ; Print string LDCF9
-  LD HL,$5C0A
+  LD HL,$5E0A
   LD (L86D7),HL           ; Set penRow/penCol
   LD HL,SE12D             ; "It doesnt look like you can do anything else here"
   CALL LB513              ; Show message
@@ -2396,7 +2360,8 @@ LB685:
   LD A,(LDB83)            ; get Alien tile phase
   OR A
   RET Z                   ; phase 0 => return
-  LD A,$40                ; draw flags - reflect vertically
+  LD DE,Sprites+$21*32    ; Small Alien sprite, reflected vertically
+  xor a                   ; draw flags
   RET
 LB698:                    ; Alien type 2
   LD DE,Sprites+$1A*32    ; was $EA87 - big Alien body sprite
@@ -2623,7 +2588,8 @@ LB805:
   LD H,A
   LD A,(LDB89)            ; get Bullet Y coord/line on the screen
   LD L,A
-  CALL LB84F              ; Get Bullet tile address in DE and draw flags in A
+  CALL LB84F              ; Get Bullet tile address in DE
+  xor a                   ; draw flags
   CALL L9EDE              ; Draw tile DE at column H row L
   LD A,$01
   LD (LDB8C),A
@@ -2654,7 +2620,7 @@ LB84A:
   RET
 ;
 ; Get Bullet tile address and draw flags
-;   Returns: DE = tile address; A = draw flags
+;   Returns: DE = tile address; A = draw flags (always $00)
 LB84F:
   LD A,(LDB8B)            ; get Bullet Direction/orientation
   OR A                    ; down?
@@ -2666,20 +2632,16 @@ LB84F:
   CP $03                  ; right?
   jr Z,LB876
 LB865:                    ; Bullet goes down
-  LD DE,Sprites+$1E*32    ; was: $EAC7 - Bullet vert sprite
-  XOR A                   ; no draw flags
+  LD DE,Sprites+$1D*32    ; was: $EAC7 - Bullet vert sprite
   RET
 LB86A:                    ; Bullet goes up
   LD DE,Sprites+$1E*32    ; was: $EAC7 - Bullet vert sprite
-  LD A,$40                ; reflect tile vertically
   RET
 LB870:                    ; Bullet goes left
-  LD DE,Sprites+$1D*32    ; was: $EAB7 - Bullet horz sprite
-  LD A,$80                ; reflect tile horizontally
+  LD DE,Sprites+$1F*32    ; was: $EAB7 - Bullet horz sprite
   RET
 LB876:                    ; Bullet goes right
-  LD DE,Sprites+$1D*32    ; was: $EAB7 - Bullet horz sprite
-;  LD A,$40                ; reflect tile vertically (no need to reflect it)
+  LD DE,Sprites+$20*32    ; was: $EAB7 - Bullet horz sprite
   RET
 ;
 ; Move the Bullet
@@ -2953,6 +2915,11 @@ LBA07:
   CALL LBC34              ; Delay x20
   XOR A
   LD (LDC85),A            ; Skip delay and copy screen in LBEDE
+  jr LBA3D                ; Return to Menu
+
+MenuFromGame:
+  ld a,$3A+12             ; "Continue" menu item
+  ld (LDB8F),a            ; set Menu Y pos
 ;
 ; Return to Menu
 ;
@@ -3584,25 +3551,17 @@ LBF686:
   jr LBF6F_4
 LBF6F_2:
   call ShowShadowScreen   ; Copy shadow screen to ZX screen
-  halt
-;  CALL LB2D0              ; Delay
 LBF6F_3:
   CALL LA0F1              ; Scan keyboard
   jp nz,LBA3D             ; any key pressed => Return to main Menu
   CALL LBFD5              ; Scroll shadow screen up one line
-  halt
-;  CALL LBFEC
-;  JR LBF686
 LBF6F_4:
   LD A,(LDD56)
   INC A                   ; increase counter within the line
   LD (LDD56),A
   CP 12                   ; last line of the current string?
   jr z,Credits_5          ; yes => jump
-;  jr NZ,LBF6F_2           ; no => continue the scrolling
-  halt
-  halt
-  halt
+  CALL LB2D0              ; Delay
   jr LBF6F_2              ; continue the Credits loop
 Credits_5:
   XOR A
@@ -3626,17 +3585,12 @@ Credits_5:
   call LBA81              ; Delay x40 - added to have a pause after the last line
   JP LBA3D                ; Return to main Menu
 ; Scroll shadow screen up 1px
+; Click timing: 30 + (137*24-1)*21+16 + 10 = 69083
 LBFD5:
   LD DE,ShadowScreen
   LD HL,ShadowScreen+24
   LD BC,137*24
   LDIR
   RET
-;LBFEC:
-;  LD DE,$A2D7
-;  LD HL,$9340
-;  LD BC,$02B8
-;  LDIR
-;  RET
 
 ;----------------------------------------------------------------------------

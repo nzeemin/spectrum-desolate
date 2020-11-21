@@ -156,9 +156,9 @@ namespace SpriteRotate
                 PrepareTilesetImpl(bmp, 8, 122, writer);
 
                 writer.WriteLine(";");
-                writer.WriteLine("; Sprites, 33 tiles 16x8 with mask");
+                writer.WriteLine("; Sprites, 36 tiles 16x8 with mask");
                 writer.WriteLine("Sprites:");
-                PrepareTilesetMaskedImpl(bmp, 168, 33, writer);
+                PrepareTilesetMaskedImpl(bmp, 168, 36, writer);
 
                 writer.WriteLine(";");
                 writer.WriteLine("; Tileset 2, 127 tiles 16x8 with mask");
