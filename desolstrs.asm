@@ -38,6 +38,8 @@ SE071: DEFM "ABlakRain",0
 SE073: DEFM "Travis Supalla",0
 SE075: DEFM "Jim Dieckmann",0
 SE077: DEFM "tr1p1ea@yahoo.com.au",0
+SCR40: DEFM "Ported to ZX Spectrum",0
+SCR41: DEFM "by nzeemin, 2020",0
 ; Data Cartridge messages
 SE079: DEFM "Im hurt bad . . . I dont|think im gonna make it.|I changed the Level 1|Access Code to: 4057|"
        DEFM "Maybe that will hold|them off for a while . . .",0

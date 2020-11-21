@@ -798,13 +798,13 @@ LDD58:                    ; Table of Credits strings
   DEFW SE029,SE029,SE029,SE06F,SE029
   DEFW SE029,SE029,SE029,SE029,SE029
   DEFW SE029,SE029,SE029,SE029,SE029
-  DEFW SE029,SE029,SE029,SE029,SE029       ; 75
+  DEFW SCR40,SCR41  ; 72
 LDDF2:                    ; Table of left margins for Credits strings
   DEFB $1C,$1C,$00,$20,$10,$16,$1E,$0C,$14,$18,$00,$4A,$38,$3A,$3A,$2E
   DEFB $26,$44,$40,$38,$38,$44,$46,$40,$32,$26,$36,$40,$32,$30,$00,$10
   DEFB $14,$08,$3E,$00,$00,$08,$1E,$20,$00,$32,$00,$00,$22,$0E,$00,$00
   DEFB $00,$00,$00,$00,$00,$00,$00,$00,$00,$00,$08,$00,$00,$00,$00,$00
-  DEFB $00,$00,$00,$00,$00,$00,$00,$00,$00,$00,$00
+  DEFB $00,$00,$00,$00,$00,$00,$18,$28
 ;
 LDE47:                    ; Player's tile numbers for shooting animation
   DEFB $00,$01,$02,$03, $00,$01,$04,$05    ; $00 down, four phases

@@ -3584,19 +3584,27 @@ LBF686:
   jr LBF6F_4
 LBF6F_2:
   call ShowShadowScreen   ; Copy shadow screen to ZX screen
-  CALL LB2D0              ; Delay
+  halt
+;  CALL LB2D0              ; Delay
 LBF6F_3:
   CALL LA0F1              ; Scan keyboard
   jp nz,LBA3D             ; any key pressed => Return to main Menu
   CALL LBFD5              ; Scroll shadow screen up one line
+  halt
 ;  CALL LBFEC
-  JR LBF686
+;  JR LBF686
 LBF6F_4:
   LD A,(LDD56)
   INC A                   ; increase counter within the line
   LD (LDD56),A
   CP 12                   ; last line of the current string?
-  jr NZ,LBF6F_2           ; no => continue the scrolling
+  jr z,Credits_5          ; yes => jump
+;  jr NZ,LBF6F_2           ; no => continue the scrolling
+  halt
+  halt
+  halt
+  jr LBF6F_2              ; continue the Credits loop
+Credits_5:
   XOR A
   LD (LDD56),A            ; clear counter within the line
   ld d,a                  ; clear D
@@ -3613,8 +3621,9 @@ LBF6F_4:
   LD A,(LDD57)
   INC A                   ; increase the Credits line counter
   LD (LDD57),A
-  CP $47
+  CP $49
   jr NZ,LBF6F_3
+  call LBA81              ; Delay x40 - added to have a pause after the last line
   JP LBA3D                ; Return to main Menu
 ; Scroll shadow screen up 1px
 LBFD5:
