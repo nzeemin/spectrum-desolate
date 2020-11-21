@@ -833,7 +833,7 @@ LAB73:
 ;
 LAB7A:
   LD A,$01
-  LD (LDC8A),A
+  LD (LDC8A),A            ; Direction to other room = down
   CALL LAE09              ; Decode current room description to LDBF5
   LD DE,$001C             ; offset in the room description - access level
 LAB85:
@@ -843,7 +843,7 @@ LAB85:
   LD DE,$0007
   ADD HL,DE               ; HL = $1C+$07=$23 - offset for room number
   LD A,(HL)
-  LD (LDC86),A            ; new room number??
+  LD (LDC86),A            ; store new room number
   LD DE,$0004
   ADD HL,DE               ; HL = $1C+$07+$04=$27 - offset for Access code slot
   LD A,(HL)
@@ -860,7 +860,7 @@ LABA4:
   CALL LAC4C              ; Compare byte at (HL+DE) with Direction/orientation LDB75
   JP NZ,LAADA             ; => Show the screen, continue the game main loop
   LD A,$02
-  LD (LDC8A),A
+  LD (LDC8A),A            ; Direction to other room = up
   CALL LAE09              ; Decode current room description to LDBF5
   LD DE,$001D             ; offset in the room description
   jr LAB85
@@ -890,7 +890,7 @@ LABBE:
   JP LAD8C                ; Show screen and wait for Escape key
 LABF7:
   LD A,$03
-  LD (LDC8A),A
+  LD (LDC8A),A            ; Direction to other room = left
   CALL LAE09              ; Decode current room description to LDBF5
   LD DE,$001E             ; offset in the room description
   JP LAB85
@@ -920,7 +920,7 @@ LAC05:
   JP LAD8C                ; Show screen and wait for Escape key
 LAC3E:
   LD A,$04
-  LD (LDC8A),A
+  LD (LDC8A),A            ; Direction to other room = right
   CALL LAE09              ; Decode current room description to LDBF5
   LD DE,$001F             ; offset in the room description
   JP LAB85
@@ -1178,7 +1178,7 @@ LAE19:
   jr LADFF                ; Get address from table by index A, and return
 ;
 ; Check access and show Door Lock
-;
+;   LDC8B - Access code slot number
 LAE23:
   LD A,$28
   LD (LDC59),A            ; set delay factor
@@ -1187,9 +1187,10 @@ LAE23:
   LD E,A
   LD HL,LDCA2             ; Table with Access code slots
   ADD HL,DE
-  LD A,(HL)
+  LD A,(HL)               ; get value from the slot
   CP $01                  ; code was entered already?
   JP Z,LB00E              ; yes => Going to the next room
+; Need to enter the code
   LD B,$04
   LD HL,LDC8D             ; Buffer for entering access code
 LAE3D:
@@ -1197,28 +1198,27 @@ LAE3D:
   INC HL
   DJNZ LAE3D
   LD HL,LF468             ; Encoded screen: Door Lock panel popup
-;  LD BC,$0060             ; decode 96 bytes
-  CALL LADEE              ; Decode the screen to DBF5
+  CALL LADEE              ; Decode 96 bytes of the screen to DBF5
   CALL LB177              ; Display screen HL from tiles with Tileset2
   LD A,10     ; was: $05
   LD (LDCF3),A            ; Left margin size for text
   ld a,12     ; was: $06
   LD (LDCF4),A            ; Line interval for text
   CALL LB09B              ; Preparing to draw string with the prompt
-  LD HL,SE0DD             ; ": Door Locked :"
+  LD HL,SE0DD             ; "Door Locked"
   CALL LBEDE              ; Show message char-by-char
   LD HL,$440A
   LD (L86D7),HL           ; Set penRow/penCol
   CALL LAFFE              ; Get "Access code level N required" string by access level in DC8C
   CALL LBEDE              ; Show message HL char-by-char
   LD A,$25
-  LD (LDC82),A            ; set Inventory current
+  LD (LDC82),A            ; set current item number - "Enter" sign
   LD A,$A0    ; was: $50
   LD (LDC83),A            ; set X pos
   LD A,$60    ; was: $30
   LD (LDC84),A            ; set Y pos
   LD A,$06
-  LD (LDC57),A
+  LD (LDC57),A            ; set Door Lock pos
 LAE80:
   ld hl,Tileset3+15*32    ; Selection box tile
   PUSH HL
@@ -1238,11 +1238,14 @@ LAE9B:
   CALL LA0F1              ; Scan keyboard
   CP $05                  ; Select key
   jr Z,LAEBA
-  CP $02                  ; left key?
+  cp $01                  ; Down key?
+  jp z,DoorLock_KeyDown
+  CP $02                  ; Left key?
   JP Z,LAF70              ;   Move left
-  CP $03                  ; right key?
+  CP $03                  ; Right key?
   JP Z,LAF86              ;   Move right
-;TODO: up/down keys
+  cp $04                  ; Up key?
+  jp z,DoorLock_KeyUp
   CP $07                  ; Escape key?
   jr NZ,LAE99             ;   no => continue the key waiting loop
   JP L9E2E                ; Exit Door Lock - Show the screen, continue the game main loop
@@ -1250,13 +1253,14 @@ LAE9B:
 LAEBA:
   call WaitKeyUp          ; Wait until no key pressed to prevent double-reads of the same key
   LD A,(LDC82)            ; get current selection
-  CP $25                  ; "Enter" button?
-  JP Z,LAF14              ; Code entered, need to check it
-  LD A,(LDC57)
+  CP $25                  ; "Enter" sign?
+  JP Z,LAF14              ; yes => Code entered, need to check it
+  LD A,(LDC57)            ; get Door Lock pos
   DEC A
   CP $01
   jr Z,LAE99              ; Return to Delay and wait for key in Door Lock
-  LD (LDC57),A
+  LD (LDC57),A            ; set Door Lock pos
+; Move entered code digits higher
   LD B,$03
   LD HL,LDC8D             ; Buffer for entering access code
   INC HL
@@ -1268,11 +1272,12 @@ LAED4:
   POP HL
   INC HL
   DJNZ LAED4
-  LD DE,$0003
-  LD HL,LDC8D             ; Buffer for entering access code
-  ADD HL,DE
+;  LD DE,$0003
+  LD HL,LDC8D+3           ; Buffer for entering access code
+;  ADD HL,DE
   LD A,(LDC82)            ; get current selection
   LD (HL),A               ; put in the buffer
+; Show four tiles with the entered code
   LD HL,LDC8D             ; Buffer for entering access code
   LD A,4    ; was: $02
   LD C,A
@@ -1307,10 +1312,10 @@ LAEEF:
 ;
 ; Access code entered, need to check
 LAF14:
-  LD A,(LDC57)
+  LD A,(LDC57)            ; get Door Lock pos
   DEC A
   CP $01
-  jr Z,LAF2C
+  jr Z,LAF2C              ; => Code Accepted
 ; Invalid Code
 LAF1D:
   CALL LB09B              ; Preparing to draw string with the result
@@ -1344,36 +1349,63 @@ LAF34:
   LD (HL),$01             ; Mark code here was accepted
   call LBA81              ; Delay x40 - added to have a pause after the Accepted message
   JP LB00E                ; Going to the next room
-; Move selection Left
+;
+DoorLock_KeyUp:
+  ld a,(LDC84)            ; get Y pos
+  cp $30                  ; top row already?
+  jp Z,LAE99              ; yes => Return to Delay and wait for key in Door Lock
+; Move selection up
+  call LAFD2              ; Draw selection box by XOR
+  ld a,(LDC84)            ; get Y pos
+  add a,-16               ;   one tile up
+  ld (LDC84),a            ; set Y pos
+  ld A,(LDC82)            ; get Inventory current
+  add a,-3
+  ld (LDC82),A            ; set Inventory current
+  jp LAE80
+DoorLock_KeyDown:
+  ld a,(LDC84)            ; get Y pos
+  cp $60                  ; bottom row already?
+  jp Z,LAE99              ; yes => Return to Delay and wait for key in Door Lock
+; Move selection down
+  call LAFD2              ; Draw selection box by XOR
+  ld a,(LDC84)            ; get Y pos
+  add a,16                ;   one tile down
+  ld (LDC84),a            ; set Y pos
+  ld A,(LDC82)            ; get Inventory current
+  add a,3
+  ld (LDC82),A            ; set Inventory current
+  jp LAE80
+; Move selection right
 LAF5A:
   CALL LAFD2              ; Draw selection box by XOR
   LD A,(LDC82)            ; get Inventory current
-  INC A                   ; left
+  INC A                   ;   right
   LD (LDC82),A            ; set Inventory current
   RET
-; Move selection Right
+; Move selection left
 LAF65:
   CALL LAFD2              ; Draw selection box by XOR
   LD A,(LDC82)            ; get Inventory current
-  DEC A                   ; right
+  DEC A                   ;   left
   LD (LDC82),A            ; set Inventory current
   RET
-; Door Lock Move left
+; Door Lock - key Left
 LAF70:
   LD A,(LDC83)            ; get X pos
   CP $80      ; was: $40
   jr Z,LAF9C              ; => Move prev row
-  CALL LAF65              ; Move selection Right
+  CALL LAF65              ; Move selection Left
   LD A,(LDC83)            ; get X pos
   ADD A,-16   ; was: $F8
   LD (LDC83),A            ; set X pos
   JP LAE80
-; Door Lock Move right
+; Door Lock - key Right
 LAF86:
   LD A,(LDC83)            ; get X pos
   CP $A0      ; was: $50
   jr Z,LAFB7              ; => Move next row
-  CALL LAF5A              ; Move selection Left
+  CALL LAF5A              ; Move selection Right
   LD A,(LDC83)            ; get X pos
   ADD A,16    ; was: $08
   LD (LDC83),A            ; set X pos
@@ -1383,7 +1415,7 @@ LAF9C:
   LD A,(LDC84)            ; get Y pos
   CP $30      ; was: $18
   JP Z,LAE99              ; Return to Delay and wait for key in Door Lock
-  CALL LAF65              ; Move selection Right
+  CALL LAF65              ; Move selection Left
   LD A,$A0    ; was: $50
   LD (LDC83),A            ; set X pos
   LD A,(LDC84)            ; get Y pos
@@ -1395,7 +1427,7 @@ LAFB7:
   LD A,(LDC84)            ; get Y pos
   CP $60      ; was: $30
   JP Z,LAE99              ; Return to Delay and wait for key in Door Lock
-  CALL LAF5A              ; Move selection Left
+  CALL LAF5A              ; Move selection Right
   LD A,$80    ; was: $40
   LD (LDC83),A            ; set X pos
   LD A,(LDC84)            ; get Y pos
@@ -1451,49 +1483,49 @@ LB00E:
   LD (LDB82),A            ; mark we don't have an alien in the room
   LD A,$40
   LD (LDC59),A            ; set delay factor
-  LD A,(LDC8A)
-  CP $01
+  LD A,(LDC8A)            ; get Direction to other room
+  CP $01                  ; down?
   jr Z,LB03E
-  CP $02
+  CP $02                  ; up?
   jr Z,LB04F
-  CP $03
+  CP $03                  ; left?
   jr Z,LB061
-  CP $04
+  CP $04                  ; right?
   jr Z,LB06E
 LB02E:
-  LD B,$08
+  LD B,$08                ; x8
 LB030:
   CALL LB2D0              ; Delay
   DJNZ LB030
-  LD A,(LDC86)
+  LD A,(LDC86)            ; get new room number
   LD (LDB79),A            ; set the room number
   JP L9E2E                ; Show the screen, continue the game main loop
 LB03E:
   LD A,$30      ; was: $18
   LD (LDB77),A            ; set Y pixel coord
-  XOR A
+  XOR A                   ; down
   LD (LDB75),A            ; Direction/orientation
   LD A,$03
-  LD (LDB78),A            ; set Y tile coord
+  LD (LDB78),A            ; set Y tile coord = 3
   JP LB02E
 LB04F:
   LD A,$60      ; was: $30
   LD (LDB77),A            ; set Y pixel coord
-  LD A,$01
+  LD A,$01                ; up
   LD (LDB75),A            ; Direction/orientation
   LD A,$06
-  LD (LDB78),A            ; set Y tile coord
+  LD (LDB78),A            ; set Y tile coord = 6
   JP LB02E
 LB061:
   LD A,$0A
-  LD (LDB76),A            ; set X coord = 10
-  LD A,$02
+  LD (LDB76),A            ; set X tile coord = 10
+  LD A,$02                ; left
   LD (LDB75),A            ; Direction/orientation
   JP LB02E
 LB06E:
   LD A,$01
-  LD (LDB76),A            ; set X coord = 1
-  LD A,$03
+  LD (LDB76),A            ; set X tile coord = 1
+  LD A,$03                ; right
   LD (LDB75),A            ; Direction/orientation
   JP LB02E
 ;

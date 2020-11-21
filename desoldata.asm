@@ -719,7 +719,7 @@ LDBF5:
   DEFB $00,$00,$00,$00,$00,$00,$00,$00
 LDC55:  DEFB $03          ; Menu background phase: $00..$07
 LDC56:  DEFB $00          ; Offset in the room, in tiles ??
-LDC57:  DEFB $00          ; ?? $06 DEC
+LDC57:  DEFB $00          ; Door Lock pos ?? $06 DEC
 ;  DEFB $00
 LDC59:  DEFB $44          ; Delay factor: $64 $28 $00 $44 $96 $FF
 LDC5A:  DEFB $00          ; Inventory items count??
@@ -737,7 +737,7 @@ LDC86:  DEFB $00          ; new room number??
 LDC87:  DEFB $00          ; ??
 LDC88:  DEFB $00          ; current offset in the room description $00..$30
 LDC89:  DEFB $00          ; Current inventory item / Picked up item??
-LDC8A:  DEFB $00          ; ?? $01 $02 $03 $04
+LDC8A:  DEFB $00          ; Direction to other room ?? $01 down, $02 up, $03 left, $04 right
 LDC8B:  DEFB $FF          ; Access code slot number - see LDCA2 table
 LDC8C:  DEFB $00          ; Access code level ??
 LDC8D:  DEFB $00,$00,$00,$00,$00    ; Buffer for entering access code
