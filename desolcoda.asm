@@ -75,6 +75,43 @@ start_2:
 ;  call WaitAnyKey
 ;  call ClearShadowScreen
 ;  call ShowShadowScreen
+
+;  ld hl,$012C
+;  ld de,$0006
+;  call ROM_BEEPER
+;  call LBA81
+
+;  ld hl,$0258
+;  ld de,$0004
+;  call ROM_BEEPER
+;  call LBA81
+
+;  ld hl,938    ; pitch
+;  ld de,1      ; duration
+;  call ROM_BEEPER
+;  call LBA81
+
+;  ld hl,938 	; pitch
+;  ld de,2     ; duration
+;  call ROM_BEEPER
+ ; call LBA81
+
+;  ld de,20    ; duration
+;  ld hl,938   ; pitch
+;  call ROM_BEEPER
+;  ld de,40    ; duration
+;  ld hl,469   ; pitch
+;  call ROM_BEEPER
+;  call LBA81
+
+;  ld de,60    ; duration
+;  ld hl,561   ; pitch
+;  call ROM_BEEPER
+;  ld de,60    ; duration
+;  ld hl,964   ; pitch
+;  call ROM_BEEPER
+;  call LBA81
+
   jp start
 
 ;----------------------------------------------------------------------------
@@ -90,6 +127,14 @@ DesolateDataBeg:
 
 ;----------------------------------------------------------------------------
 DesolateCodeBeg:
+
+ROM_BEEPER 		EQU $03B5   ; hl=pitch  de=duration
+
+; Sound for "Look" or "Shoot" action
+SoundLookShoot:
+  ld hl,$0190
+  ld de,$0004
+  jp ROM_BEEPER
 
 ; Wait for any key
 WaitAnyKey:

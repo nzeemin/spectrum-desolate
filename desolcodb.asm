@@ -705,6 +705,7 @@ LAAA8:
 ;
 ; Look / Shoot key pressed
 LAAAF:
+  call SoundLookShoot
   LD A,(LDB7D)            ; Get look/shoot switch value
   CP $01                  ; shoot mode?
   JP Z,LB758              ; yes => Shooting
@@ -1226,6 +1227,7 @@ LAE9B:
   JP L9E2E                ; Exit Door Lock - Show the screen, continue the game main loop
 ; Door Lock Select key pressed
 LAEBA:
+  call SoundLookShoot
   call WaitKeyUp          ; Wait until no key pressed to prevent double-reads of the same key
   LD A,(LDC82)            ; get current selection
   CP $25                  ; "Enter" sign?
@@ -1912,6 +1914,8 @@ LB301:
 ;
 ; Inventory Look/shoot key pressed
 LB307:
+  call SoundLookShoot
+  call WaitKeyUp
   call ClearInventoryMesage
   LD HL,LDC5B             ; Inventory list
   LD A,(LDC82)            ; get Inventory current
@@ -2982,6 +2986,7 @@ LBA88:
 ;
 ; Select on Menu item
 LBA93:
+  call SoundLookShoot
   LD A,(LDB8F)            ; get Menu Y pos
   CP $3A
   jr Z,LBAB2              ; New menu item
@@ -3506,6 +3511,9 @@ LBEDE:
   LD A,(LDC85)            ; get Delay and copy screen flag
   OR A
   JR Z,LBEF9_1            ; Skip delay and copy screen
+;  ld de,1     ; duration
+;  ld hl,1     ; pitch
+;  call 949    ; call ROM beeper routine
   CALL LB2D0              ; Delay
   CALL ShowShadowScreen   ; Copy shadow screen to ZX screen
 LBEF9_1:
