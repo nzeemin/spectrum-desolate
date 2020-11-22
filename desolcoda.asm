@@ -206,29 +206,32 @@ DrawTileMasked:
   ld b,8        ; 8 row pairs
   call GetScreenAddr	; now HL = screen addr
 DrawTileMasked_1:
-  push bc
+;  push bc
+  ld de,24-1
 ; Draw 1st line
   ld a,(ix+$00) ; get mask
   and (hl)
   or (ix+$01)
   ld (hl),a     ; write 1st byte
   inc hl
-  ld c,a
   ld a,(ix+$02) ; get mask
   and (hl)
   or (ix+$03)
   ld (hl),a     ; write 2nd byte
-  ld b,a
-  ld de,24-1
   add hl,de     ; to the 2nd line
 ; Draw 2nd line
-  ld (hl),c     ; write 1st byte
+  ld a,(ix+$04) ; get mask
+  and (hl)
+  or (ix+$05)
+  ld (hl),a     ; write 1st byte
   inc hl
-  ld (hl),b     ; write 2nd byte
-  ld de,24-1
+  ld a,(ix+$06) ; get mask
+  and (hl)
+  or (ix+$07)
+  ld (hl),a     ; write 2nd byte
   add hl,de     ; to the next line
-  pop bc
-  ld de,$0004
+;  pop bc
+  ld de,$0008
   add ix,de
   djnz DrawTileMasked_1
   ret

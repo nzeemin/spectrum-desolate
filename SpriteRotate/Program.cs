@@ -163,9 +163,10 @@ namespace SpriteRotate
                 PrepareSpritesImpl(bmp, 168, 36, writer);
 
                 writer.WriteLine(";");
-                writer.WriteLine("; Tileset 2, 127 tiles 16x8 with mask");
+                writer.WriteLine("; Tileset 2, 126 tiles 16x8 with mask");
                 writer.WriteLine("Tileset2:");
-                PrepareTilesetMaskedImpl(bmp, 228, 126, writer);
+                //PrepareTilesetMaskedImpl(bmp, 228, 126, writer);
+                PrepareSpritesImpl(bmp, 228, 126, writer);
 
                 writer.WriteLine(";");
 
@@ -787,7 +788,7 @@ namespace SpriteRotate
                 byte[] savdmp = File.ReadAllBytes("memdmp.bin");
                 Array.Copy(savdmp, 0, memdmp, 0, 65536);
 
-                using (var bmp = new Bitmap(106 * 2 * 13 + 16, 74 * 2 * 6 + 64, PixelFormat.Format32bppArgb))
+                using (var bmp = new Bitmap(106 * 2 * 13 + 16, 74 * 14 + 32, PixelFormat.Format32bppArgb))
                 {
                     Graphics g = Graphics.FromImage(bmp);
                     g.TextRenderingHint = TextRenderingHint.AntiAliasGridFit;
@@ -811,6 +812,42 @@ namespace SpriteRotate
 
                         g.DrawString($"{r}: {addr:X4}", font, Brushes.Navy, xr, yr - 12);
                     }
+
+                    addr = 0xEB27;
+                    xr = x0 + 0 * 106 * 2;
+                    yr = y0 + 6 * 74 * 2 + 6;
+                    DrawRoomNewTiles(g, xr, yr, DecodeRoom(addr, 96), bmpTiles, true);
+                    g.DrawString($"{addr:X4}", font, Brushes.Navy, xr, yr - 12);
+
+                    addr = 0xF329;
+                    xr = x0 + 1 * 106 * 2;
+                    yr = y0 + 6 * 74 * 2 + 6;
+                    DrawRoomNewTiles(g, xr, yr, DecodeRoom(addr, 96), bmpTiles, true);
+                    g.DrawString($"{addr:X4}", font, Brushes.Navy, xr, yr - 12);
+
+                    addr = 0xF42F;
+                    xr = x0 + 2 * 106 * 2;
+                    yr = y0 + 6 * 74 * 2 + 6;
+                    DrawRoomNewTiles(g, xr, yr, DecodeRoom(addr, 96), bmpTiles, true);
+                    g.DrawString($"{addr:X4}", font, Brushes.Navy, xr, yr - 12);
+
+                    addr = 0xF468;
+                    xr = x0 + 3 * 106 * 2;
+                    yr = y0 + 6 * 74 * 2 + 6;
+                    DrawRoomNewTiles(g, xr, yr, DecodeRoom(addr, 96), bmpTiles, true);
+                    g.DrawString($"{addr:X4}", font, Brushes.Navy, xr, yr - 12);
+
+                    addr = 0xF4B5;
+                    xr = x0 + 4 * 106 * 2;
+                    yr = y0 + 6 * 74 * 2 + 6;
+                    DrawRoomNewTiles(g, xr, yr, DecodeRoom(addr, 96), bmpTiles, true);
+                    g.DrawString($"{addr:X4}", font, Brushes.Navy, xr, yr - 12);
+
+                    addr = 0xF515;
+                    xr = x0 + 5 * 106 * 2;
+                    yr = y0 + 6 * 74 * 2 + 6;
+                    DrawRoomNewTiles(g, xr, yr, DecodeRoom(addr, 96), bmpTiles, false);
+                    g.DrawString($"{addr:X4}", font, Brushes.Navy, xr, yr - 12);
 
                     var roomsfilename = "roomsnew.png";
                     bmp.Save(roomsfilename);
@@ -1322,7 +1359,7 @@ namespace SpriteRotate
             }
         }
 
-        static void DrawRoomNewTiles(Graphics g, int xr, int yr, byte[] room, Bitmap bmpTiles)
+        static void DrawRoomNewTiles(Graphics g, int xr, int yr, byte[] room, Bitmap bmpTiles, bool useTileset2 = false)
         {
             for (int row = 0; row < 8; row++)
             {
@@ -1334,6 +1371,7 @@ namespace SpriteRotate
 
                     var tilex = 8 + (tile / 16) * 20;
                     var tiley = 8 + (tile % 16) * 20;
+                    if (useTileset2) tilex += 220;
 
                     g.DrawImage(bmpTiles, x, y, new Rectangle(tilex, tiley, 16, 16), GraphicsUnit.Pixel);
                 }

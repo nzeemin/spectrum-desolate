@@ -767,8 +767,7 @@ LAB28:
   PUSH BC
   PUSH DE
   LD HL,LEB27             ; Decode from: Small message popup
-;  LD BC,$0060             ; Number of bytes to decode = 96
-  call LADEE              ; Decode the screen to LDBF5
+  call LADEE              ; Decode 96 bytes of the screen to LDBF5
 ;  LD DE,LDBF5             ; Decode to
 ;  CALL LB9F1              ; Decode the screen
 ;  LD HL,LDBF5
@@ -1265,6 +1264,7 @@ LAEEF:
   ADD HL,HL
   ADD HL,HL
   add hl,hl               ; now HL = L * 32
+  add hl,hl               ; now HL = L * 64
   LD DE,Tileset2
   ADD HL,DE
   PUSH BC
@@ -1671,6 +1671,7 @@ LB177_0:
   ADD HL,HL
   ADD HL,HL
   add hl,hl	; * 32
+  add hl,hl	; * 64
   LD DE,Tileset2
   add hl,de
   ex de,hl
