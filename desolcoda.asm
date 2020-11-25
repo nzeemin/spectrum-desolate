@@ -7,8 +7,7 @@ CHEAT_HAVE_WEAPON       EQU 0
 CHEAT_HEALTH_999        EQU 0
 
 
-;TODO:  ORG $5FB4   ; = 24500
-  ORG $5E00
+  ORG $5FB4   ; = 24500
 
 start:
   call LBA07  ; Show titles and go to Menu
