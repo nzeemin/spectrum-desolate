@@ -7,7 +7,7 @@ rem https://stackoverflow.com/questions/2048509/how-to-echo-with-different-color
 for /F "delims=#" %%E in ('"prompt #$E# & for %%E in (1) do rem"') do set "ESCchar=%%E"
 
 @echo on
-bin\pasmo desolcoda.asm desolcode.bin desolate.txt
+tools\pasmo desolcoda.asm desolcode.bin desolate.txt
 @if errorlevel 1 (
   echo %ESCchar%[91mFAILED%ESCchar%[0m
   exit /b

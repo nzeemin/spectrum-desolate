@@ -321,13 +321,13 @@ namespace SpriteRotate
         {
             using (var file = new StreamWriter("lineaddrs.txt"))
             {
-                for (int line = 40; line < 40 + 128; line += 2)
+                for (int line = 48; line < 48 + 128; line += 2)
                 {
-                    if ((line - 40) % 16 == 0)
+                    if ((line - 48) % 16 == 0)
                         file.Write("  DW ");
                     int addr = 0x4000 + ((line & 0x7) << 8) + ((line & 0x38) << 2) + ((line & 0xC0) << 5) + 4;
                     file.Write($"${addr:X4}");
-                    if ((line - 40) % 16 < 14)
+                    if ((line - 48) % 16 < 14)
                         file.Write(",");
                     else
                         file.WriteLine();

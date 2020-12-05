@@ -18,17 +18,17 @@ Links:
 
 To run the game on Wabbitemu emulator:
  1. Run Wabbitemu, select ROM file
- 2. File Open DesData.8xp
- 3. MEM, select Archive; PRGM, select DesData; ENTER
- 4. File Open Desolate.8xp
- 5. File Open MIRAGEOS.8xk
- 6. APPS select MirageOS
+ 2. File Open `DesData.8xp`
+ 3. <kbd>MEM</kbd>, select Archive; <kbd>PRGM</kbd>, select DesData; <kbd>ENTER</kbd>
+ 4. File Open `Desolate.8xp`
+ 5. File Open `MIRAGEOS.8xk`
+ 6. <kbd>APPS</kbd> select MirageOS
  7. Select Main > Desolate
 
 
-## Tools for the bin folder
+## Tools for the tools folder
 
- - `bas2tap.exe` and `tap2tzx.exe` utilities
+ - `bas2tap.exe`, `bin2tap.exe`, `tap2tzx.exe` utilities
    https://sourceforge.net/projects/zxspectrumutils/files/
 
  - `pasmo.exe` cross-assembler
@@ -36,4 +36,13 @@ To run the game on Wabbitemu emulator:
 
  - `sjasmplus.exe`
    https://github.com/z00m128/sjasmplus/releases
+
+ - `lzsa.exe`
+   https://github.com/emmanuel-marty/lzsa/releases
+
+
+## Links
+
+ - [Discussion on zx-pk.ru (in Russian)](https://zx-pk.ru/threads/32431-desolate-port-s-ti-83-plus.html)
+ - [Desolate port on Vector-06c](https://github.com/nzeemin/vector06c-desolate)
 

@@ -48,12 +48,15 @@ L9E2E:
 ; Quit menu item selected
 L9E51:
   call LBC7D              ; Clear shadow screen and copy on ZX screen
+  call ScreenThemeNite    ; switch to dark theme
   ld hl,$3014
   ld (L86D7),hl
   ld hl,SQuit
   call LBEDE              ; Show the message
   call ShowShadowScreen
   call WaitAnyKey
+  call LBC7D              ; Clear and show shadow screen
+  call ScreenThemeLite    ; switch to light theme
   jp LBA3D                ; Return to Menu
 
 ; Put tile on the screen (NOT aligned to 8px column), 16x8 -> 16x16 on shadow screen
@@ -769,9 +772,6 @@ LAB28:
   PUSH DE
   LD HL,LEB27             ; Decode from: Small message popup
   call LADEE              ; Decode 96 bytes of the screen to LDBF5
-;  LD DE,LDBF5             ; Decode to
-;  CALL LB9F1              ; Decode the screen
-;  LD HL,LDBF5
   CALL LB177              ; Display screen HL from tiles with Tileset2
   POP DE
   POP BC
@@ -1947,8 +1947,7 @@ LB33F:
   LD (LDC59),A            ; set delay factor
   LD (LDC85),A            ; Use delay and copy screen in LBEDE
   LD HL,LF42F             ; Encoded screen for Data cartridge reader
-;  LD BC,$0060             ; decode 96 bytes
-  CALL LADEE              ; Decode the screen to DBF5
+  CALL LADEE              ; Decode 96 bytes of the screen to DBF5
   CALL LB177              ; Display screen HL from tiles with Tileset 2
   LD A,(LDCF8)
   CP $01                  ; was cartridge selected?
@@ -2933,6 +2932,7 @@ LBA07:
   CALL LBC34              ; Delay x20
   XOR A
   LD (LDC85),A            ; Skip delay and copy screen in LBEDE
+  call ScreenThemeLite    ; switching to the light theme on Main Menu
   jr LBA3D                ; Return to Menu
 
 MenuFromGame:
@@ -2944,9 +2944,7 @@ MenuFromGame:
 LBA3D:
   LD A,(LDC55)            ; get Menu background phase
   INC A
-  CP $08
-;TODO: Just AND $07
-  CALL Z,LBC2F
+  AND $07
   LD (LDC55),A            ; set Menu background phase
   DI
   LD HL,LF515             ; Main menu screen moving background, 96 tiles
@@ -3062,6 +3060,7 @@ LBB17:
   LD HL,LDC9E             ; level 4 access code buffer
   CALL LBC6B              ; Generate random code
   CALL LBC7D              ; Clear shadow screen and copy to ZX screen
+  call ScreenThemeNite    ; switching to dark theme for story mode
   LD A,$44
   LD (LDC59),A            ; set delay factor
   LD (LDC85),A            ; Use delay and copy screen in LBEDE
@@ -3097,6 +3096,8 @@ LBB7E:
   LD (LDC85),A            ; Skip delay and copy screen in LBEDE
 ; Continue menu item selected
 LBB82:
+  call LBC7D              ; Clear shadow screen and copy to ZX screen
+  call ScreenThemeLite    ; switching to light theme opening the game screen
   LD A,$01
   LD (LDB73),A
   LD A,$FF
@@ -3153,11 +3154,7 @@ LBBDC:
 ;
 LBBEC:
   LD HL,LF329             ; Decode from - Encoded screen for Inventory/Info popup
-;  LD BC,$0060             ; Counter = 96 bytes or tiles
-  call LADEE              ; Decode the screen to LDBF5
-;  LD DE,LDBF5             ; Where to decode
-;  CALL LB9F1              ; Decode the screen
-;  LD HL,LDBF5
+  call LADEE              ; Decode 96 bytes of the screen to LDBF5
   CALL LB177              ; Display screen HL from tiles with Tileset 2
   LD A,10   ; was: $05
   LD (LDCF3),A            ; Left margin size for text
@@ -3180,11 +3177,6 @@ LBC29:
   LD A,(LDC55)            ; get Menu background phase
   ADD A,L
   LD L,A
-  RET
-;
-LBC2F:
-  XOR A
-  LD (LDC55),A            ; clear Menu background phase
   RET
 ;
 ; Delay x40
@@ -3384,7 +3376,8 @@ LBD85:
   LD A,14     ; was: $07
   LD (LDCF4),A            ; Line interval for text
 ; Showing end-of-story screen
-  CALL ClearShadowScreen
+  call LBC7D              ; Clear and show shadow screen
+  call ScreenThemeNite    ; switch to dark theme for story mode
   call ClearPenRowCol
   LD HL,SE11B             ; "The onboard guidance system picks up a ...
   CALL LBEDE              ; Show message char-by-char
@@ -3549,15 +3542,16 @@ LBF54:
 ;
 ; Credits menu item selected
 LBF64:
-  CALL ClearShadowScreen
-  CALL ShowShadowScreen   ; Copy shadow screen to ZX screen
+  call LBC7D              ; Clear and show shadow screen
+  call ScreenThemeNite    ; switching to dark theme for Credits
   CALL LBF54              ; Set variables for Credits
   JR LBF81                ; Credits screen text scrolls up
 ;
 ; The End
 ;
 LBF6F:
-  CALL ClearShadowScreen
+  call LBC7D              ; Clear and show shadow screen
+  call ScreenThemeNite    ; switching to dark theme for End and Credits
   CALL LBF54              ; Set variables for Credits
   LD HL,$2E46
   LD (L86D7),HL           ; Set penRow/penCol
@@ -3575,7 +3569,7 @@ LBF6F_2:
   call ShowShadowScreen   ; Copy shadow screen to ZX screen
 LBF6F_3:
   CALL LA0F1              ; Scan keyboard
-  jp nz,LBA3D             ; any key pressed => Return to main Menu
+  jp nz,Credits_exit      ; any key pressed => Return to main Menu
   CALL LBFD5              ; Scroll shadow screen up one line
 LBF6F_4:
   LD A,(LDD56)
@@ -3605,6 +3599,9 @@ Credits_5:
   CP $49
   jr NZ,LBF6F_3
   call LBA81              ; Delay x40 - added to have a pause after the last line
+Credits_exit:
+  call LBC7D              ; Clear and show shadow screen
+  call ScreenThemeLite    ; switching to light theme for Main Menu
   JP LBA3D                ; Return to main Menu
 ; Scroll shadow screen up 1px
 ; Click timing: 30 + (137*24-1)*21+16 + 10 = 69083

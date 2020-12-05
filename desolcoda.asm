@@ -75,42 +75,6 @@ start_2:
 ;  call ClearShadowScreen
 ;  call ShowShadowScreen
 
-;  ld hl,$012C
-;  ld de,$0006
-;  call ROM_BEEPER
-;  call LBA81
-
-;  ld hl,$0258
-;  ld de,$0004
-;  call ROM_BEEPER
-;  call LBA81
-
-;  ld hl,938    ; pitch
-;  ld de,1      ; duration
-;  call ROM_BEEPER
-;  call LBA81
-
-;  ld hl,938 	; pitch
-;  ld de,2     ; duration
-;  call ROM_BEEPER
- ; call LBA81
-
-;  ld de,20    ; duration
-;  ld hl,938   ; pitch
-;  call ROM_BEEPER
-;  ld de,40    ; duration
-;  ld hl,469   ; pitch
-;  call ROM_BEEPER
-;  call LBA81
-
-;  ld de,60    ; duration
-;  ld hl,561   ; pitch
-;  call ROM_BEEPER
-;  ld de,60    ; duration
-;  ld hl,964   ; pitch
-;  call ROM_BEEPER
-;  call LBA81
-
   jp start
 
 ;----------------------------------------------------------------------------
@@ -196,14 +160,14 @@ ReadKeyboard_map:
 
 ; ZX screen address list used to copy shadow screen lines on the ZX screen
 ScreenAddrs:
-  DW $40A4,$42A4,$44A4,$46A4,$40C4,$42C4,$44C4,$46C4
-  DW $40E4,$42E4,$44E4,$46E4,$4804,$4A04,$4C04,$4E04
-  DW $4824,$4A24,$4C24,$4E24,$4844,$4A44,$4C44,$4E44
-  DW $4864,$4A64,$4C64,$4E64,$4884,$4A84,$4C84,$4E84
-  DW $48A4,$4AA4,$4CA4,$4EA4,$48C4,$4AC4,$4CC4,$4EC4
-  DW $48E4,$4AE4,$4CE4,$4EE4,$5004,$5204,$5404,$5604
-  DW $5024,$5224,$5424,$5624,$5044,$5244,$5444,$5644
-  DW $5064,$5264,$5464,$5664,$5084,$5284,$5484,$5684
+  DW $40C4,$42C4,$44C4,$46C4,$40E4,$42E4,$44E4,$46E4
+  DW $4804,$4A04,$4C04,$4E04,$4824,$4A24,$4C24,$4E24
+  DW $4844,$4A44,$4C44,$4E44,$4864,$4A64,$4C64,$4E64
+  DW $4884,$4A84,$4C84,$4E84,$48A4,$4AA4,$4CA4,$4EA4
+  DW $48C4,$4AC4,$4CC4,$4EC4,$48E4,$4AE4,$4CE4,$4EE4
+  DW $5004,$5204,$5404,$5604,$5024,$5224,$5424,$5624
+  DW $5044,$5244,$5444,$5644,$5064,$5264,$5464,$5664
+  DW $5084,$5284,$5484,$5684,$50A4,$52A4,$54A4,$56A4
 
 ; Compare HL and DE
 CpHLDE:
@@ -443,7 +407,31 @@ DrawNumber_2:
 	call DrawChar
 	ret 
 
-; Copy shadow screen 24*128=3072 bytes to ZX screen using pop/push
+;
+ScreenThemeNite:
+  ld a,$05                ; attribute for dark/story mode
+  jr ScreenTheme_0
+;
+ScreenThemeLite:
+  ld a,$38                ; attribute for light/game mode
+ScreenTheme_0:
+  ld hl,$58A2             ; ZX screen attribute address, top-left
+  ld c,18                 ; height in attribute rows
+ScreenTheme_1:
+  ld b,28                 ; width of the area
+ScreenTheme_2:
+  ld (hl),a
+  inc hl
+  djnz ScreenTheme_2
+  inc hl
+  inc hl
+  inc hl
+  inc hl
+  dec c
+  jr nz,ScreenTheme_1
+  ret
+
+; Copy shadow screen 24*128=3072 bytes to ZX screen
 ; Second version, on LDIs
 ; Clock timing: 31 + (433+398+34) * 64 + 10 = 55401 (was 61279 on the DRAFT version with POPs/PUSHes)
 ShowShadowScreen:
