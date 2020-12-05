@@ -758,7 +758,7 @@ LDCA2:    ; Table with Access code slots - marks where door locks codes accepted
   DEFB $00,$00,$00,$00,$00,$00,$00,$00
 LDCF2:  DEFB $00          ; ?? $00 $01
 LDCF3:  DEFB $00          ; Left margin size for text
-LDCF4:  DEFB $0E          ; Line interval for text
+LDCF4:  DEFB $0E          ; Line interval for text: 12 or 14
 LDCF5:  DEFB $00          ; ?? $00 $01
 ;  DEFB $00
 LDCF7:  DEFB $00          ; Weapon: $00 $01
