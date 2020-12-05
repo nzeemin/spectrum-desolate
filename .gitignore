@@ -3,11 +3,11 @@
 /SpriteRotate/bin
 /SpriteRotate/obj
 /SpriteRotate/.vs
-/desolate.txt
 /*.tap
 /*.tzx
 /*.bin
+/*.txt
 /original/skoolkit/desolate
 /original/x-*
-/desolate.sjbin
-/desolate.sjsym
+/desolcode.sjbin
+/desolcode.sjsym

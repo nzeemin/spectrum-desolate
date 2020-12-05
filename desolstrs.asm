@@ -43,7 +43,7 @@ SCR41: DEFM "by nzeemin, 2020",0
 ; Data Cartridge messages
 SE079: DEFM "Im hurt bad . . . I dont|think im gonna make it.|I changed the Level 1|Access Code to: 4057|"
        DEFM "Maybe that will hold|them off for a while . . .",0
-SE07B: DEFM "For security reasons I|had to change the|Level 2 Access Code.|Maybe now the crew|will stop",$02
+SE07B: DEFM "For security reasons|I had to change the|Level 2 Access Code.|Maybe now the crew|will stop",$02
        DEFM "stealing",$02,"stuff!|It is:",0
 SE07D: DEFM "The system is going|haywire. The Level 3|Access Code was over-|written. I only just|recovered it."
        DEFM "Turns",$02,"out|it is:",0
@@ -69,7 +69,7 @@ SE091: DEFM "Capt Millin: We are|transporting a cargo|of genetically|modified cl
        DEFM "for field testing . . .",0
 SE093: DEFM "Capt Millin: I have|just recieved word|that the facility on|earth was destroyed.|"
        DEFM "We now carry the only|clone prototypes.",0
-SE095: DEFM "Willis: We are in BIG|trouble. Only 1 clone|survived the",$02,"meteorite|shower.",$02
+SE095: DEFM "Willis: We are in BIG|trouble.",$02,"Only one",$02,"clone|survived the",$02,"meteorite|shower.",$02
        DEFM "And the",$02,"system|says Re-animation will|take over 6 hours!!!",0
 SE097: DEFM "This is ludicrous!|65 credits for",$02,"a proton|bar? How are we|meant to snack while|we work? "
        DEFM "The agency|is",$02,"getting",$02,"on",$02,"my",$02,"nerves.",0

@@ -51,24 +51,6 @@ start_2:
 ;  call LBD85  ; Final
 ;  call LBF6F  ; The End
 
-;  call ShowScreen
-;  call ClearScreen
-
-;  ld ix,Tileset3+32*2
-;  ld e,0
-;  ld l,0
-;  call DrawTile
-
-;  ld ix,Tileset2+32*$20
-;  ld e,0
-;  ld l,0
-;  call DrawTileMasked
-
-;  call ClearPenRowCol
-;  ld hl,87
-;  call DrawNumber5
-;  call WaitAnyKey
-
 ;  call ShowShadowScreen
 
 ;  call WaitAnyKey
