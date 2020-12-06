@@ -1029,6 +1029,12 @@ LE01F:          ; Table of strings: access code messages
   DEFW SAccessLevel2
   DEFW SAccessLevel3
   DEFW SAccessLevel4
+DoorLockLevelEntered:  ; Table of flags on which levels access codes was already entered
+  DEFB $01
+  DEFB $00    ; level 1 code entered
+  DEFB $00    ; level 2 code entered
+  DEFB $00    ; level 3 code entered
+  DEFB $00    ; level 4 code entered
 
 ;----------------------------------------------------------------------------
 
