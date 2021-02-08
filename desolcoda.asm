@@ -10,6 +10,7 @@ CHEAT_HEALTH_999        EQU 0
   ORG $5FB4   ; = 24500
 
 start:
+  call ClearShadowScreen
   call LBA07  ; Show titles and go to Menu
 
 ; Cheat code to get all door access codes
@@ -233,11 +234,31 @@ DrawString:
   inc hl
   or a
   ret z
-  push hl
   call DrawChar
-  pop hl
   jr DrawString
 
+; Draw decimal number HL in 5 digits
+DrawNumber5:
+	ld	bc,-10000
+	call	DrawNumber_1
+	ld	bc,-1000
+	call	DrawNumber_1
+; Draw decimal number HL in 3 digits
+DrawNumber3:
+	ld	bc,-100
+	call	DrawNumber_1
+	ld	c,-10
+	call	DrawNumber_1
+	ld	c,-1
+DrawNumber_1:
+	ld	a,'0'-1
+DrawNumber_2:
+	inc	a
+	add	hl,bc
+	jr	c,DrawNumber_2
+	sbc	hl,bc
+;	jp DrawChar
+;
 ; Draw character on the screen using FontProto
 ;   A = character to show: $00-$1F space with A width; $20 space
 DrawChar:
@@ -363,31 +384,7 @@ DrawChar_fin:
   pop hl
   ret
 DrawChar_width:   DB 0    ; Saved symbol width
-DrawChar_row0:    DB 0    ; Saved first row number
 DrawChar_row:     DB 0    ; Saved current row number
-
-; Draw decimal number HL in 5 digits
-DrawNumber5:
-	ld	bc,-10000
-	call	DrawNumber_1
-	ld	bc,-1000
-	call	DrawNumber_1
-; Draw decimal number HL in 3 digits
-DrawNumber3:
-	ld	bc,-100
-	call	DrawNumber_1
-	ld	c,-10
-	call	DrawNumber_1
-	ld	c,-1
-DrawNumber_1:
-	ld	a,'0'-1
-DrawNumber_2:
-	inc	a
-	add	hl,bc
-	jr	c,DrawNumber_2
-	sbc	hl,bc
-	call DrawChar
-	ret 
 
 ;
 ScreenThemeNite:
@@ -561,11 +558,11 @@ GetRandom11_1:
 ;----------------------------------------------------------------------------
 DesolateCodeEnd:
 
-; Shadow screen, 192 x 138 pixels
-;   12*2*(64*2+10) = 3312 bytes
-ShadowScreen EQU $F300
+; Shadow screen, 192 x 140 pixels
+;   12*2*(64*2+12) = 3360 bytes
+ShadowScreen EQU $F2D0
 ;ShadowScreen:
-;  DEFS 3312,$00
+;  DEFS 3360,$00
 
   IF DesolateCodeEnd > ShadowScreen
   .ERROR DesolateCodeEnd overlaps ShadowScreen

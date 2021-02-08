@@ -415,7 +415,7 @@ LA8CD:
   ADD A,A
   ADD A,A                 ; now A = Direction * 4
   JR LA8E9
-LA8DF:
+LA8DF:                    ; Shooting animation
   LD HL,LDE47             ; Table with Player's tile numbers
   LD A,(LDB75)            ; Direction/orientation
   ADD A,A
@@ -527,8 +527,8 @@ LA966:
 LA97C:
   XOR A                   ; down
   LD (LDB75),A            ; set Direction/orientation
-  CALL LAA60
-  CP $01
+  CALL LAA60              ; get byte from the room after movement
+  CP $01                  ; free block?
   JP NZ,LA8CD
   LD A,(LDB77)            ; get Y pixel coord
   PUSH AF
@@ -554,7 +554,7 @@ LA99B:
 LA9B3:
   LD A,$01                ; up
   LD (LDB75),A            ; Direction/orientation
-  CALL LAA60
+  CALL LAA60              ; get byte from the room after movement
   CP $01
   JP NZ,LA8CD
   LD A,(LDB77)            ; get Y pixel coord
@@ -596,7 +596,7 @@ LA9EB:
 LAA03:
   LD A,$02                ; left
   LD (LDB75),A            ; set Direction/orientation
-  CALL LAA60
+  CALL LAA60              ; get byte from the room after movement
   CP $01
   JP NZ,LA8CD
   LD A,(LDB76)            ; get X coord in tiles
@@ -619,7 +619,7 @@ LAA1A:
 LAA32:
   LD A,$03                ; right
   LD (LDB75),A            ; Direction/orientation
-  CALL LAA60
+  CALL LAA60              ; get byte from the room after movement
   CP $01
   JP NZ,LA8CD
   LD A,(LDB76)            ; get X coord in tiles
@@ -642,6 +642,8 @@ LAA5C:
   POP AF
   JP LA8CD
 ;
+; Get byte from the room at position after the movement
+;   A = byte from the room
 LAA60:
   CALL LADE5              ; Decode current room to LDBF5; HL = LDBF5
   LD A,(LDB76)            ; get X coord in tiles
@@ -655,10 +657,11 @@ LAA60:
   LD A,(LDB78)            ; Get Y tile coord
   LD B,A
   CALL LAA8D              ; For direction up - dec B, down - inc B
+;
 LAA78:
   ADD HL,DE
   DJNZ LAA78
-  LD A,(HL)
+  LD A,(HL)               ; get byte from the room
   RET
 ;
 ; For direction left - dec E, right - inc E
@@ -692,7 +695,7 @@ LAA9B:
   RET
 ;
 ; Get room offset in tiles for X = LDB76, Y = LDB78
-;   Returns the room offset in E, A, and LDC56
+;   Returns the room offset in A and LDC56
 LAA9D:
 ;  LD A,(LDB74)            ; $0C - line width in tiles ??
 ;  LD E,A
@@ -933,11 +936,11 @@ LAC54:
 ; Found dead body, no items on it
   CALL LAB28              ; Show small message popup
   CALL LAB73              ; Set penRow/penCol for small message popup
-  LD HL,SE0C3             ; " Another Dead Person"
+  LD HL,SE0C3             ; "Another Dead Person"
   CALL LBEDE              ; Show message char-by-char
   LD HL,$6612
   LD (L86D7),HL           ; Set penRow/penCol
-  LD HL,SE0C5             ; " Search Reveals Nothing"
+  LD HL,SE0C5             ; "Search Reveals Nothing"
   CALL LBEDE              ; Show message char-by-char
   JP LAD8C                ; Show screen and wait for Escape key
 ; Found dead body with some item on it
@@ -994,6 +997,7 @@ LACF6:
 ;  CALL LAD99              ; Wait for Down key
   jp LAB28                ; Show small message popup
 ;
+; Get item found on the dead body
 LAD00:
   CALL LACF6              ; Show screen, wait for any key, show small message popup
   LD HL,$5816
@@ -1137,7 +1141,7 @@ LAE09:
   LD HL,LDF27             ; Table of adresses for room descriptions
   CALL LADFF              ; Get address from table by index A
   LD BC,$0031             ; decode 49 bytes
-  jr LADF5
+  jr LADF5                ; Decode the room/screen to LDBF5
 ;
 ; Inventory item to item description string
 LAE19:
@@ -1314,7 +1318,7 @@ LAF14:
 LAF1D:
   CALL LB09B              ; Preparing to draw string with the result
   LD HL,SE0DF             ; "INVALID CODE"
-  CALL DrawString         ; Show message char-by-char
+  CALL DrawString         ; Show message
   CALL ShowShadowScreen   ; Copy shadow screen to ZX screen
   JP LAE99                ; Return to Delay and wait for key in Door Lock
 ; Validate the code entered
@@ -1333,7 +1337,7 @@ LAF34:
   DJNZ LAF34
   CALL LB09B              ; Preparing to draw string with the result
   LD HL,SE0E1             ; "Accepted!"
-  CALL DrawString         ; Show message char-by-char
+  CALL DrawString         ; Show message
   CALL ShowShadowScreen   ; Copy shadow screen to ZX screen
   LD A,(LDC8B)            ; get Access code slot number
   LD D,$00
@@ -1507,6 +1511,7 @@ LB030:
   LD A,(LDC86)            ; get new room number
   LD (LDB79),A            ; set the room number
   JP L9E2E                ; Show the screen, continue the game main loop
+; Going to the next room - down
 LB03E:
   LD A,$30      ; was: $18
   LD (LDB77),A            ; set Y pixel coord
@@ -1515,6 +1520,7 @@ LB03E:
   LD A,$03
   LD (LDB78),A            ; set Y tile coord = 3
   JP LB02E
+; Going to the next room - up
 LB04F:
   LD A,$60      ; was: $30
   LD (LDB77),A            ; set Y pixel coord
@@ -1529,6 +1535,7 @@ LB061:
   LD A,$02                ; left
   LD (LDB75),A            ; Direction/orientation
   JP LB02E
+; Going to the next room - right
 LB06E:
   LD A,$01
   LD (LDB76),A            ; set X tile coord = 1
@@ -1590,6 +1597,7 @@ LB0A2:
   LD (L86D7),HL           ; Set penRow/penCol
   LD HL,SE0BB             ; "- INVENTORY -"
   call DrawString         ; was: CALL LBEDE
+; Draw intentory items
   LD HL,LDB9C             ; Inventory table address
   LD B,$1D                ; 29 items
 LB0E0:                    ; loop by B
@@ -1600,6 +1608,7 @@ LB0E0:                    ; loop by B
   POP HL
   INC HL                  ; next item in the Inventory
   DJNZ LB0E0              ; continue loop
+; Draw empty slots
   LD A,(LDC5A)            ; get Inventory items count
   LD C,A
   LD A,$1E                ; 30 placeholders
@@ -1628,11 +1637,12 @@ LB0F3:
 LB119:
   JP LB1AA                ; go to Inventory screen loop
 ;
+; Inventory - move (X,Y) to the next row
 LB11C:
   LD A,16                 ; was: $08
   LD (LDC83),A            ; set X pos
   LD A,(LDC84)            ; get Y pos
-  ADD A,20                ; 10 lines lower; was: $0A
+  ADD A,20                ; 20 lines lower; was: $0A
   LD (LDC84),A            ; set Y pos
   RET
 ;
@@ -1642,7 +1652,7 @@ LB12A:
   LD A,$1D                ; 29 items
   SUB C
   PUSH AF
-  CALL LB529
+  CALL LB529              ; Convert Inventory item number to icon number
   LD L,A
   LD H,$00
   ADD HL,HL
@@ -1669,7 +1679,9 @@ LB12A:
   LD (LDC5A),A
   POP BC
   RET
-; Draw tile by XOR using X = (LDC83), Y = (LDC84), then go to next position
+;
+; Inventory - Draw tile by XOR using X = (LDC83), Y = (LDC84),
+; then go to next position
 LB15D:
   LD A,(LDC84)            ; get Y pos for Inventory
   LD L,A                  ; L = row
@@ -1735,7 +1747,7 @@ ClearInventoryMesage:
   pop hl
   ret
 ;
-; Inventory
+; Inventory screen loop
 LB1AA:
   XOR A
   LD (LDC82),A            ; clear Inventory current
@@ -1769,22 +1781,20 @@ LB1C1:
   jr LB1C1                ; continue the loop
 LB1DB:
   CALL LB2DE              ; Print string LDCF9
-  CALL LB2AF              ; Prepare item description string
-  RET
+  jp LB2AF                ; Prepare item description string
 LB1E2:
   CALL LB295              ; Draw Inventory selection square
   LD A,(LDC82)            ; get Inventory current
   DEC A                   ; left
   LD (LDC82),A            ; set Inventory current
-  CALL LB1DB              ; Print string LDCF9 and Prepare item description string
-  RET
+  jp LB1DB                ; Print string LDCF9 and Prepare item description string
 LB1F0:
   CALL LB295              ; Draw Inventory selection square
   LD A,(LDC82)            ; get Inventory current
   INC A                   ; right
   LD (LDC82),A            ; set Inventory current
-  CALL LB1DB              ; Print string LDCF9 and Prepare item description string
-  RET
+  jp LB1DB                ; Print string LDCF9 and Prepare item description string
+; Inventory Down key pressed
 Inventory_KeyDown:
   call LB295              ; Draw Inventory selection square
   ld a,(LDC84)            ; get Y pos
@@ -1798,6 +1808,7 @@ Inventory_KeyDown:
 Inventory_KeyDown_1:
   call LB1DB              ; Print string LDCF9 and Prepare item description string
   jp LB1BB                ; continue Inventory loop
+; Inventory Up key pressed
 Inventory_KeyUp:
   call LB295              ; Draw Inventory selection square
   ld a,(LDC84)            ; get Y pos
@@ -1811,20 +1822,22 @@ Inventory_KeyUp:
 Inventory_KeyUp_1:
   call LB1DB              ; Print string LDCF9 and Prepare item description string
   jp LB1BB                ; continue Inventory loop
+; Inventory Left key pressed
 LB1FE:                    ; Left key pressed
   LD A,(LDC83)            ; get X pos
   CP 16       ; was: $08
   JP Z,LB25F
-  CALL LB1E2
+  CALL LB1E2              ; Draw square and move left
   LD A,(LDC83)            ; get X pos
   ADD A,-16   ; was: $F8
   LD (LDC83),A            ; set X pos
   JP LB1BB                ; continue Inventory loop
+; Inventory Right key pressed
 LB214:                    ; Right key pressed
   LD A,(LDC83)            ; get X pos
   CP $A0      ; was: $50
   jr Z,LB22A
-  CALL LB1F0
+  CALL LB1F0              ; Draw square and move right
   LD A,(LDC83)            ; get X pos
   ADD A,16    ; was: $08
   LD (LDC83),A            ; set X pos
@@ -1833,14 +1846,15 @@ LB22A:
   LD A,(LDC84)            ; get Y pos
   CP $4C      ; was: $26  ; last row?
   jr Z,LB245
-  CALL LB1F0
+  CALL LB1F0              ; Draw square and move right
   LD A,(LDC84)            ; get Y pos
   ADD A,20    ; was: $0A
   LD (LDC84),A            ; set Y pos
   LD A,16     ; was: $08
   LD (LDC83),A            ; set X pos
   JP LB1BB                ; continue Inventory loop
-LB245:
+; Inventory - Put selection on the 1st item
+LB245:                    ; Last row
   CALL LB295              ; Draw Inventory selection square
   LD A,16     ; was: $08
   LD (LDC83),A            ; set X pos
@@ -1855,7 +1869,7 @@ LB25F:
   LD A,(LDC84)            ; get Y pos
   CP $24      ; was: $12
   jr Z,LB27A
-  CALL LB1E2
+  CALL LB1E2              ; Draw square and move left
   LD A,(LDC84)            ; get Y pos
   ADD A,-20   ; was: $F6
   LD (LDC84),A            ; set Y pos
@@ -1897,7 +1911,7 @@ LB2AF:
   CP $63                  ; empty slot?
   jr Z,LB2CC
   LD (LDC89),A            ; set as current item
-  jp LAE19
+  jp LAE19                ; Inventory item to item description string
 LB2CC:
   LD HL,SE0DB             ; "---- N o  I t e m ----"
   RET
@@ -1968,6 +1982,7 @@ LB307:
   SUB $11                 ; Data cartridge?
   JP C,LB3AF
   JP LB3E8                ; smth other
+;
 ; Data cartridge reader (or data cartridge) selected in the Inventory
 LB33F:
   LD A,$44
@@ -2201,12 +2216,13 @@ LB51F:
   LD (L86D7),HL	
   RET
 ;
+; Convert Inventory item number to icon number
 LB529:
   OR A
-  RET Z
+  RET Z                   ; 0 = Data cartridge reader
   SUB $11
   RET NC
-  LD A,$01
+  LD A,$01                ; Data cartridge
   RET
 ;
 ; Get value (LDB90+DE)
@@ -2277,12 +2293,14 @@ LB57B:
   CP $06
   JP Z,LB607              ; Alien right
   JP LB622
+;
+; Alien goes down
 LB59D:
   xor a
   LD (LDB86),A            ; set Alien direction/orientation = down
   CALL LB713
   OR A
-  JP Z,LB737              ; => Player injured by reflected bullet
+  JP Z,LB737              ; => Player injured by Alien moving to him
   CALL LB6B0
   CP $01
   JP NZ,LB622
@@ -2293,12 +2311,14 @@ LB59D:
   INC A                   ; down one tile
   LD (LDB80),A            ; set Alien Y tile coord
   JP LB622
+;
+; Alien goes up
 LB5C3:
   LD A,$01
   LD (LDB86),A            ; set Alien direction/orientation = up
   CALL LB713
   OR A
-  JP Z,LB737              ; => Player injured by reflected bullet
+  JP Z,LB737              ; => Player injured by Alien moving to him
   CALL LB6B0
   CP $01
   JP NZ,LB622
@@ -2314,7 +2334,7 @@ LB5E9:
   LD (LDB86),A            ; set Alien direction/orientation = left
   CALL LB713
   OR A
-  JP Z,LB737              ; => Player injured by reflected bullet
+  JP Z,LB737              ; => Player injured by Alien moving to him
   CALL LB6B0
   CP $01
   JP NZ,LB622
@@ -2327,7 +2347,7 @@ LB607:
   LD (LDB86),A            ; set Alien direction/orientation = right
   CALL LB713
   OR A
-  JP Z,LB737              ; => Player injured by reflected bullet
+  JP Z,LB737              ; => Player injured by Alien moving to him
   CALL LB6B0
   CP $01
   jr NZ,LB622
@@ -2357,7 +2377,7 @@ LB622:
 LB64B:
   CALL LB8CA              ; Is the Bullet hit the Alien?
   OR A
-  CALL Z,LB71F            ; yes => Killed the Alien
+  CALL Z,LB71F            ; Bullet hit the alien => Killed the Alien
   RET
 ;
 LB653:
@@ -2366,7 +2386,7 @@ LB653:
   RET Z                   ; dead => return
   CALL LB72E              ; Get value at offset $2F in the room description
   OR A                    ; do we have the alien?
-  RET Z                   ; we don't have it => jump
+  RET Z                   ; we don't have it => return
 ; We have an alien in the room description
   LD A,(LDB81)            ; get Alien type
   CP $02
@@ -2379,7 +2399,7 @@ LB653:
   ADD A,-16   ; $F8       ; one tile up
   LD L,A
   xor a                   ; clear draw flags
-  CALL LB69D              ; Get alien sprite address
+  CALL LB69D              ; Get alien head sprite address
   jp L9EDE                ; Draw sprite DE at column H row L, and return
 ;
 ; Clear Alien tile phase
@@ -2410,6 +2430,7 @@ LB685:
 LB698:                    ; Alien type 2
   LD DE,Sprites+$1A*64    ; was $EA87 - big Alien body sprite
   JR LB6A0
+; Get alien head sprite address in R4
 LB69D:
   LD DE,Sprites+$19*64    ; was $EA77 - big Alien head sprite
 LB6A0:
@@ -2522,7 +2543,7 @@ LB72E:
   LD A,(HL)
   RET
 ;
-; Player injured by reflected bullet
+; Player injured by Alien moving to him
 LB737:
   XOR A
   LD (LDB8D),A            ; clear shooting process mark
@@ -2544,8 +2565,8 @@ LB74C:
 ; Fire key pressed in Shoot mode
 LB758:
   LD A,(LDB8C)            ; get shooting flag
-  CP $01
-  jr Z,LB768
+  CP $01                  ; still in prev shooting?
+  jr Z,LB768              ; yes => jump
   LD A,$01
   LD (LDB8D),A            ; set shooting process flag
   LD (LDD55),A            ; set shooting flag for player's animation
@@ -2622,7 +2643,7 @@ LB7F3:
   LD A,(LDB88)            ; get bullet X coord in tiles
   INC A                   ; right one tile
   LD (LDB88),A            ; set bullet X coord in tiles
-; 
+; Bullet moving
 LB805:
   LD A,(LDB8D)            ; get shooting process flag
   OR A                    ; in the process?
@@ -2689,6 +2710,7 @@ LB876:                    ; Bullet goes right
   RET
 ;
 ; Move the Bullet
+; Returns: A = room cell value for the new bullet position
 LB87C:
   CALL LADE5              ; Decode current room to LDBF5
   LD A,(LDB88)            ; get Bullet X coord in tiles
@@ -2706,7 +2728,7 @@ LB87C:
 LB896:
   ADD HL,DE
   DJNZ LB896
-  LD A,(HL)
+  LD A,(HL)               ; get value for the room cell
   RET
 ;
 ; For Bullet direction left: dec E, right: inc E
@@ -2760,6 +2782,7 @@ LB8CA:
   LD A,(LDB87)            ; get Alien position within the room
   SUB C
   RET
+;
 ; Bullet hit something
 LB8D6:
   CALL LB8DC              ; Clear all Bullet variables
@@ -2816,6 +2839,7 @@ LB930:
   LD A,(LDCF7)            ; Weapon slot
   OR A
   jr NZ,LB94C
+; Don't have a weapon
   CALL LB925
   CALL LAB28              ; Show small message popup
   LD HL,$582C
@@ -2859,7 +2883,7 @@ LB96B:
 LB97D:
   LD (L86D7),DE           ; set penRow/penCol
   call DrawNumber5
-  jp ShowShadowScreen   ; Copy shadow screen to ZX screen
+  jp ShowShadowScreen     ; Copy shadow screen to ZX screen
 ;
 ; Decrease Health
 LB994:
@@ -2997,6 +3021,8 @@ LBA3D:
   JP Z,LBBCC
   CP $01                  ; Down key
   JP Z,LBBDC
+  LD HL,GetRandomByte_seed
+  INC (HL)                ; Change random seed
   jr LBA3D                ; Return to main Menu
 ;
 ;NOTE: LBA81 routine moved close to LBC34
@@ -3198,7 +3224,7 @@ LBBEC:
   LD HL,$163C
   LD (L86D7),HL           ; Set penRow/penCol
   LD HL,SE0A5             ; "- Controls -"
-  CALL DrawString         ; Show message char-by-char
+  CALL DrawString         ; Show message
   LD HL,$240A
   LD (L86D7),HL           ; Set penRow/penCol
   LD HL,SE0A7             ; "2nd = Look / Shoot Alpha = Inventory ..."
@@ -3304,10 +3330,10 @@ LBC8B:
   LD A,(HL)
   OR A                    ; do we have it working?
   jr Z,LBCD5
-  CALL LBD69              ; Set penRow/penCol = $580A
   LD HL,SE12D             ; " It doesnt look like you can do anything else here"
 ; Show the message, show screen, wait for key, continue game main loop
 LBCC5:
+  CALL LBD69              ; Set penRow/penCol = $580A
   CALL LBEDE              ; Show message char-by-char
   CALL ShowShadowScreen   ; Copy shadow screen to ZX screen
 LBCCB:
@@ -3332,9 +3358,8 @@ LBCD5:
   JP Z,LBD70
 ; RoomDesc[$13] == $01 - the Generator
 LBCF6:
-  CALL LBD69              ; Set penRow/penCol = $580A
   LD HL,SE12F             ; "This Generator is damaged All of the panels are loose"
-  JP LBCC5                ; Show the message/screen, wait for key, continue game main loop
+  jr LBCC5                ; Show the message/screen, wait for key, continue game main loop
 ; RoomDesc[$13] == $02 - the Workstation
 LBCFF:
   LD HL,LDB90+1
@@ -3342,9 +3367,8 @@ LBCFF:
   LD A,(HL)
   OR A                    ; Generator working?
   jr NZ,LBD11             ; yes => jump
-  CALL LBD69              ; Set penRow/penCol = $580A
   LD HL,SE131             ; "This Workstation doesnt seem to have any power...?"
-  JP LBCC5                ; Show the message/screen, wait for key, continue game main loop
+  jr LBCC5                ; Show the message/screen, wait for key, continue game main loop
 LBD11:
   CALL LAE09              ; Decode current room description to LDBF5
   LD DE,$0030             ; offset in the room description
@@ -3362,29 +3386,25 @@ LBD2B:
 ;  CP $01                  ;   Down key?
 ;  JR NZ,LBD2B             ; no => wait some more
   LD HL,LDB90+2
-  LD (HL),$01             ; mark Workstation is working now
+  LD (HL),$01             ; mark Workstation is used
   LD A,(LDC89)            ; get the current item number
   LD H,$00
   LD L,A
   LD DE,LDB9C             ; Inventory items
   ADD HL,DE
   LD (HL),$01             ; mark that we have the item now
-  CALL LBD69              ; Set penRow/penCol = $580A
   LD HL,SE135             ; "The Workstation Ejected A Data Cartridge 2"
-  JP LBCC5                ; Show the message/screen, wait for key, continue game main loop
+  jr LBCC5                ; Show the message/screen, wait for key, continue game main loop
 ; RoomDesc[$13] == $04 - Life-Support System
 LBD4E:
-  CALL LBD69              ; Set penRow/penCol = $580A
   LD HL,SE13F             ; "The Life Support System needs Re-Configuring"
-  JP LBCC5                ; Show the message/screen, wait for key, continue game main loop
+  jr LBCC5                ; Show the message/screen, wait for key, continue game main loop
 ; RoomDesc[$13] == $05 - Evacuation Deck re-pressurised
 LBD57:
-  CALL LBD69              ; Set penRow/penCol = $580A
   LD HL,SE141             ; "AirLock Control & Re-Pressurisation Station"
-  JP LBCC5                ; Show the message/screen, wait for key, continue game main loop
+  jr LBCC5                ; Show the message/screen, wait for key, continue game main loop
 ; RoomDesc[$13] == $06 - Guidance System
 LBD60:
-  CALL LBD69              ; Set penRow/penCol = $580A
   LD HL,SE143             ; "This MainFrame is missing a Power Cell"
   JP LBCC5                ; Show the message/screen, wait for key, continue game main loop
 ; Set penRow/penCol = $580A
@@ -3398,7 +3418,6 @@ LBD70:
   LD A,(HL)               ; mark Guidance System working now
   OR A                    ; does it work?
   jr NZ,LBD85             ; yes => Flying away on the Pod
-  CALL LBD69              ; Set penRow/penCol = $580A
   LD HL,SE145             ; "This Pod cant naviagate. Guidance System is offline"
   JP LBCC5                ; Show the message/screen, wait for key, continue game main loop
 ; Flying away on the Pod
@@ -3489,7 +3508,7 @@ LBE3E:
   LD (LDBF4),A
   JR LBE6A
 LBE5E:
-  LD HL,$6E0C
+  LD HL,$6E0C             ; Player deaths > 0
   LD (L86D7),HL           ; Set penRow/penCol
   LD HL,SE0B3             ; "Over & Over Again" (achievement)
   CALL LBEDE              ; Show message char-by-char

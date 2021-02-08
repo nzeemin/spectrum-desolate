@@ -1,7 +1,7 @@
 # spectrum-desolate
 Porting **Desolate** game from TI-83 Plus calculator to ZX Spectrum.
 
-Status: work in progress.
+Status: work in progress, almost done.
 
 ![](screenshot/port-room1.png)
 
