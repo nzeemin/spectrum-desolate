@@ -2003,6 +2003,8 @@ LB33F:
 LB36C:
   LD HL,$1416
   LD (L86D7),HL           ; Set penRow/penCol
+  LD A,$16
+  LD (LDCF3),A            ; Left margin size for text
   POP HL                  ; restore the message address
 LB373:
   CALL LBEDE              ; Show message char-by-char
@@ -3409,8 +3411,10 @@ LBD60:
   JP LBCC5                ; Show the message/screen, wait for key, continue game main loop
 ; Set penRow/penCol = $580A
 LBD69:
+  push hl
   LD HL,$580A
   LD (L86D7),HL           ; Set penRow/penCol
+  pop hl
   RET
 ; RoomDesc[$13] == $07 - Pod
 LBD70:

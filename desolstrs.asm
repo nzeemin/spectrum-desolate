@@ -160,7 +160,7 @@ SAccessLevel4: DEFM $1B,"Level 4|",$09,"Access Code|",$15,"Required",0
 ;
 SE129: DEFM "You dont seem to be able|",$0F,"to use this item here",0
 SE12B: DEFM "You dont have any time|",$08,"to play with this now",0
-SE12D: DEFM $12,"It doesnt look like you|",$06,"can do anything else here",0
+SE12D: DEFM $10,"It doesnt look like you|",$04,"can do anything else here",0
 SE12F: DEFM "This Generator is damaged|All of the panels are loose",0
 SE131: DEFM $0F,"This Workstation doesnt|seem to have any power...?",0
 SE133: DEFM $0A,"The Workstation has now|",$09,"successfully booted up",$06,"$",0

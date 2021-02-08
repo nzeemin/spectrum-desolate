@@ -1,8 +1,9 @@
 # spectrum-desolate
-Porting **Desolate** game from TI-83 Plus calculator to ZX Spectrum.
+Ported **Desolate** game from TI-83 Plus calculator to ZX Spectrum.
 
-Status: work in progress, almost done.
+Status: released.
 
+![](screenshot/port-story1.png)
 ![](screenshot/port-room1.png)
 
 
@@ -45,4 +46,5 @@ To run the game on Wabbitemu emulator:
 
  - [Discussion on zx-pk.ru (in Russian)](https://zx-pk.ru/threads/32431-desolate-port-s-ti-83-plus.html)
  - [Desolate port on Vector-06c](https://github.com/nzeemin/vector06c-desolate)
+ - [Desolate port on UKNC](https://github.com/nzeemin/uknc-desolate)
 
