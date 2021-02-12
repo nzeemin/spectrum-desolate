@@ -1,10 +1,20 @@
 # spectrum-desolate
 Ported **Desolate** game from TI-83 Plus calculator to ZX Spectrum.
 
+[![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
+
 Status: released.
+
+Thanks a lot to tr1p1ea for the original game!
+Thanks to [zx-pk.ru forum](https://zx-pk.ru/forum.php) members for all the help and support!
 
 ![](screenshot/port-story1.png)
 ![](screenshot/port-room1.png)
+
+Videos:
+ - [Desolate Walkthrough, ZX Spectrum](https://youtu.be/41zymtzSNes) by Pavel Plíva and RZX Archive
+ - [Desolate (2021) Walkthrough + Review, ZX Spectrum](https://youtu.be/fsPbqdiyB0Y) by Modern ZX-Retro Gaming
+ - [ZX Spectrum -=Desolate=-](https://youtu.be/ZGCxc-kQIGs) by Saberman for IndieRetroNews
 
 
 ## The original game
@@ -45,6 +55,7 @@ To run the game on Wabbitemu emulator:
 ## Links
 
  - [Discussion on zx-pk.ru (in Russian)](https://zx-pk.ru/threads/32431-desolate-port-s-ti-83-plus.html)
+ - [Discussion on Spectrum Computing forum](https://spectrumcomputing.co.uk/forums/viewtopic.php?f=9&t=4263)
  - [Desolate port on Vector-06c](https://github.com/nzeemin/vector06c-desolate)
  - [Desolate port on UKNC](https://github.com/nzeemin/uknc-desolate)
 
