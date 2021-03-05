@@ -37,6 +37,13 @@ To run the game on Wabbitemu emulator:
  7. Select Main > Desolate
 
 
+## Comparing original to the port
+
+![](screenshot/compare-doorlock.png)
+
+![](screenshot/compare-room2.png)
+
+
 ## Tools for the tools folder
 
  - `bas2tap.exe`, `bin2tap.exe`, `tap2tzx.exe` utilities
